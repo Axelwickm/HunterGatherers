@@ -5,6 +5,7 @@
 #include <memory>
 #include <vector>
 #include <array>
+#include <cmath>
 #include <SFML/Graphics.hpp>
 
 #include "WorldObject.h"
