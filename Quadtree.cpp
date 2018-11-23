@@ -151,7 +151,7 @@ bool Quadtree<T>::remove(WorldObject *worldObject) {
 }
 
 template<class T>
-bool Quadtree<T>::move(sf::Vector2f oldPosition, std::shared_ptr<WorldObject> worldObject) {
+bool Quadtree<T>::move(sf::Vector2f oldPosition, WorldObject* worldObject) {
     // Does not contain
     if (!contains(oldPosition)) {
         return false;
@@ -159,7 +159,7 @@ bool Quadtree<T>::move(sf::Vector2f oldPosition, std::shared_ptr<WorldObject> wo
 
     if (not quadsCreated) {
         for (unsigned long long int i = 0; i < nodes.size(); i++) {
-            if (nodes.at(i).get() == worldObject.get()) {
+            if (nodes.at(i).get() == worldObject) {
                 if (!contains(worldObject->getPosition())) {
                     nodes.erase(nodes.begin() + i);
                     return true;
@@ -173,7 +173,7 @@ bool Quadtree<T>::move(sf::Vector2f oldPosition, std::shared_ptr<WorldObject> wo
     // Remove from quads
     for (int i = 0; i < 4; i++) {
         if (quads[i]->move(oldPosition, worldObject)) {
-            if (add(worldObject)) {
+            if (add(worldObject->getSharedPtr())) {
                 return false;
             } else {
                 // Check if it is even worth having quads, or if they should be deconstruced
@@ -214,6 +214,37 @@ std::vector<std::shared_ptr<WorldObject> > Quadtree<T>::searchNear(sf::Vector2<T
         return n1;
     }
     return std::vector<std::shared_ptr<WorldObject> >();
+}
+
+template<class T>
+void Quadtree<T>::draw(sf::RenderWindow *window, bool entities) {
+    sf::CircleShape c;
+    c.setRadius(5);
+    c.setFillColor(sf::Color::Red);
+    c.setOrigin(c.getRadius(), c.getRadius());
+
+    if (entities) {
+        for (const std::shared_ptr<WorldObject> &wo : getNodes()) {
+            c.setPosition(sf::Vector2f(wo->getPosition()));
+            window->draw(c);
+        }
+    }
+
+    sf::RectangleShape r;
+    r.setPosition(sf::Vector2f(getPosition()));
+    r.setSize(sf::Vector2f(getDimensions()));
+    r.setFillColor(sf::Color(0, 0, 0, 0));
+    r.setOutlineColor(sf::Color(100, 100, 100));
+    r.setOutlineThickness(1);
+    window->draw(r);
+
+
+    if (quadsCreated) {
+        for (int i = 0; i < 4; i++) {
+            quads[i]->draw(window, entities);
+        }
+    }
+
 }
 
 

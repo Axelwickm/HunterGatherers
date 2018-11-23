@@ -13,7 +13,7 @@
 
 class Camera {
 public:
-    explicit Camera (sf::RenderWindow* window);
+    explicit Camera (sf::RenderWindow* window, sf::Vector2f worldSize);
     void move(sf::Vector2f offset);
     void zoomTo(float mouseWheelDelta, sf::Vector2<int> mousePosition);
     void resizeWindow(sf::Event::SizeEvent size);
@@ -23,6 +23,7 @@ public:
 private:
     sf::RenderWindow* window;
     sf::View view;
+    sf::Vector2f worldSize;
 };
 
 

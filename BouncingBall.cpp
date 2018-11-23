@@ -40,7 +40,7 @@ void BouncingBall::update(float deltaTime) {
             }
         }
 
-        quadtree->move(old, std::shared_ptr(owner));
+        quadtree->move(old, this);
     }
 }
 

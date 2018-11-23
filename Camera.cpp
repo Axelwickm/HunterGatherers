@@ -4,9 +4,10 @@
 
 #include "Camera.h"
 
-Camera::Camera(sf::RenderWindow *window) {
+Camera::Camera(sf::RenderWindow *window, sf::Vector2f worldSize) {
     this->window = window;
     this->view = window->getDefaultView();
+    this->worldSize = worldSize;
     view.zoom(1.f);
     window->setView(view);
 }
@@ -15,7 +16,7 @@ void Camera::move(sf::Vector2f offset) {
     offset *= view.getSize().x/window->getSize().x;
     view.move(offset.x, offset.y);
 
-    view.setCenter((float) fmin(view.getCenter().x, window->getSize().x), (float) fmin(view.getCenter().y, window->getSize().y)); // TODO: change this to world dimensions
+    view.setCenter((float) fmin(view.getCenter().x, worldSize.x), (float) fmin(view.getCenter().y, worldSize.y));
     view.setCenter((float) fmax(view.getCenter().x, 0), (float) fmax(view.getCenter().y, 0));
 
     window->setView(view);
@@ -24,11 +25,11 @@ void Camera::move(sf::Vector2f offset) {
 void Camera::zoomTo(float mouseWheelDelta,  sf::Vector2<int> mousePosition) {
     sf::Vector2f c1 = (sf::Vector2f) window->mapPixelToCoords(sf::Mouse::getPosition(*window));
     view.zoom(1.f-mouseWheelDelta * Controls::scrollFactor);
-    view.setSize((float) fmin(view.getSize().x, window->getSize().x), (float) fmin(view.getSize().y, window->getSize().y));
+    view.setSize((float) fmin(view.getSize().x, worldSize.x), (float) fmin(view.getSize().y, worldSize.y));
     auto c2 = (sf::Vector2f) window->mapPixelToCoords(mousePosition, view);
     view.move(c1-c2);
 
-    view.setCenter((float) fmin(view.getCenter().x, window->getSize().x), (float) fmin(view.getCenter().y, window->getSize().y)); // TODO: change this to world dimensions
+    view.setCenter((float) fmin(view.getCenter().x, window->getSize().x), (float) fmin(view.getCenter().y, window->getSize().y));
     view.setCenter((float) fmax(view.getCenter().x, 0), (float) fmax(view.getCenter().y, 0));
 
     window->setView(view);

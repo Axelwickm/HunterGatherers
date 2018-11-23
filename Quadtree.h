@@ -19,31 +19,27 @@ class Quadtree {
 public:
     Quadtree(sf::Vector2<T> topLeft, sf::Vector2<T> dimensions);
 
-    sf::Vector2<T> getPosition();
-
-    sf::Vector2<T> getDimensions();
 
     std::array<Quadtree<T> *, 4> getQuads();
-
     bool hasQuads();
 
-    std::vector<std::shared_ptr<WorldObject> > getNodes();
-
-    unsigned long long getSubNodeCount();
-
-    std::vector<std::shared_ptr<WorldObject> > searchNear(sf::Vector2<T> position, float distance);
+    sf::Vector2<T> getPosition();
+    sf::Vector2<T> getDimensions();
 
     T getLimit();
-
     void setLimit(T l);
 
+    std::vector<std::shared_ptr<WorldObject> > searchNear(sf::Vector2<T> position, float distance);
     bool contains(sf::Vector2<T> position);
 
+    unsigned long long getSubNodeCount();
+    std::vector<std::shared_ptr<WorldObject> > getNodes();
+
     bool add(std::shared_ptr<WorldObject> worldObject);
-
     bool remove(WorldObject *worldObject);
+    bool move(sf::Vector2f oldPosition, WorldObject* worldObject);
 
-    bool move(sf::Vector2f oldPosition, std::shared_ptr<WorldObject> worldObject);
+    void draw(sf::RenderWindow *window, bool entities);
 
 
 private:

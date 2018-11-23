@@ -15,24 +15,22 @@ class Quadtree;
 class WorldObject {
 public:
     explicit WorldObject(sf::Vector2f position);
+    std::shared_ptr<WorldObject> getSharedPtr();
 
     virtual void update(float deltaTime) = 0;
-
     virtual void draw(sf::RenderWindow *window, float deltaTime) = 0;
 
     sf::Vector2f getPosition();
-
     void setPosition(sf::Vector2f position);
 
-    void setQuadtree(Quadtree<float> *quadtree, std::weak_ptr<WorldObject> owner);
-
+    void setQuadtree(Quadtree<float> *quadtree, std::weak_ptr<WorldObject> object);
     Quadtree<float> *getQuadtree();
 
 protected:
+    std::weak_ptr<WorldObject> me;
     sf::Vector2f position;
 
     Quadtree<float> *quadtree;
-    std::weak_ptr<WorldObject> owner;
 private:
 
 };

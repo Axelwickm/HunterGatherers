@@ -9,15 +9,21 @@ WorldObject::WorldObject(sf::Vector2f position) {
     this->quadtree = nullptr;
 }
 
+std::shared_ptr<WorldObject> WorldObject::getSharedPtr() {
+    return std::shared_ptr<WorldObject>(me);
+}
+
 sf::Vector2f WorldObject::getPosition() { return position; }
 
 void WorldObject::setPosition(sf::Vector2f position) { this->position = position; }
 
-void WorldObject::setQuadtree(Quadtree<float> *quadtree, std::weak_ptr<WorldObject> owner) {
+void WorldObject::setQuadtree(Quadtree<float> *quadtree, std::weak_ptr<WorldObject> object) {
     this->quadtree = quadtree;
-    this->owner = owner;
+    this->me = object;
 }
 
 Quadtree<float> *WorldObject::getQuadtree() {
     return quadtree;
 }
+
+
