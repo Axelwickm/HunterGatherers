@@ -9,6 +9,7 @@
 #include <SFML/Graphics.hpp>
 
 #include "WorldObject.h"
+#include "utils.cpp"
 
 #ifndef FAMILYISEVERYTHING_QUADTREE_H
 #define FAMILYISEVERYTHING_QUADTREE_H
@@ -53,8 +54,6 @@ private:
     bool quadsCreated;
 
     std::vector<std::shared_ptr<WorldObject> > nodes;
-
-    bool boxesIntersect(sf::Vector2<T> apos, sf::Vector2<T> adim, sf::Vector2<T> bpos, sf::Vector2<T> bdim);
 };
 
 

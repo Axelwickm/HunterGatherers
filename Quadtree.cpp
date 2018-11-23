@@ -167,7 +167,6 @@ bool Quadtree<T>::move(sf::Vector2f oldPosition, std::shared_ptr<WorldObject> wo
                 return false;
             }
         }
-        //std::cout<<"D\n";
         return false;
     }
 
@@ -217,13 +216,7 @@ std::vector<std::shared_ptr<WorldObject> > Quadtree<T>::searchNear(sf::Vector2<T
     return std::vector<std::shared_ptr<WorldObject> >();
 }
 
-template<class T>
-bool Quadtree<T>::boxesIntersect(sf::Vector2<T> apos, sf::Vector2<T> adim, sf::Vector2<T> bpos, sf::Vector2<T> bdim) {
-    return (fabs(apos.x - bpos.x) * 1.f < (adim.x + bdim.x)) &&
-           (fabs(apos.y - bpos.y) * 1.f < (adim.y + bdim.y));
-}
 
-//template class Quadtree<int>; <-- Creates division errors
-template
-class Quadtree<float>;
-//template class Quadtree<unsigned long>; <-- Creates division errors
+//template class Quadtree<int>; <-- Triggers division errors
+template class Quadtree<float>;
+//template class Quadtree<unsigned long>; <-- Triggers division errors
