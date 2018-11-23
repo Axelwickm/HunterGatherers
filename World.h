@@ -25,9 +25,17 @@ public:
     bool addObject(std::shared_ptr<WorldObject> worldObject);
     bool removeObject(WorldObject* worldObject);
 
+
+    const sf::RenderWindow *getWindow() const;
+
+    const sf::Vector2f &getDimensions() const;
+
+    const Quadtree<float> &getQuadtree() const;
+
 private:
     sf::RenderWindow* window;
     const sf::Vector2f dimensions;
+
     Quadtree<float> quadtree;
 
     std::set<std::shared_ptr<WorldObject> > objects;

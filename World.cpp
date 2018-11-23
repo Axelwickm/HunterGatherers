@@ -3,6 +3,7 @@
 //
 
 #include "World.h"
+#include "Agent.h"
 #include "BouncingBall.h"
 
 World::World(sf::RenderWindow *window, sf::Vector2f dimensions):
@@ -13,12 +14,18 @@ window(window), dimensions(dimensions), quadtree(Quadtree<float>(sf::Vector2<flo
             std::chrono::system_clock::now()).time_since_epoch().count();
 
     srand(now);
+
+
     for (int i = 0; i < 100; i++) {
         sf::Vector2<float> position(rand() % ((int) dimensions.x - 50) + 25, rand() % ((int) dimensions.y - 50) + 25);
-        std::shared_ptr<BouncingBall> w(new BouncingBall(position, 10.f, dimensions));
+        std::shared_ptr<BouncingBall> w(new BouncingBall(this, position, 10.f));
         w->setVelocity({(float) rand() / RAND_MAX * 50.f - 25.f, (float) rand() / RAND_MAX * 50.f - 25.f});
         addObject(w);
     }
+
+    std::shared_ptr<Agent> agent(new Agent(this, sf::Vector2f(100, 100)));
+    agent->setVelocity(sf::Vector2f(10, 0));
+    addObject(agent);
 }
 
 void World::update(float deltaTime) {
@@ -53,3 +60,16 @@ bool World::removeObject(WorldObject* worldObject) {
     }
     return false;
 }
+
+const sf::RenderWindow *World::getWindow() const {
+    return window;
+}
+
+const sf::Vector2f &World::getDimensions() const {
+    return dimensions;
+}
+
+const Quadtree<float> &World::getQuadtree() const {
+    return quadtree;
+}
+

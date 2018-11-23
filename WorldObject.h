@@ -9,28 +9,49 @@
 
 #include <memory>
 
+
 template<class T>
 class Quadtree;
+class World;
 
 class WorldObject {
 public:
-    explicit WorldObject(sf::Vector2f position);
+    explicit WorldObject(World* world, sf::Vector2f position);
     std::shared_ptr<WorldObject> getSharedPtr();
 
-    virtual void update(float deltaTime) = 0;
+    virtual void update(float deltaTime);
+    virtual void update(float deltaTime, sf::Vector2f oldPosition);
     virtual void draw(sf::RenderWindow *window, float deltaTime) = 0;
 
-    sf::Vector2f getPosition();
-    void setPosition(sf::Vector2f position);
+
 
     void setQuadtree(Quadtree<float> *quadtree, std::weak_ptr<WorldObject> object);
     Quadtree<float> *getQuadtree();
 
-protected:
-    std::weak_ptr<WorldObject> me;
-    sf::Vector2f position;
+    const sf::Vector2f &getVelocity() const;
+    void setVelocity(const sf::Vector2f &velocity);
 
+    float getAccelerationFactor() const;
+    void setAccelerationFactor(float accelerationFactor);
+
+
+
+protected:
+    World* world;
+    std::weak_ptr<WorldObject> me;
     Quadtree<float> *quadtree;
+
+    sf::Vector2f position;
+public:
+    const sf::Vector2f &getPosition() const;
+
+    void setPosition(const sf::Vector2f &position);
+
+protected:
+    sf::Vector2f velocity;
+    float accelerationFactor;
+
+
 private:
 
 };

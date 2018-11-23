@@ -7,9 +7,17 @@
 
 #include "WorldObject.h"
 
-class Agent : WorldObject {
+#include <SFML/Graphics.hpp>
+
+class Agent : public WorldObject {
 public:
+    Agent(World* world, sf::Vector2f position);
+
     void update(float deltaTime) override;
+    void draw(sf::RenderWindow *window, float deltaTime) override;
+
+private:
+    sf::RectangleShape r;
 };
 
 

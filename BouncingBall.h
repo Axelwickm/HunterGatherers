@@ -12,9 +12,7 @@
 
 class BouncingBall : public WorldObject {
 public:
-    BouncingBall(sf::Vector2f position, float radius, sf::Vector2f worldBounds);
-
-    void setVelocity(sf::Vector2f velocity);
+    BouncingBall(World* world, sf::Vector2f position, float radius);
 
     void update(float deltaTime) override;
 
@@ -25,8 +23,6 @@ public:
 private:
     float radius;
     sf::CircleShape c;
-    sf::Vector2f worldBounds;
-    sf::Vector2f velocity;
 };
 
 

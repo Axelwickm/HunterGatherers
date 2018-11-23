@@ -5,10 +5,10 @@
 #include "BouncingBall.h"
 
 #include "Quadtree.h"
+#include "World.h"
 
-BouncingBall::BouncingBall(sf::Vector2f position, float radius, sf::Vector2f worldBounds) : WorldObject(position) {
+BouncingBall::BouncingBall(World* world, sf::Vector2f position, float radius) : WorldObject(world, position) {
     this->radius = radius;
-    this->worldBounds = worldBounds;
 
     c.setRadius(radius);
     c.setFillColor(sf::Color::Magenta);
@@ -16,15 +16,14 @@ BouncingBall::BouncingBall(sf::Vector2f position, float radius, sf::Vector2f wor
 }
 
 void BouncingBall::update(float deltaTime) {
-    sf::Vector2f old = position;
+    WorldObject::update(deltaTime);
 
-    position += velocity * deltaTime;
     auto newPos = getPosition();
-    if (worldBounds.x < newPos.x + radius || newPos.x < radius) {
+    if (world->getDimensions().x < newPos.x + radius || newPos.x < radius) {
         velocity.x *= -1.f;
     }
 
-    if (worldBounds.y < newPos.y + radius || newPos.y < radius) {
+    if (world->getDimensions().y < newPos.y + radius || newPos.y < radius) {
         velocity.y *= -1.f;
     }
 
@@ -32,15 +31,13 @@ void BouncingBall::update(float deltaTime) {
         auto nl = quadtree->searchNear(newPos, radius);
         c.setFillColor(sf::Color::Magenta);
         for (auto &n : nl) {
-            if (n.get() != this) {
+            if (n.get() != this && typeid(*(n.get())) == typeid(BouncingBall)) {
                 sf::Vector2f v = n->getPosition() - position;
                 if (sqrtf(v.x * v.x + v.y * v.y) < ((BouncingBall *) n.get())->getRadius() + radius) {
                     c.setFillColor(sf::Color::Green);
                 }
             }
         }
-
-        quadtree->move(old, this);
     }
 }
 
@@ -48,10 +45,6 @@ void BouncingBall::draw(sf::RenderWindow *window, float deltaTime) {
     c.setPosition(getPosition());
     window->draw(c);
 
-}
-
-void BouncingBall::setVelocity(sf::Vector2f velocity) {
-    this->velocity = velocity;
 }
 
 float BouncingBall::getRadius() {

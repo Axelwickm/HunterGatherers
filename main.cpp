@@ -1,6 +1,5 @@
 #include <iostream>
 #include <memory>
-#include <numeric>
 
 #include "Camera.h"
 #include "Config.h"
@@ -15,8 +14,6 @@ int main() {
     World world(&window, dimensions);
 
     sf::Clock deltaClock;
-    sf::Clock computationTime;
-    std::vector<sf::Int64> times;
 
     bool dragging = false;
     sf::Vector2<int> mousePosition = sf::Mouse::getPosition();
@@ -88,8 +85,6 @@ int main() {
 
         window.display();
     }
-
-    std::cout << "Average time: " << std::accumulate(times.begin(), times.end(), 0.0) / times.size() << std::endl;
 
     return 0;
 }

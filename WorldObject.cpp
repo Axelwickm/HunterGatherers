@@ -3,19 +3,19 @@
 //
 
 #include "WorldObject.h"
+#include "Quadtree.h"
+#include "World.h"
 
-WorldObject::WorldObject(sf::Vector2f position) {
+WorldObject::WorldObject(World* world, sf::Vector2f position) {
     this->position = position;
     this->quadtree = nullptr;
+    this->world = world;
+    accelerationFactor = 1.f;
 }
 
 std::shared_ptr<WorldObject> WorldObject::getSharedPtr() {
     return std::shared_ptr<WorldObject>(me);
 }
-
-sf::Vector2f WorldObject::getPosition() { return position; }
-
-void WorldObject::setPosition(sf::Vector2f position) { this->position = position; }
 
 void WorldObject::setQuadtree(Quadtree<float> *quadtree, std::weak_ptr<WorldObject> object) {
     this->quadtree = quadtree;
@@ -25,5 +25,47 @@ void WorldObject::setQuadtree(Quadtree<float> *quadtree, std::weak_ptr<WorldObje
 Quadtree<float> *WorldObject::getQuadtree() {
     return quadtree;
 }
+
+void WorldObject::update(float deltaTime) {
+    sf::Vector2f old = position;
+    update(deltaTime, old);
+}
+
+void WorldObject::update(float deltaTime, sf::Vector2f oldPosition) {
+    velocity *= powf(accelerationFactor, deltaTime);
+    position += velocity * deltaTime;
+    position = sf::Vector2f((float) fmin(position.x, world->getDimensions().x), (float) fmin(position.y, world->getDimensions().y));
+    position = sf::Vector2f((float) fmax(position.x, 0), (float) fmax(position.y, 0));
+    if (quadtree != nullptr) {
+        quadtree->move(oldPosition, this);
+    }
+
+}
+
+const sf::Vector2f &WorldObject::getPosition() const {
+    return position;
+}
+
+void WorldObject::setPosition(const sf::Vector2f &position) {
+    WorldObject::position = position;
+}
+
+
+const sf::Vector2f &WorldObject::getVelocity() const {
+    return velocity;
+}
+
+void WorldObject::setVelocity(const sf::Vector2f &velocity) {
+    WorldObject::velocity = velocity;
+}
+
+float WorldObject::getAccelerationFactor() const {
+    return accelerationFactor;
+}
+
+void WorldObject::setAccelerationFactor(float accelerationFactor) {
+    WorldObject::accelerationFactor = accelerationFactor;
+}
+
 
 
