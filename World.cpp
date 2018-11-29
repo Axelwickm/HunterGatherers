@@ -6,8 +6,8 @@
 #include "Agent.h"
 #include "BouncingBall.h"
 
-World::World(sf::RenderWindow *window, sf::Vector2f dimensions):
-window(window), dimensions(dimensions), quadtree(Quadtree<float>(sf::Vector2<float>(0, 0), dimensions)) {
+World::World(sf::RenderWindow *window, sf::Vector2f dimensions, OpenCL_Wrapper *openCL_wrapper):
+window(window), dimensions(dimensions), openCL_wrapper(openCL_wrapper), quadtree(Quadtree<float>(sf::Vector2<float>(0, 0), dimensions)) {
     quadtree.setLimit(30);
 
     long long int now = std::chrono::time_point_cast<std::chrono::microseconds>(
@@ -23,12 +23,17 @@ window(window), dimensions(dimensions), quadtree(Quadtree<float>(sf::Vector2<flo
         addObject(w);
     }
 
-    std::shared_ptr<Agent> agent(new Agent(this, sf::Vector2f(100, 100)));
-    agent->setVelocity(sf::Vector2f(10, 0));
+    agent = std::shared_ptr<Agent>(new Agent(this, sf::Vector2f(100, 100)));
+    agent->setVelocity(sf::Vector2f(100, 10));
     addObject(agent);
 }
 
 void World::update(float deltaTime) {
+    // AI updates
+    agent->updatePercept(deltaTime);
+    openCL_wrapper->think(agent.get(), agent->percept);
+
+    // World updates
     for (auto &object : objects) {
         object->update(deltaTime);
     }
@@ -45,12 +50,19 @@ void World::draw(float deltaTime) {
 }
 
 bool World::addObject(std::shared_ptr<WorldObject> worldObject) {
-    if (quadtree.add(worldObject)){
-        worldObject->setQuadtree(&quadtree, worldObject);
-        objects.insert(worldObject);
-        return true;
+    if (!quadtree.add(worldObject)){
+        return false;
     }
-    return false;
+    worldObject->setQuadtree(&quadtree, worldObject);
+    objects.insert(worldObject);
+
+    if (typeid(*worldObject.get()) == typeid(Agent)){
+
+        openCL_wrapper->addAgent(std::weak_ptr<Agent>(std::dynamic_pointer_cast<Agent>(worldObject)));
+    }
+
+    return true;
+
 }
 
 bool World::removeObject(WorldObject* worldObject) {
@@ -71,5 +83,9 @@ const sf::Vector2f &World::getDimensions() const {
 
 const Quadtree<float> &World::getQuadtree() const {
     return quadtree;
+}
+
+OpenCL_Wrapper *World::getOpenCL_wrapper() const {
+    return openCL_wrapper;
 }
 

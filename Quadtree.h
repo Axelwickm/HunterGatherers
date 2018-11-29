@@ -29,7 +29,8 @@ public:
     T getLimit();
     void setLimit(T l);
 
-    std::vector<std::shared_ptr<WorldObject> > searchNear(sf::Vector2<T> position, float distance);
+    std::vector<std::shared_ptr<WorldObject> > searchNear(sf::Vector2<T> position, float distance); // TODO: do same as below
+    void searchNearLine(std::vector<std::shared_ptr<WorldObject> > &wobjs, const sf::Vector2<T> &lineStart, const sf::Vector2<T> &lineEnd);
     bool contains(sf::Vector2<T> position);
 
     unsigned long long getSubNodeCount();

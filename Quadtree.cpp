@@ -217,6 +217,23 @@ std::vector<std::shared_ptr<WorldObject> > Quadtree<T>::searchNear(sf::Vector2<T
 }
 
 template<class T>
+void Quadtree<T>::searchNearLine(std::vector<std::shared_ptr<WorldObject> > &wobjs, const sf::Vector2<T> &lineStart, const sf::Vector2<T> &lineEnd) {
+    if (lineIntersectWithBox(lineStart, lineEnd, topLeft, dimensions)) {
+        if (!nodes.empty()){
+            wobjs.insert(wobjs.end(), nodes.begin(), nodes.end());
+        }
+
+        if (quadsCreated) {
+            for (int i = 0; i < 4; i++) {
+                quads[i]->searchNearLine(wobjs, lineStart, lineEnd);
+            }
+        }
+
+
+    }
+}
+
+template<class T>
 void Quadtree<T>::draw(sf::RenderWindow *window, bool entities) {
     sf::CircleShape c;
     c.setRadius(5);

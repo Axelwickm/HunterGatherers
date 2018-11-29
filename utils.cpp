@@ -7,10 +7,51 @@
 
 #include <SFML/Graphics.hpp>
 
+#define EPSILON 1e-6f
+
 template<class T>
-bool boxesIntersect(sf::Vector2<T> apos, sf::Vector2<T> adim, sf::Vector2<T> bpos, sf::Vector2<T> bdim) {
+inline bool boxesIntersect(const sf::Vector2<T> &apos, const sf::Vector2<T> &adim, const sf::Vector2<T> &bpos, const sf::Vector2<T> &bdim) {
     return (fabs(apos.x - bpos.x) * 1.f < (adim.x + bdim.x)) &&
            (fabs(apos.y - bpos.y) * 1.f < (adim.y + bdim.y));
+}
+
+template<class T>
+inline bool clipT(const T &n, const T &d, sf::Vector2<T>* c){
+    sf::Vector2<T> c2(*c);
+    if (abs(d) < EPSILON){
+        return n < 0;
+    }
+    T t = n / d;
+
+    if (0 < d) {
+        if (t > c2.y) return false;
+        if (t > c2.x) (*c).x = t;
+    } else {
+        if (t < c2.x) return false;
+        if (t < c2.y) (*c).y = t;
+    }
+    return true;
+}
+
+template<class T>
+inline bool lineIntersectWithBox(const sf::Vector2<T> &lineStart, const sf::Vector2<T> &lineEnd, const sf::Vector2<T> &boxpos, const sf::Vector2<T> &boxdim){
+    T box[4] = {boxpos.x, boxpos.y, boxpos.x + boxdim.x, boxpos.y + boxdim.y};
+    T dx = lineEnd.x - lineStart.x;
+    T dy = lineEnd.y - lineStart.y;
+
+    if (dx < EPSILON && dy < EPSILON &&
+        lineStart.x >= box[0] && lineStart.x <= box[2] &&
+        lineStart.y >= box[1] && lineStart.y <= box[3]){
+        return true;
+    }
+
+    sf::Vector2<T> c = {0, 1};
+    return clipT(box[0] - lineStart.x, dx, &c) &&
+           clipT(lineStart.x - box[2], -dx, &c) &&
+           clipT(box[1] - lineStart.y,  dy, &c) &&
+           clipT(lineStart.y - box[3], -dy, &c);
+
+
 }
 
 #endif //FAMILYISEVERYTHING_UTILS_CPP

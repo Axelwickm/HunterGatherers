@@ -7,6 +7,7 @@
 namespace RenderSettings {
     bool showQuadtree = true;
     bool showQuadtreeEntities = false;
+    bool showVision = true;
 };
 
 namespace Controls{

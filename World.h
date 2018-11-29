@@ -14,10 +14,13 @@
 #include "Quadtree.h"
 #include "WorldObject.h"
 #include "Config.h"
+#include "OpenCL_Wrapper.h"
 
 class World {
 public:
-    World(sf::RenderWindow* window, sf::Vector2f dimensions);
+    World(sf::RenderWindow* window, sf::Vector2f dimensions, OpenCL_Wrapper *openCL_wrapper);
+
+    OpenCL_Wrapper *getOpenCL_wrapper() const;
 
     void update(float deltaTime);
     void draw(float deltaTime);
@@ -36,7 +39,10 @@ private:
     sf::RenderWindow* window;
     const sf::Vector2f dimensions;
 
+    std::shared_ptr<Agent> agent;
+
     Quadtree<float> quadtree;
+    OpenCL_Wrapper *openCL_wrapper;
 
     std::set<std::shared_ptr<WorldObject> > objects;
 

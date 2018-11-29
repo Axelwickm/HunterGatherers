@@ -1,17 +1,41 @@
 #include <iostream>
 #include <memory>
+#include <string>
 
 #include "Camera.h"
 #include "Config.h"
 #include "World.h"
+#include "OpenCL_Wrapper.h"
 
+int main(int argc, char *argv[]) {
+    std::string deviceName;
 
-int main() {
+    for (int i = 0; i < argc; i++){
+        std::string s(argv[i]);
+        if (s == "-CL_DEVICE"){
+            deviceName = std::string(argv[i+1]);
+            while (true){
+                auto c = deviceName.find("_");
+                if (c == std::string::npos){
+                    break;
+                }
+                deviceName.replace(c, 1, " ");
+            }
+
+            printf("Set to use OpenCL device: %s\n", deviceName.c_str());
+
+            i++;
+        }
+    }
+
+    OpenCL_Wrapper cl(deviceName);
+
     const sf::Vector2f dimensions(1920, 1080);
+
 
     sf::RenderWindow window(sf::VideoMode(dimensions.x, dimensions.y), "Hunter Gatherers");
     Camera camera(&window, dimensions);
-    World world(&window, dimensions);
+    World world(&window, dimensions, &cl);
 
     sf::Clock deltaClock;
 

@@ -5,12 +5,12 @@
 #ifndef HUNTERGATHERERS_CONFIG_H
 #define HUNTERGATHERERS_CONFIG_H
 
-
 #include <SFML/Graphics.hpp>
 
 namespace RenderSettings {
     extern bool showQuadtree;
     extern bool showQuadtreeEntities;
+    extern bool showVision;
 };
 
 namespace Controls{
