@@ -1,3 +1,4 @@
+#pragma OPENCL EXTENSION cl_arm_printf : enable
 #define RELU(x) (0 < x ? x : 0)
 
 __kernel void perceptron(__constant unsigned* layerSize, __constant float* layerWeight, __constant unsigned* layerBias,
@@ -6,7 +7,7 @@ __kernel void perceptron(__constant unsigned* layerSize, __constant float* layer
     size_t id = get_global_id(0);
     size_t previousLayerSize = layerSize[layerIndex];
     size_t thisLayerSize = layerSize[layerIndex+1];
-
+    //printf("Kernel %d - %d\n", layerIndex, id);
 
     if (id >= thisLayerSize){
         return;

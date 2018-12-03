@@ -30,16 +30,20 @@ public:
     void draw(sf::RenderWindow *window, float deltaTime) override;
 
     void updatePercept(float deltaTime);
-    std::vector<float> percept; // TODO: make private, getters setters.
-    std::vector<float> action;// TODO: make private, getters setters.
 
-    double getOrientation() const;
-    void setOrientation(double orientation);
+    const std::vector<float> &getPercept() const;
+    void setPercept(const std::vector<float> &percept);
+
+    const std::vector<float> &getActions() const;
+    void setActions(const std::vector<float> &action);
+
+    float getOrientation() const;
+    void setOrientation(float orientation);
 
 private:
     // General
     sf::RectangleShape r;
-    double orientation; // In degrees
+    float orientation; // In degrees
 
     // AI
     NeuralNet neuralNet = {
@@ -49,9 +53,11 @@ private:
             {0.3, 0.4, 0.6},
             {0.5, 0.7, 0.9, 0.8, 0.4, 0.8, 0.1, 0.0, // 2*senseBandwidth (4)
              0.5, 0.6, 0.5, 0.7,                     // 2*2
-             0.1, 0.5, 0.75, 0.3, 0.7, 0.63},        // Output bandwidth (2) * prev (2)
+             0.1, 0.5, 0.0, 0.0, 0.7, 0.63},        // Output bandwidth (3) * prev (2)
     };
 
+    std::vector<float> percept;
+    std::vector<float> actions;
 
     // Visual variables
     float visibility;

@@ -31,7 +31,8 @@ window(window), dimensions(dimensions), openCL_wrapper(openCL_wrapper), quadtree
 void World::update(float deltaTime) {
     // AI updates
     agent->updatePercept(deltaTime);
-    openCL_wrapper->think(agent.get(), agent->percept);
+    openCL_wrapper->think(agent.get(), agent->getPercept());
+    openCL_wrapper->clFinishAll();
 
     // World updates
     for (auto &object : objects) {

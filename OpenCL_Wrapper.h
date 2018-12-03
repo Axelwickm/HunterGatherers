@@ -40,11 +40,13 @@ struct AgentEntry {
 
 class OpenCL_Wrapper {
 public:
-    OpenCL_Wrapper(std::string deviceToUse);
+    explicit OpenCL_Wrapper(std::string deviceToUse);
     virtual ~OpenCL_Wrapper();
 
     void addAgent(std::weak_ptr<Agent> agent);
     void think(Agent* agent, const std::vector<float>& percept);
+
+    void clFinishAll();
 
 private:
     cl_device_id device_id;
@@ -58,6 +60,7 @@ private:
     cl_program createAndCompileProgram(const std::string& source);
 
     std::unordered_map<Agent*, AgentEntry> agentRegister;
+    static void responseCallback(cl_event e, cl_int status, void* data);
 
 };
 

@@ -6,6 +6,7 @@
 #include <streambuf>
 #include <stdexcept>
 #include <sstream>
+#include <functional>
 
 #include "OpenCL_Wrapper.h"
 
@@ -268,13 +269,14 @@ void OpenCL_Wrapper::think(Agent* agent, const std::vector<float>& percept) {
         }
 
 
-        size_t localSize = std::min(maxComputeUnits, agentEntry.layerSizes_Host[i]);
-        size_t globalSize = (size_t) ceil((double) agentEntry.layerSizes_Host[i]/localSize)*localSize;
+        size_t localSize = std::min(maxComputeUnits, agentEntry.layerSizes_Host[i+1]);
+        size_t globalSize = (size_t) ceil((double) agentEntry.layerSizes_Host[i+1]/localSize)*localSize;
 
-        //printf("%d %d\n", localSize, globalSize);
+        //printf("%d %d\n", i, globalSize);
 
         err = clEnqueueNDRangeKernel(command_queue, perceptronKernel, 1, nullptr, &globalSize, &localSize, 0, nullptr,
                                &newEvent);
+
         if (err){
             throw std::runtime_error("Failed to enqueue perceptron ND Range kernels: "+std::to_string(err));
         }
@@ -285,20 +287,37 @@ void OpenCL_Wrapper::think(Agent* agent, const std::vector<float>& percept) {
 
     }
 
-    float output[agentEntry.outputBandwidth];
+    auto output = new std::vector<float>();
+    output->resize(agentEntry.outputBandwidth);
+
     if (agentEntry.layerCount-1 % 2 == 0){
-        clEnqueueReadBuffer(command_queue, agentEntry.netActivationB, CL_FALSE, 0,
-                sizeof(float)*agentEntry.outputBandwidth, &output[0], 1, &lastEvent, &newEvent);
+        err = clEnqueueReadBuffer(command_queue, agentEntry.netActivationA, CL_FALSE, 0,
+                            sizeof(float)*agentEntry.outputBandwidth, &output->front(), 1, &lastEvent, &newEvent);
     }
     else {
-        clEnqueueReadBuffer(command_queue, agentEntry.netActivationA, CL_FALSE, 0,
-                            sizeof(float)*agentEntry.outputBandwidth, &output[0], 1, &lastEvent, &newEvent);
+        err = clEnqueueReadBuffer(command_queue, agentEntry.netActivationB, CL_FALSE, 0,
+                            sizeof(float)*agentEntry.outputBandwidth, &output->front(), 1, &lastEvent, &newEvent);
     }
 
-    lastEvent = newEvent;
-    clWaitForEvents(1, &lastEvent);
-    for (auto& x : output){
-        printf("%f ", x);
+    if (err){
+        throw std::runtime_error("Failed to read output buffer from network: "+std::to_string(err));
     }
-    printf("\n");
+    lastEvent = newEvent;
+
+
+    auto callbackData = new std::pair<Agent*, std::vector<float>*>;
+    *callbackData = std::make_pair(agentEntry.agent.lock().get(), output);
+
+    clSetEventCallback(lastEvent, CL_COMPLETE, responseCallback, (void*) callbackData);
+}
+
+void OpenCL_Wrapper::clFinishAll() {
+    clFinish(command_queue);
+}
+
+void OpenCL_Wrapper::responseCallback(cl_event e, cl_int status, void *data) {
+    auto p = static_cast<std::pair<Agent*, std::vector<float>*>* > (data);
+    p->first->setActions(*p->second);
+    delete p->second;
+    delete p;
 }

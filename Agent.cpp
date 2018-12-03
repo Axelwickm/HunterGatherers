@@ -37,10 +37,24 @@ Agent::Agent(World* world, sf::Vector2f position) : WorldObject(world, position)
 
     percept = std::vector<float>(neuralNet.maxLayerSize);
     std::fill(std::begin(percept), std::end(percept), 0.f);
+    actions = std::vector<float>(neuralNet.outputBandwidth);
+    std::fill(std::begin(actions), std::end(actions), 0.f);
 }
 
 void Agent::update(float deltaTime) {
     WorldObject::update(deltaTime);
+
+    // Apply actions
+    sf::Vector2f vel = getVelocity();
+    float velocityFactor = (actions.at(0)*20.f / sqrtf(vel.x*vel.x+vel.y*vel.y))*10.f*deltaTime;
+    sf::Vector2f orientationVector = {
+            cosf(orientation*PI/180.f),
+            sinf(orientation*PI/180.f)
+    };
+    setVelocity(getVelocity() + orientationVector * velocityFactor);
+
+    float turn = ((float) actions.at(1) - actions.at(2))*10.f*deltaTime;
+    orientation += 0.5f < fabs(turn) ? turn : 0;
 }
 
 void Agent::draw(sf::RenderWindow *window, float deltaTime) {
@@ -98,11 +112,27 @@ const NeuralNet &Agent::getNeuralNet() const {
     return neuralNet;
 }
 
-double Agent::getOrientation() const {
+float Agent::getOrientation() const {
     return orientation;
 }
 
-void Agent::setOrientation(double orientation) {
+void Agent::setOrientation(float orientation) {
     Agent::orientation = orientation;
+}
+
+const std::vector<float> &Agent::getPercept() const {
+    return percept;
+}
+
+void Agent::setPercept(const std::vector<float> &percept) {
+    Agent::percept = percept;
+}
+
+const std::vector<float> &Agent::getActions() const {
+    return actions;
+}
+
+void Agent::setActions(const std::vector<float> &action) {
+    Agent::actions = action;
 }
 
