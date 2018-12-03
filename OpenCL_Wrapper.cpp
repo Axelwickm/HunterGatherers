@@ -151,7 +151,7 @@ const std::string OpenCL_Wrapper::loadFile(std::string filename) {
 cl_program OpenCL_Wrapper::createAndCompileProgram(const std::string& source) {
     const char* source_data = source.data();
     const char** source_data_p = &source_data;
-    int err;
+    cl_int err;
     cl_program program = clCreateProgramWithSource(context, 1, source_data_p, nullptr, &err);
 
     if (!program || err){
@@ -169,6 +169,7 @@ cl_program OpenCL_Wrapper::createAndCompileProgram(const std::string& source) {
 }
 
 void OpenCL_Wrapper::addAgent(std::weak_ptr<Agent> agent) {
+
     NeuralNet neuralNet = agent.lock()->getNeuralNet();
     AgentEntry agentEntry;
     agentEntry.agent = agent;
@@ -178,24 +179,46 @@ void OpenCL_Wrapper::addAgent(std::weak_ptr<Agent> agent) {
     agentEntry.outputBandwidth = neuralNet.outputBandwidth;
     agentEntry.layerCount = neuralNet.layerCount;
 
-
-    agentEntry.layerSizes = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(unsigned)*(neuralNet.layerCount+1),nullptr, nullptr);
-    agentEntry.layerWeights = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(float)*neuralNet.layerCount, nullptr, nullptr);
-    agentEntry.layerBiases = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(float)*neuralNet.layerCount, nullptr, nullptr);
-
-
-    clEnqueueWriteBuffer(command_queue, agentEntry.layerSizes, CL_TRUE, 0, sizeof(unsigned)*(neuralNet.layerCount+1),
-            &neuralNet.layerSizes.front(), 0, nullptr, nullptr);
-    clEnqueueWriteBuffer(command_queue, agentEntry.layerWeights, CL_TRUE, 0, sizeof(float)*neuralNet.layerCount,
-            &neuralNet.layerWeights.front(), 0, nullptr, nullptr);
-    clEnqueueWriteBuffer(command_queue, agentEntry.layerBiases, CL_TRUE, 0, sizeof(float)*neuralNet.layerCount,
-            &neuralNet.layerBiases.front(), 0, nullptr, nullptr);
-
     cl_int err;
+    agentEntry.layerSizes = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(unsigned)*(neuralNet.layerCount+1),nullptr, &err);
+    if (err){
+        throw std::runtime_error("Failed to create OpenCL neural net layer sizes buffer: "+std::to_string(err));
+    }
+    agentEntry.layerWeights = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(float)*neuralNet.layerWeights.size(), nullptr, &err);
+    if (err){
+        throw std::runtime_error("Failed to create OpenCL neural net layer weight buffer: "+std::to_string(err));
+    }
+    agentEntry.layerBiases = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(float)*neuralNet.layerCount, nullptr, &err);
+    if (err){
+        throw std::runtime_error("Failed to create OpenCL neural net layer weight buffer: "+std::to_string(err));
+    }
+
+
+    err = clEnqueueWriteBuffer(command_queue, agentEntry.layerSizes, CL_TRUE, 0, sizeof(unsigned)*(neuralNet.layerCount+1),
+            &neuralNet.layerSizes.front(), 0, nullptr, nullptr);
+    if (err){
+        throw std::runtime_error("Failed to enqueue layer sizes buffer write: "+std::to_string(err));
+    }
+
+    err = clEnqueueWriteBuffer(command_queue, agentEntry.layerWeights, CL_TRUE, 0, sizeof(float)*neuralNet.layerWeights.size(),
+            &neuralNet.layerWeights.front(), 0, nullptr, nullptr);
+    if (err){
+        throw std::runtime_error("Failed to enqueue layer sizes buffer write: "+std::to_string(err));
+    }
+
+    err = clEnqueueWriteBuffer(command_queue, agentEntry.layerBiases, CL_TRUE, 0, sizeof(float)*neuralNet.layerCount,
+            &neuralNet.layerBiases.front(), 0, nullptr, nullptr);
+    if (err){
+        throw std::runtime_error("Failed to enqueue layer sizes buffer write: "+std::to_string(err));
+    }
+
     agentEntry.netActivationA = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(float)*agentEntry.maxLayerSize,
             nullptr, &err);
     agentEntry.netActivationB = clCreateBuffer(context, CL_MEM_READ_WRITE, sizeof(float)*agentEntry.maxLayerSize,
             nullptr, &err);
+    if (err){
+        throw std::runtime_error("Failed to create net activation buffer: "+std::to_string(err));
+    }
 
     agentRegister.insert({agent.lock().get(), agentEntry});
 }
@@ -205,61 +228,64 @@ void OpenCL_Wrapper::think(Agent* agent, const std::vector<float>& percept) {
     cl_event lastEvent;
     cl_event newEvent;
 
-    clSetKernelArg(perceptronKernel, 0, sizeof(cl_mem), &agentEntry.layerSizes);
-    clSetKernelArg(perceptronKernel, 1, sizeof(cl_mem), &agentEntry.layerWeights);
-    clSetKernelArg(perceptronKernel, 2, sizeof(cl_mem), &agentEntry.layerBiases);
+    cl_int err = 0;
+    err |= clSetKernelArg(perceptronKernel, 0, sizeof(cl_mem), &agentEntry.layerSizes);
+    err |= clSetKernelArg(perceptronKernel, 1, sizeof(cl_mem), &agentEntry.layerWeights);
+    err |= clSetKernelArg(perceptronKernel, 2, sizeof(cl_mem), &agentEntry.layerBiases);
+    if (err){
+        throw std::runtime_error("Failed to set OpenCL neural net architecture kernel arg: "+std::to_string(err));
+    }
 
     // Buffer the percept
     // Note that this will probably not fill the whole buffer, but the kernel is fine with that.
-    clEnqueueWriteBuffer(command_queue, agentEntry.netActivationA, CL_FALSE, 0,
+    err = clEnqueueWriteBuffer(command_queue, agentEntry.netActivationA, CL_FALSE, 0,
             sizeof(float)*agentEntry.maxLayerSize, &percept[0], 0, nullptr, &lastEvent);
+
+    if (err){
+        throw std::runtime_error("Failed to write to first net activation buffer: "+std::to_string(err));
+    }
 
 
     unsigned layerOffset = 0;
     for (unsigned i = 0; i < agentEntry.layerCount; i++){
-        clSetKernelArg(perceptronKernel, 3, sizeof(unsigned), &i);
-        clSetKernelArg(perceptronKernel, 4, sizeof(unsigned), &layerOffset);
+        err =  clSetKernelArg(perceptronKernel, 3, sizeof(unsigned), &i);
+        err |= clSetKernelArg(perceptronKernel, 4, sizeof(unsigned), &layerOffset);
+
+        if (err){
+            throw std::runtime_error("Failed to set OpenCL current layer kernel arg: "+std::to_string(err));
+        }
 
         if (i%2 == 0){
-            clSetKernelArg(perceptronKernel, 5, sizeof(cl_mem), &agentEntry.netActivationA);
-            clSetKernelArg(perceptronKernel, 6, sizeof(cl_mem), &agentEntry.netActivationB);
+            err =  clSetKernelArg(perceptronKernel, 5, sizeof(cl_mem), &agentEntry.netActivationA);
+            err |= clSetKernelArg(perceptronKernel, 6, sizeof(cl_mem), &agentEntry.netActivationB);
         }
         else {
-            clSetKernelArg(perceptronKernel, 6, sizeof(cl_mem), &agentEntry.netActivationA);
-            clSetKernelArg(perceptronKernel, 5, sizeof(cl_mem), &agentEntry.netActivationB);
+            err =  clSetKernelArg(perceptronKernel, 6, sizeof(cl_mem), &agentEntry.netActivationA);
+            err |= clSetKernelArg(perceptronKernel, 5, sizeof(cl_mem), &agentEntry.netActivationB);
+        }
+        if (err){
+            throw std::runtime_error("Failed to set OpenCL activation kernel arg: "+std::to_string(err));
         }
 
 
         size_t localSize = std::min(maxComputeUnits, agentEntry.layerSizes_Host[i]);
         size_t globalSize = (size_t) ceil((double) agentEntry.layerSizes_Host[i]/localSize)*localSize;
 
-        printf("%d %d\n", localSize, globalSize);
+        //printf("%d %d\n", localSize, globalSize);
 
-        clEnqueueNDRangeKernel(command_queue, perceptronKernel, 1, nullptr, &globalSize, &localSize, 0, &lastEvent,
+        err = clEnqueueNDRangeKernel(command_queue, perceptronKernel, 1, nullptr, &globalSize, &localSize, 0, nullptr,
                                &newEvent);
-
-        if (i == 0) {
-            float o[agentEntry.outputBandwidth];
-
-            clEnqueueReadBuffer(command_queue, agentEntry.netActivationA, CL_FALSE, 0,
-                                sizeof(float)*agentEntry.outputBandwidth, &o[0], 1, &lastEvent, &newEvent);
-
-            lastEvent = newEvent;
-
-            clWaitForEvents(1, &lastEvent);
-            for (auto &x : o) {
-                printf("%f ", x);
-            }
-            printf("\n");
+        if (err){
+            throw std::runtime_error("Failed to enqueue perceptron ND Range kernels: "+std::to_string(err));
         }
 
         lastEvent = newEvent;
-        layerOffset += agentEntry.layerSizes_Host[i];
+        layerOffset += agentEntry.layerSizes_Host[i] * agentEntry.layerSizes_Host[i+1];
 
 
     }
 
-    /*float output[agentEntry.outputBandwidth];
+    float output[agentEntry.outputBandwidth];
     if (agentEntry.layerCount-1 % 2 == 0){
         clEnqueueReadBuffer(command_queue, agentEntry.netActivationB, CL_FALSE, 0,
                 sizeof(float)*agentEntry.outputBandwidth, &output[0], 1, &lastEvent, &newEvent);
@@ -274,5 +300,5 @@ void OpenCL_Wrapper::think(Agent* agent, const std::vector<float>& percept) {
     for (auto& x : output){
         printf("%f ", x);
     }
-    printf("\n");*/
+    printf("\n");
 }

@@ -6,7 +6,7 @@
 #define HUNTERGATHERERS_OPENCL_WRAPPER_H
 
 
-
+#define CL_HPP_TARGET_OPENCL_VERSION 120
 #ifdef __APPLE__
 #include "OpenCL/opencl.h"
 #else

@@ -73,8 +73,14 @@ int main(int argc, char *argv[]) {
                 }
             }
 
+            // Mouse drag
             else if (event.type == sf::Event::MouseMoved){
                 dragging = true;
+                /*if (sf::Touch::isDown(0)){
+                    std::cout<<"Touch\n";
+                    mousePosition = sf::Touch::getPosition(0);
+                }*/
+                //std::cout<<sf::Touch::isDown(1)<<std::endl;
                 if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left)){
                     camera.move((sf::Vector2f) (mousePosition - sf::Vector2<int>(event.mouseMove.x, event.mouseMove.y)));
                 }
@@ -82,9 +88,14 @@ int main(int argc, char *argv[]) {
 
             }
 
-                // Mouse was scrolled
+            // Mouse was scrolled
             else if (event.type == sf::Event::MouseWheelScrolled){
                 camera.zoomTo(event.mouseWheelScroll.delta, sf::Mouse::getPosition(window));
+            }
+
+            // A finger was placed on the screen
+            else if (event.type == sf::Event::TouchBegan){
+                std::cout<<"Touch!\n";
             }
 
             // Window resized
