@@ -9,6 +9,7 @@
 #include "Config.h"
 #include "utils.cpp"
 #include "World.h"
+#include "Gene.h"
 
 #define PI 3.14159265f
 
@@ -39,11 +40,54 @@ Agent::Agent(World* world, sf::Vector2f position) : WorldObject(world, position)
     std::fill(std::begin(percept), std::end(percept), 0.f);
     actions = std::vector<float>(neuralNet.outputBandwidth);
     std::fill(std::begin(actions), std::end(actions), 0.f);
+
+    MapGenes genes;
+    std::shared_ptr<FloatGene> originalFloat = std::make_shared<FloatGene>(0, 1);
+    std::shared_ptr<MapGenes> innerMap = std::make_shared<MapGenes>();
+
+    auto lambda = [](LambdaGene<float>& l, float mutationFactor){
+        FloatGene* g = (FloatGene*) ((MapGenes*) l.getOwner()->getOwner())->getGene("originalFloat");
+        g->evaluate(mutationFactor, l.getEvaluationCount());
+        return g->getValue()*2.f;
+    };
+
+    std::shared_ptr<Gene> l = std::make_shared<LambdaGene<float>>(lambda);
+    innerMap->addGenes("derivedValue", l);
+    genes.addGenes("originalFloat", originalFloat);
+    genes.addGenes("innerMap", innerMap);
+    auto integerGene = std::make_shared<IntegerGene>(0, 10);
+    auto templateGene = std::make_shared<IntegerGene>(0, 2);
+    genes.addGenes("int",  integerGene);
+    innerMap->addGenes("dependentList", std::make_shared<ListGenes>(templateGene, integerGene));
+
+    genes.generate();
+
+    printf("\n-----\n");
+
+    printf("Original: %f\n", (genes.getGene<FloatGene>("originalFloat"))->getValue());
+    printf("New: %f\n", genes.getGene<MapGenes>("innerMap")->getGene<LambdaGene<float>>("derivedValue")->getValue());
+    printf("Int: %d\n", genes.getGene<IntegerGene>("int")->getValue());
+
+    printf("\n-----\n");
+    genes.mutate(0.05);
+
+
+    printf("Original: %f\n", ((FloatGene*) genes.getGene("originalFloat"))->getValue());
+    printf("New: %f\n", ((LambdaGene<float>*)((MapGenes*) genes.getGene("innerMap"))->getGene("derivedValue"))->getValue());
+    printf("Int: %d\n", genes.getGene<IntegerGene>("int")->getValue());
+
+    printf("Copy\n");
+    std::shared_ptr<MapGenes> a2 = std::static_pointer_cast<MapGenes>(genes.Clone());
+    printf("Mutate 1\n");
+    genes.mutate(0);
+    printf("Mutate 2\n");
+    a2->mutate(0);
+    printf("call 1 %p\n", &genes);
+    printf("call 2 %p\n", a2.get());
 }
 
 void Agent::update(float deltaTime) {
     WorldObject::update(deltaTime);
-
     // Apply actions
     sf::Vector2f vel = getVelocity();
     float velocityFactor = (actions.at(0)*20.f / sqrtf(vel.x*vel.x+vel.y*vel.y))*10.f*deltaTime;
