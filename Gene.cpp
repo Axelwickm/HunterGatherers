@@ -36,6 +36,7 @@ unsigned int Gene::getEvaluationCount() const {
 }
 
 void Gene::setEvaluationCount(unsigned int evaluationCount) {
+    //printf("Set evaluation count %d --> %d\n", Gene::evaluationCount, evaluationCount);
     Gene::evaluationCount = evaluationCount;
 }
 
@@ -131,9 +132,12 @@ void IntegerGene::generate() {
 
 void IntegerGene::mutate(float factor) {
     setEvaluationCount(getEvaluationCount()+1);
-    std::binomial_distribution<int> distribution(maxVal-minVal, factor*getMutationWeight());
+    // FIXME: this function is mathematically ugly
+    int range = ceil((maxVal-minVal)*factor*getMutationWeight());
+    std::uniform_int_distribution distribution(-range, range);
+    printf("Integer mutate %d ", value);
     value = std::max(std::min(value + distribution(randomEngine), maxVal), minVal);
-    setEvaluationCount(getEvaluationCount()+1);
+    printf(" -> %d, factor=%f, eval count = %d\n", value, factor, getEvaluationCount());
 }
 
 void IntegerGene::evaluate(float mutationFactor, unsigned version) {
@@ -209,6 +213,7 @@ void MapGenes::generate() {
 void MapGenes::mutate(float factor) {
     setEvaluationCount(getEvaluationCount()+1);
     for (auto &gene: genes) {
+        //printf("Mutate calling evaluate on %s:\n", gene.first.c_str());
         gene.second->evaluate(factor, getEvaluationCount());
     }
 }
@@ -237,17 +242,16 @@ void MapGenes::addGenes(const std::string& name, std::shared_ptr<Gene> gene) {
 }
 
 
-
 // List Gene
 
 ListGenes::ListGenes(std::shared_ptr<Gene> templateGene, std::size_t count)
 : Gene(typeid(ListGenes)), templateGene(std::move(templateGene)), staticCount(true), count(count) {
-
+    ListGenes::templateGene->setOwner(this);
 }
 
 ListGenes::ListGenes(std::shared_ptr<Gene> templateGene, std::shared_ptr<IntegerGene> countGene)
 : Gene(typeid(ListGenes)), templateGene(std::move(templateGene)), staticCount(false), countGene(std::move(countGene)) {
-
+    ListGenes::templateGene->setOwner(this);
 }
 
 std::shared_ptr<Gene> ListGenes::Clone() {
@@ -257,9 +261,8 @@ std::shared_ptr<Gene> ListGenes::Clone() {
     for (auto& gene : genes){
         auto geneCopy = gene->Clone();
         geneCopy->setOwner(this);
-        genes.push_back(geneCopy);
+        obj.genes.push_back(geneCopy);
     }
-
     std::shared_ptr<Gene> copy = std::make_shared<ListGenes>(obj);
     return copy;
 }
@@ -288,19 +291,39 @@ void ListGenes::mutate(float factor) {
     setEvaluationCount(getEvaluationCount()+1);
 
     if (!staticCount){
-        countGene->evaluate(0, getEvaluationCount());
+        countGene->evaluate(factor, getEvaluationCount());
         count = countGene->getValue();
     }
 
     if (count < genes.size()){
-        printf("Too big: %u --> %u\n", count, genes.size());
+        auto original = genes;
+        genes.clear();
+        std::sample(original.begin(), original.end(), std::back_inserter(genes), count, randomEngine);
     }
-    else if (count > genes.size()){
-        printf("Too small: %u --> %u\n", count, genes.size());
-    }
+    else if (genes.size() < count){
+        auto dist = std::uniform_int_distribution<std::size_t>(0, count-1);
+        std::vector<std::size_t> insertPositions;
+        insertPositions.reserve(count-genes.size());
+        for (std::size_t i = 0; i < count-genes.size(); i++){
+            insertPositions.push_back(dist(randomEngine));
+        }
+        std::sort(insertPositions.begin(), insertPositions.end());
 
+        auto itr = genes.begin();
+        std::size_t i = 0;
+        for (std::size_t j = 0; j < insertPositions.size(); j++){
+            while (insertPositions.at(j)+j != i){
+                i++;
+                itr = std::next(itr);
+            }
+            genes.insert(itr, templateGene->Clone());
+        }
+    }
+    int i = 0;
     for (auto &gene: genes) {
+        //printf("List calling evaluate on %d:\n", i);
         gene->evaluate(factor, getEvaluationCount());
+        i++;
     }
 }
 

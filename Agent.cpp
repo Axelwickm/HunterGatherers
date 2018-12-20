@@ -68,22 +68,21 @@ Agent::Agent(World* world, sf::Vector2f position) : WorldObject(world, position)
     printf("New: %f\n", genes.getGene<MapGenes>("innerMap")->getGene<LambdaGene<float>>("derivedValue")->getValue());
     printf("Int: %d\n", genes.getGene<IntegerGene>("int")->getValue());
 
-    printf("\n-----\n");
-    genes.mutate(0.05);
+    printf("\n-----\nMutation:\n");
+    genes.mutate(0.25);
 
+    printf("\n-----\n");
 
     printf("Original: %f\n", ((FloatGene*) genes.getGene("originalFloat"))->getValue());
     printf("New: %f\n", ((LambdaGene<float>*)((MapGenes*) genes.getGene("innerMap"))->getGene("derivedValue"))->getValue());
     printf("Int: %d\n", genes.getGene<IntegerGene>("int")->getValue());
 
-    printf("Copy\n");
+    printf("\n-----\n");
+
+    printf("Cloning\n");
     std::shared_ptr<MapGenes> a2 = std::static_pointer_cast<MapGenes>(genes.Clone());
     printf("Mutate 1\n");
     genes.mutate(0);
-    printf("Mutate 2\n");
-    a2->mutate(0);
-    printf("call 1 %p\n", &genes);
-    printf("call 2 %p\n", a2.get());
 }
 
 void Agent::update(float deltaTime) {
