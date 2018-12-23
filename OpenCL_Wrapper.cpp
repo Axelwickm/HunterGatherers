@@ -171,44 +171,73 @@ cl_program OpenCL_Wrapper::createAndCompileProgram(const std::string& source) {
 
 void OpenCL_Wrapper::addAgent(std::weak_ptr<Agent> agent) {
 
-    NeuralNet neuralNet = agent.lock()->getNeuralNet();
+    const MapGenes& genes = agent.lock()->getGenes();
+
     AgentEntry agentEntry;
     agentEntry.agent = agent;
-    agentEntry.layerSizes_Host = neuralNet.layerSizes;
-    agentEntry.maxLayerSize = neuralNet.maxLayerSize;
 
-    agentEntry.outputBandwidth = neuralNet.outputBandwidth;
-    agentEntry.layerCount = neuralNet.layerCount;
+    agentEntry.outputBandwidth = (unsigned int) genes.getGene<IntegerGene>("OutputCount")->getValue();
+    agentEntry.layerCount = (unsigned int) genes.getGene<IntegerGene>("LayerCount")->getValue();
+
+    auto layersList = genes.getGene<ListGenes>("Layers")->getList().begin();
+    std::vector<float> layerBiases;
+    std::generate_n(std::back_inserter(layerBiases), agentEntry.layerCount, [&]{
+        auto g = ((MapGenes*) layersList->get())->getGene<FloatGene>("Bias");
+        layersList++;
+        return g->getValue();
+    });
+
+    layersList = genes.getGene<ListGenes>("Layers")->getList().begin();
+    std::vector<unsigned> layerSizes;
+    layerSizes.push_back((unsigned int) genes.getGene<IntegerGene>("InputCount")->getValue());
+    agentEntry.maxLayerSize = 0;
+    std::generate_n(std::back_inserter(layerSizes), agentEntry.layerCount, [&]{
+        auto g = ((MapGenes*) layersList->get())->getGene<LambdaGene<int> >("PerceptronCount");
+        layersList++;
+        unsigned val = g->getValue();
+        agentEntry.maxLayerSize = agentEntry.maxLayerSize < val ? val : agentEntry.maxLayerSize;
+        return val;
+    });
+    agentEntry.layerSizes_Host = layerSizes;
+
+    std::vector<float> layerWeights;
+    for (auto& layer : genes.getGene<ListGenes>("Layers")->getList()){
+        for (auto& perceptron : ((MapGenes*) layer.get())->getGene<ListGenes>("Perceptrons")->getList()){
+            for (auto& weight : ((MapGenes*) perceptron.get())->getGene<ListGenes>("Weights")->getList()){
+                layerWeights.push_back(((FloatGene*) weight.get())->getValue());
+            }
+        }
+    }
 
     cl_int err;
-    agentEntry.layerSizes = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(unsigned)*(neuralNet.layerCount+1),nullptr, &err);
+    agentEntry.layerSizes = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(unsigned)*(agentEntry.layerCount+1),nullptr, &err);
     if (err){
         throw std::runtime_error("Failed to create OpenCL neural net layer sizes buffer: "+std::to_string(err));
     }
-    agentEntry.layerWeights = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(float)*neuralNet.layerWeights.size(), nullptr, &err);
+    agentEntry.layerWeights = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(float)*layerWeights.size(), nullptr, &err);
     if (err){
         throw std::runtime_error("Failed to create OpenCL neural net layer weight buffer: "+std::to_string(err));
     }
-    agentEntry.layerBiases = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(float)*neuralNet.layerCount, nullptr, &err);
+    agentEntry.layerBiases = clCreateBuffer(context, CL_MEM_READ_ONLY, sizeof(float)*agentEntry.layerCount, nullptr, &err);
     if (err){
         throw std::runtime_error("Failed to create OpenCL neural net layer weight buffer: "+std::to_string(err));
     }
 
 
-    err = clEnqueueWriteBuffer(command_queue, agentEntry.layerSizes, CL_TRUE, 0, sizeof(unsigned)*(neuralNet.layerCount+1),
-            &neuralNet.layerSizes.front(), 0, nullptr, nullptr);
+    err = clEnqueueWriteBuffer(command_queue, agentEntry.layerSizes, CL_TRUE, 0, sizeof(unsigned)*(agentEntry.layerCount+1),
+            &layerSizes.front(), 0, nullptr, nullptr);
     if (err){
         throw std::runtime_error("Failed to enqueue layer sizes buffer write: "+std::to_string(err));
     }
 
-    err = clEnqueueWriteBuffer(command_queue, agentEntry.layerWeights, CL_TRUE, 0, sizeof(float)*neuralNet.layerWeights.size(),
-            &neuralNet.layerWeights.front(), 0, nullptr, nullptr);
+    err = clEnqueueWriteBuffer(command_queue, agentEntry.layerWeights, CL_TRUE, 0, sizeof(float)*layerWeights.size(),
+            &layerWeights.front(), 0, nullptr, nullptr);
     if (err){
         throw std::runtime_error("Failed to enqueue layer sizes buffer write: "+std::to_string(err));
     }
 
-    err = clEnqueueWriteBuffer(command_queue, agentEntry.layerBiases, CL_TRUE, 0, sizeof(float)*neuralNet.layerCount,
-            &neuralNet.layerBiases.front(), 0, nullptr, nullptr);
+    err = clEnqueueWriteBuffer(command_queue, agentEntry.layerBiases, CL_TRUE, 0, sizeof(float)*agentEntry.layerCount,
+            &layerBiases.front(), 0, nullptr, nullptr);
     if (err){
         throw std::runtime_error("Failed to enqueue layer sizes buffer write: "+std::to_string(err));
     }

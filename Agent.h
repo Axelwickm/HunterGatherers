@@ -6,10 +6,12 @@
 #define FAMILYISEVERYTHING_AGENT_H
 
 #include "WorldObject.h"
+#include "Gene.h"
 
 #include <SFML/Graphics.hpp>
 #include <vector>
 
+/*
 struct NeuralNet {
     unsigned inputBandwidth;
     unsigned outputBandwidth;
@@ -19,12 +21,12 @@ struct NeuralNet {
     std::vector<unsigned> layerSizes;
     std::vector<float> layerBiases;
     std::vector<float> layerWeights;
-};
+};*/
 
 class Agent : public WorldObject {
 public:
     Agent(World* world, sf::Vector2f position);
-    const NeuralNet &getNeuralNet() const;
+    const MapGenes &getGenes() const;
 
     void update(float deltaTime) override;
     void draw(sf::RenderWindow *window, float deltaTime) override;
@@ -46,16 +48,7 @@ private:
     float orientation; // In degrees
 
     // AI
-    NeuralNet neuralNet = {
-            4, 3,
-            0, 3,
-            {4, 2, 2, 3},                            // Include sense and output bandwidth
-            {0.3, 0.4, 0.6},
-            {0.5, 0.7, 0.9, 0.8, 0.4, 0.8, 0.1, 0.0, // 2*senseBandwidth (4)
-             0.5, 0.6, 0.5, 0.7,                     // 2*2
-             0.1, 0.5, 0.0, 0.0, 0.7, 0.63},        // Output bandwidth (3) * prev (2)
-    };
-
+    MapGenes genes;
     std::vector<float> percept;
     std::vector<float> actions;
 

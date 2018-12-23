@@ -33,56 +33,90 @@ Agent::Agent(World* world, sf::Vector2f position) : WorldObject(world, position)
     lineOfVision[0].color = sf::Color::Cyan;
     lineOfVision[1].color = sf::Color::Cyan;
 
-    neuralNet.maxLayerSize = std::max(*std::max_element(std::begin(neuralNet.layerSizes), std::end(neuralNet.layerSizes)),
-            neuralNet.inputBandwidth);
+    int inputCount = 4;
+    int outputCount = 3;
 
-    percept = std::vector<float>(neuralNet.maxLayerSize);
+    percept = std::vector<float>(4);
     std::fill(std::begin(percept), std::end(percept), 0.f);
-    actions = std::vector<float>(neuralNet.outputBandwidth);
+    actions = std::vector<float>(3);
     std::fill(std::begin(actions), std::end(actions), 0.f);
 
-    MapGenes genes;
-    std::shared_ptr<FloatGene> originalFloat = std::make_shared<FloatGene>(0, 1);
-    std::shared_ptr<MapGenes> innerMap = std::make_shared<MapGenes>();
+    auto previousLayerPerceptronCountLambda = [](LambdaGene<int>& l, float mutationFactor){
+        auto layers = l.getOwner<MapGenes>()->getOwner<ListGenes>()->getOwner<MapGenes>()->getOwner<ListGenes>();
+        auto thisLayer = l.getOwner<MapGenes>()->getOwner<ListGenes>()->getOwner<MapGenes>();
 
-    auto lambda = [](LambdaGene<float>& l, float mutationFactor){
-        FloatGene* g = (FloatGene*) ((MapGenes*) l.getOwner()->getOwner())->getGene("originalFloat");
-        g->evaluate(mutationFactor, l.getEvaluationCount());
-        return g->getValue()*2.f;
+        auto itr = layers->getList().begin();
+        for (auto& _ : layers->getList()){
+            if (itr->get() == thisLayer){
+                break;
+            }
+            itr++;
+        }
+
+        if (itr == layers->getList().begin()){
+            auto count = layers->getOwner<MapGenes>()->getGene<IntegerGene>("InputCount");
+            count->evaluate(mutationFactor, l.getEvaluationCount());
+            return count->getValue();
+        }
+
+        itr--;
+        auto lastLayer = ((MapGenes*) itr->get());
+        auto count = lastLayer->getGene<LambdaGene<int> >("PerceptronCount");
+        count->evaluate(mutationFactor, l.getEvaluationCount());
+        return count->getValue();
+
     };
 
-    std::shared_ptr<Gene> l = std::make_shared<LambdaGene<float>>(lambda);
-    innerMap->addGenes("derivedValue", l);
-    genes.addGenes("originalFloat", originalFloat);
-    genes.addGenes("innerMap", innerMap);
-    auto integerGene = std::make_shared<IntegerGene>(0, 10);
-    auto templateGene = std::make_shared<IntegerGene>(0, 2);
-    genes.addGenes("int",  integerGene);
-    innerMap->addGenes("dependentList", std::make_shared<ListGenes>(templateGene, integerGene));
+    auto perceptronCountLambda = [](LambdaGene<int>& l, float mutationFactor){
+        auto layers = l.getOwner<MapGenes>()->getOwner<ListGenes>();
+        auto thisLayer = l.getOwner<MapGenes>();
+
+        auto itr = layers->getList().begin();
+        for (auto& _ : layers->getList()){
+            if (itr->get() == thisLayer){
+                break;
+            }
+            itr++;
+        }
+
+        if (itr == layers->getList().end()){
+            auto count = layers->getOwner<MapGenes>()->getGene<IntegerGene>("OutputCount");
+            count->evaluate(mutationFactor, l.getEvaluationCount());
+            return count->getValue();
+        }
+        auto count = l.getOwner<MapGenes>()->getGene<IntegerGene>("MutatingPerceptronCount");
+        count->evaluate(mutationFactor, l.getEvaluationCount());
+        return count->getValue();
+    };
+
+    auto perceptron = std::make_shared<MapGenes>();
+    auto weightCount = std::make_shared<LambdaGene<int> >(previousLayerPerceptronCountLambda);
+    perceptron->addGenes("WeightCount", weightCount);
+    auto weight = std::make_shared<FloatGene>(0, 1);
+    auto weights = std::make_shared<ListGenes>(weight, "WeightCount");
+    perceptron->addGenes("Weights", weights);
+
+    auto layer = std::make_shared<MapGenes>();
+    auto mutatingPerceptronCount = std::make_shared<IntegerGene>(3, 20);
+    layer->addGenes("MutatingPerceptronCount", mutatingPerceptronCount);
+    auto perceptronCount = std::make_shared<LambdaGene<int> >(perceptronCountLambda);
+    layer->addGenes("PerceptronCount", perceptronCount);
+    auto bias = std::make_shared<FloatGene>(0, 1);
+    layer->addGenes("Bias", bias);
+    auto perceptrons = std::make_shared<ListGenes>(perceptron, "PerceptronCount");
+    layer->addGenes("Perceptrons", perceptrons);
+
+    auto layerCount = std::make_shared<IntegerGene>(2, 8);
+    genes.addGenes("LayerCount", layerCount);
+    auto inputCountG = std::make_shared<IntegerGene>(inputCount, inputCount);
+    genes.addGenes("InputCount", inputCountG);
+    auto outputCountG = std::make_shared<IntegerGene>(outputCount, outputCount);
+    genes.addGenes("OutputCount", outputCountG);
+    auto layers = std::make_shared<ListGenes>(layer, "LayerCount");
+    genes.addGenes("Layers", layers);
 
     genes.generate();
 
-    printf("\n-----\n");
-
-    printf("Original: %f\n", (genes.getGene<FloatGene>("originalFloat"))->getValue());
-    printf("New: %f\n", genes.getGene<MapGenes>("innerMap")->getGene<LambdaGene<float>>("derivedValue")->getValue());
-    printf("Int: %d\n", genes.getGene<IntegerGene>("int")->getValue());
-
-    printf("\n-----\nMutation:\n");
-    genes.mutate(0.25);
-
-    printf("\n-----\n");
-
-    printf("Original: %f\n", ((FloatGene*) genes.getGene("originalFloat"))->getValue());
-    printf("New: %f\n", ((LambdaGene<float>*)((MapGenes*) genes.getGene("innerMap"))->getGene("derivedValue"))->getValue());
-    printf("Int: %d\n", genes.getGene<IntegerGene>("int")->getValue());
-
-    printf("\n-----\n");
-
-    printf("Cloning\n");
-    std::shared_ptr<MapGenes> a2 = std::static_pointer_cast<MapGenes>(genes.Clone());
-    printf("Mutate 1\n");
-    genes.mutate(0);
 }
 
 void Agent::update(float deltaTime) {
@@ -151,8 +185,8 @@ void Agent::updatePercept(float deltaTime) {
     }
 }
 
-const NeuralNet &Agent::getNeuralNet() const {
-    return neuralNet;
+const MapGenes &Agent::getGenes() const {
+    return genes;
 }
 
 float Agent::getOrientation() const {
