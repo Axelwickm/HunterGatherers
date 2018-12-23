@@ -11,18 +11,6 @@
 #include <SFML/Graphics.hpp>
 #include <vector>
 
-/*
-struct NeuralNet {
-    unsigned inputBandwidth;
-    unsigned outputBandwidth;
-
-    unsigned maxLayerSize;
-    unsigned layerCount;
-    std::vector<unsigned> layerSizes;
-    std::vector<float> layerBiases;
-    std::vector<float> layerWeights;
-};*/
-
 class Agent : public WorldObject {
 public:
     Agent(World* world, sf::Vector2f position);
@@ -52,7 +40,7 @@ private:
     std::vector<float> percept;
     std::vector<float> actions;
 
-    // Visual variables
+    // Vision variables
     float visibility;
     float visualReactivity;
     float FOV;
