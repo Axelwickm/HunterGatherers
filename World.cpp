@@ -25,7 +25,7 @@ window(window), dimensions(dimensions), openCL_wrapper(openCL_wrapper), quadtree
 
     for (int i = 0; i < 10; i++){
         sf::Vector2<float> position(rand() % ((int) dimensions.x - 50) + 25, rand() % ((int) dimensions.y - 50) + 25);
-        auto agent = std::make_shared<Agent>(this, position); // sf::Vector2f(100, 100)
+        auto agent = std::make_shared<Agent>(this, position);
         agent->setVelocity(sf::Vector2f(0, 0));
         addObject(agent);
         agents.insert(agent);

@@ -36,7 +36,7 @@ void WorldObject::update(float deltaTime, sf::Vector2f oldPosition) {
     velocity *= powf(accelerationFactor, deltaTime);
     position += velocity * deltaTime;
     position = sf::Vector2f((float) fmin(position.x, world->getDimensions().x), (float) fmin(position.y, world->getDimensions().y));
-    position = sf::Vector2f((float) fmax(position.x, 0), (float) fmax(position.y, 0));
+    position = sf::Vector2f((float) fmax(position.x, 1), (float) fmax(position.y, 1));
     if (quadtree != nullptr) {
         quadtree->move(oldPosition, this);
     }

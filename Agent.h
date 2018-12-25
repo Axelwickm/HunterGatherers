@@ -14,6 +14,7 @@
 class Agent : public WorldObject {
 public:
     Agent(World* world, sf::Vector2f position);
+    void loadResources();
     const MapGenes &getGenes() const;
 
     void update(float deltaTime) override;
@@ -32,7 +33,10 @@ public:
 
 private:
     // General
-    sf::RectangleShape r;
+    sf::Sprite r;
+    sf::IntRect frame;
+    unsigned frameIndex;
+    sf::Clock frameTimer;
     float orientation; // In degrees
 
     // AI
@@ -49,6 +53,8 @@ private:
 
     std::vector<float> receptors;
 
+    static bool loaded;
+    static sf::Texture walkingTexture;
 
 };
 

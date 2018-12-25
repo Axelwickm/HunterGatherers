@@ -13,13 +13,19 @@
 
 #define PI 3.14159265f
 
-Agent::Agent(World* world, sf::Vector2f position) : WorldObject(world, position) {
-    orientation = 75;
-    setAccelerationFactor(0.25);
+bool Agent::loaded = false;
+sf::Texture Agent::walkingTexture;
 
-    r.setSize(sf::Vector2f(10, 10));
-    r.setOrigin(5, 5);
-    r.setFillColor(sf::Color::Red);
+Agent::Agent(World* world, sf::Vector2f position) : WorldObject(world, position) {
+    loadResources();
+
+    orientation = 75;
+    setAccelerationFactor(0.001);
+
+    frameIndex = 0;
+    frame = sf::IntRect(0, 0, 32, 32);
+    r = sf::Sprite(walkingTexture, frame);
+    r.setOrigin(16, 5);
 
     visibility = 200;
     FOV = 110;
@@ -119,6 +125,13 @@ Agent::Agent(World* world, sf::Vector2f position) : WorldObject(world, position)
 
 }
 
+void Agent::loadResources() {
+    if (!loaded){
+        Agent::walkingTexture.loadFromFile("WalkCycle.png");
+        loaded = true;
+    }
+}
+
 void Agent::update(float deltaTime) {
     WorldObject::update(deltaTime);
     // Apply actions
@@ -135,6 +148,18 @@ void Agent::update(float deltaTime) {
 }
 
 void Agent::draw(sf::RenderWindow *window, float deltaTime) {
+    if (0.1 < frameTimer.getElapsedTime().asMilliseconds()){
+        frameIndex = frameIndex % 12 + 1; // Skip the first frame
+        frame.top = frameIndex * 32;
+        r.setTextureRect(frame);
+        int o = ((360 + (int) orientation%360))%360 / 90;
+        if (o == 1) o = 3; // To match the order in the image
+        else if (o == 3) o = 1;
+
+        frame.left = o*32;
+        frameTimer.restart();
+    }
+
     r.setPosition(getPosition());
     window->draw(r);
 
