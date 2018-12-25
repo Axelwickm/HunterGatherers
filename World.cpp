@@ -16,22 +16,30 @@ window(window), dimensions(dimensions), openCL_wrapper(openCL_wrapper), quadtree
     srand(now);
 
 
-    for (int i = 0; i < 100; i++) {
+    for (int i = 0; i < 10; i++) {
         sf::Vector2<float> position(rand() % ((int) dimensions.x - 50) + 25, rand() % ((int) dimensions.y - 50) + 25);
         std::shared_ptr<BouncingBall> w(new BouncingBall(this, position, 10.f));
         w->setVelocity({(float) rand() / RAND_MAX * 50.f - 25.f, (float) rand() / RAND_MAX * 50.f - 25.f});
         addObject(w);
     }
 
-    agent = std::shared_ptr<Agent>(new Agent(this, sf::Vector2f(100, 100)));
-    agent->setVelocity(sf::Vector2f(100, 10));
-    addObject(agent);
+    for (int i = 0; i < 10; i++){
+        sf::Vector2<float> position(rand() % ((int) dimensions.x - 50) + 25, rand() % ((int) dimensions.y - 50) + 25);
+        auto agent = std::make_shared<Agent>(this, position); // sf::Vector2f(100, 100)
+        agent->setVelocity(sf::Vector2f(0, 0));
+        addObject(agent);
+        agents.insert(agent);
+    }
+
 }
 
 void World::update(float deltaTime) {
     // AI updates
-    agent->updatePercept(deltaTime);
-    openCL_wrapper->think(agent.get(), agent->getPercept());
+    for (auto& agent : agents){
+        agent->updatePercept(deltaTime);
+        openCL_wrapper->think(agent.get(), agent->getPercept());
+    }
+
     openCL_wrapper->clFinishAll();
 
     // World updates
@@ -58,7 +66,6 @@ bool World::addObject(std::shared_ptr<WorldObject> worldObject) {
     objects.insert(worldObject);
 
     if (typeid(*worldObject.get()) == typeid(Agent)){
-
         openCL_wrapper->addAgent(std::weak_ptr<Agent>(std::dynamic_pointer_cast<Agent>(worldObject)));
     }
 

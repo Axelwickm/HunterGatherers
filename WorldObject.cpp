@@ -10,6 +10,7 @@ WorldObject::WorldObject(World* world, sf::Vector2f position) {
     this->position = position;
     this->quadtree = nullptr;
     this->world = world;
+    this->velocity = sf::Vector2f(0, 0);
     accelerationFactor = 1.f;
 }
 

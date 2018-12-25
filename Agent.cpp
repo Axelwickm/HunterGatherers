@@ -123,15 +123,15 @@ void Agent::update(float deltaTime) {
     WorldObject::update(deltaTime);
     // Apply actions
     sf::Vector2f vel = getVelocity();
-    float velocityFactor = (actions.at(0)*20.f / sqrtf(vel.x*vel.x+vel.y*vel.y))*10.f*deltaTime;
+    float velocityFactor = fminf(actions.at(0)*0.75f - sqrtf(vel.x*vel.x+vel.y*vel.y)*1.f, 200.f);
     sf::Vector2f orientationVector = {
             cosf(orientation*PI/180.f),
             sinf(orientation*PI/180.f)
     };
-    setVelocity(getVelocity() + orientationVector * velocityFactor);
+    setVelocity(getVelocity() + orientationVector * velocityFactor * deltaTime);
 
-    float turn = ((float) actions.at(1) - actions.at(2))*10.f*deltaTime;
-    orientation += 0.5f < fabs(turn) ? turn : 0;
+    float turn = ((float) actions.at(1) - actions.at(2))*1.f*deltaTime;
+    orientation += turn;
 }
 
 void Agent::draw(sf::RenderWindow *window, float deltaTime) {

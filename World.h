@@ -39,7 +39,7 @@ private:
     sf::RenderWindow* window;
     const sf::Vector2f dimensions;
 
-    std::shared_ptr<Agent> agent;
+    std::set<std::shared_ptr<Agent>> agents;
 
     Quadtree<float> quadtree;
     OpenCL_Wrapper *openCL_wrapper;
