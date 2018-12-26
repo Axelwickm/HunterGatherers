@@ -50,6 +50,7 @@ private:
     float FOV;
     const unsigned static acuity = 4;
     sf::Vertex lineOfVision[acuity*2];
+    sf::Vertex orientationLine[2];
 
     std::vector<float> receptors;
 

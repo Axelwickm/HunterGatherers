@@ -20,7 +20,7 @@ Agent::Agent(World* world, sf::Vector2f position) : WorldObject(world, position)
     loadResources();
 
     orientation = 75;
-    setAccelerationFactor(0.001);
+    setAccelerationFactor(0.00000001);
 
     frameIndex = 0;
     frame = sf::IntRect(0, 0, 32, 32);
@@ -148,11 +148,11 @@ void Agent::update(float deltaTime) {
 }
 
 void Agent::draw(sf::RenderWindow *window, float deltaTime) {
-    if (0.1 < frameTimer.getElapsedTime().asMilliseconds()){
+    if (2500.f/actions.at(0) < frameTimer.getElapsedTime().asMilliseconds()){
         frameIndex = frameIndex % 12 + 1; // Skip the first frame
         frame.top = frameIndex * 32;
         r.setTextureRect(frame);
-        int o = ((360 + (int) orientation%360))%360 / 90;
+        int o = ((360 + (int) orientation%360 + 315))%360 / 90;
         if (o == 1) o = 3; // To match the order in the image
         else if (o == 3) o = 1;
 
@@ -165,6 +165,7 @@ void Agent::draw(sf::RenderWindow *window, float deltaTime) {
 
     if (RenderSettings::showVision){
         window->draw(lineOfVision, 2*receptors.size(), sf::Lines);
+        window->draw(orientationLine, 2, sf::Lines);
     }
 }
 
@@ -176,7 +177,7 @@ void Agent::updatePercept(float deltaTime) {
     sf::Vector2f dV = visionEnd - getPosition();
 
     for (size_t i = 0; i < receptors.size(); i++){
-        float angle = ((float) orientation - FOV/2.f + FOV*((float) i/receptors.size()))*PI/180.f;
+        float angle = (orientation - FOV/2.f + FOV*((float) i/receptors.size()))*PI/180.f;
         sf::Vector2f lineEnd = {
                 dV.x * cosf(angle) - dV.y * sinf(angle),
                 dV.x * sinf(angle) - dV.y * cosf(angle)
@@ -207,6 +208,18 @@ void Agent::updatePercept(float deltaTime) {
             lineOfVision[i*2+1].color = sf::Color(245*receptors[i]+10, 245*receptors[i]+10, 245*receptors[i]+10, 255);
         }
 
+    }
+
+    if (RenderSettings::showVision){
+        sf::Vector2f lineEnd = {
+                dV.x * cosf(orientation*PI/180.f) - dV.y * sinf(orientation*PI/180.f),
+                dV.x * sinf(orientation*PI/180.f) - dV.y * cosf(orientation*PI/180.f)
+        };
+
+        orientationLine[0].position = getPosition();
+        orientationLine[1].position = getPosition() + lineEnd;
+        orientationLine[0].color =   sf::Color(120, 120, 200);
+        orientationLine[1].color =   sf::Color(120, 120, 120);
     }
 }
 
