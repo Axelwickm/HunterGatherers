@@ -15,6 +15,8 @@
 #include "WorldObject.h"
 #include "Config.h"
 #include "OpenCL_Wrapper.h"
+#include "Populater.h"
+
 
 class World {
 public:
@@ -27,6 +29,7 @@ public:
 
     bool addObject(std::shared_ptr<WorldObject> worldObject);
     bool removeObject(WorldObject* worldObject);
+    bool spawn(std::string type);
 
 
     const sf::RenderWindow *getWindow() const;
@@ -39,12 +42,12 @@ private:
     sf::RenderWindow* window;
     const sf::Vector2f dimensions;
 
+    Populater populater;
     std::set<std::shared_ptr<Agent>> agents;
+    std::set<std::shared_ptr<WorldObject> > objects;
 
     Quadtree<float> quadtree;
     OpenCL_Wrapper *openCL_wrapper;
-
-    std::set<std::shared_ptr<WorldObject> > objects;
 
 };
 

@@ -5,9 +5,11 @@
 #include "World.h"
 #include "Agent.h"
 #include "BouncingBall.h"
+#include "Populater.h"
 
 World::World(sf::RenderWindow *window, sf::Vector2f dimensions, OpenCL_Wrapper *openCL_wrapper):
-window(window), dimensions(dimensions), openCL_wrapper(openCL_wrapper), quadtree(Quadtree<float>(sf::Vector2<float>(0, 0), dimensions)) {
+window(window), dimensions(dimensions), openCL_wrapper(openCL_wrapper),
+populater(this), quadtree(Quadtree<float>(sf::Vector2<float>(0, 0), dimensions)) {
     quadtree.setLimit(30);
 
     long long int now = std::chrono::time_point_cast<std::chrono::microseconds>(
@@ -15,25 +17,25 @@ window(window), dimensions(dimensions), openCL_wrapper(openCL_wrapper), quadtree
 
     srand(now);
 
+    populater.addEntry("Agent", {
+            .count = 0,
+            .targetCount = 50,
+            .rate = 1
+    });
 
-    for (int i = 0; i < 10; i++) {
-        sf::Vector2<float> position(rand() % ((int) dimensions.x - 50) + 25, rand() % ((int) dimensions.y - 50) + 25);
-        std::shared_ptr<BouncingBall> w(new BouncingBall(this, position, 10.f));
-        w->setVelocity({(float) rand() / RAND_MAX * 50.f - 25.f, (float) rand() / RAND_MAX * 50.f - 25.f});
-        addObject(w);
-    }
+    populater.addEntry("Bouncing ball", {
+            .count = 0,
+            .targetCount = 10,
+            .rate = 0.5
+    });
 
-    for (int i = 0; i < 10; i++){
-        sf::Vector2<float> position(rand() % ((int) dimensions.x - 50) + 25, rand() % ((int) dimensions.y - 50) + 25);
-        auto agent = std::make_shared<Agent>(this, position);
-        agent->setVelocity(sf::Vector2f(0, 0));
-        addObject(agent);
-        agents.insert(agent);
-    }
+
 
 }
 
 void World::update(float deltaTime) {
+    populater.populate(deltaTime);
+
     // AI updates
     for (auto& agent : agents){
         agent->updatePercept(deltaTime);
@@ -95,5 +97,22 @@ const Quadtree<float> &World::getQuadtree() const {
 
 OpenCL_Wrapper *World::getOpenCL_wrapper() const {
     return openCL_wrapper;
+}
+
+bool World::spawn(std::string type) {
+    if (type == "Agent"){
+        sf::Vector2<float> position(rand() % ((int) dimensions.x - 50) + 25, rand() % ((int) dimensions.y - 50) + 25);
+        auto agent = std::make_shared<Agent>(this, position);
+        agent->setVelocity(sf::Vector2f(0, 0));
+        agents.insert(agent);
+        return addObject(agent);
+    }
+    else if (type == "Bouncing ball"){
+        sf::Vector2<float> position(rand() % ((int) dimensions.x - 50) + 25, rand() % ((int) dimensions.y - 50) + 25);
+        std::shared_ptr<BouncingBall> w(new BouncingBall(this, position, 10.f));
+        w->setVelocity({(float) rand() / RAND_MAX * 50.f - 25.f, (float) rand() / RAND_MAX * 50.f - 25.f});
+        return addObject(w);
+    }
+    return false;
 }
 
