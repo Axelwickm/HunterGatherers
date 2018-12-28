@@ -6,6 +6,7 @@
 #include "Agent.h"
 #include "BouncingBall.h"
 #include "Populater.h"
+#include "Mushroom.h"
 
 World::World(sf::RenderWindow *window, sf::Vector2f dimensions, OpenCL_Wrapper *openCL_wrapper):
 window(window), dimensions(dimensions), openCL_wrapper(openCL_wrapper),
@@ -27,6 +28,12 @@ populater(this), quadtree(Quadtree<float>(sf::Vector2<float>(0, 0), dimensions))
             .count = 0,
             .targetCount = 10,
             .rate = 0.5
+    });
+
+    populater.addEntry("Mushroom", {
+            .count = 0,
+            .targetCount = 100,
+            .rate = 0.05
     });
 
 
@@ -106,6 +113,11 @@ bool World::spawn(std::string type) {
         agent->setVelocity(sf::Vector2f(0, 0));
         agents.insert(agent);
         return addObject(agent);
+    }
+    else if (type == "Mushroom"){
+        sf::Vector2<float> position(rand() % ((int) dimensions.x - 50) + 25, rand() % ((int) dimensions.y - 50) + 25);
+        std::shared_ptr<Mushroom> w(new Mushroom(this, position));
+        return addObject(w);
     }
     else if (type == "Bouncing ball"){
         sf::Vector2<float> position(rand() % ((int) dimensions.x - 50) + 25, rand() % ((int) dimensions.y - 50) + 25);

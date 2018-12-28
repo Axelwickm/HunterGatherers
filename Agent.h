@@ -14,7 +14,7 @@
 class Agent : public WorldObject {
 public:
     Agent(World* world, sf::Vector2f position);
-    void loadResources();
+    static void loadResources();
     const MapGenes &getGenes() const;
 
     void update(float deltaTime) override;
@@ -33,7 +33,7 @@ public:
 
 private:
     // General
-    sf::Sprite r;
+    sf::Sprite sprite;
     sf::IntRect frame;
     unsigned frameIndex;
     sf::Clock frameTimer;
