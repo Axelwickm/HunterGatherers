@@ -246,15 +246,18 @@ void Quadtree<T>::draw(sf::RenderWindow *window, bool entities) {
             window->draw(c);
         }
     }
-
-    sf::RectangleShape r;
-    r.setPosition(sf::Vector2f(getPosition()));
-    r.setSize(sf::Vector2f(getDimensions()));
-    r.setFillColor(sf::Color(0, 0, 0, 0));
-    r.setOutlineColor(sf::Color(100, 100, 100));
-    r.setOutlineThickness(1);
-    window->draw(r);
-
+    sf::VertexArray rect(sf::LineStrip, 5);
+    rect[0].position = sf::Vector2f(getPosition());
+    rect[1].position = sf::Vector2f(getPosition()) + sf::Vector2f(0, getDimensions().y);
+    rect[2].position = sf::Vector2f(getPosition()) + sf::Vector2f(getDimensions().x, getDimensions().y);
+    rect[3].position = sf::Vector2f(getPosition()) + sf::Vector2f(getDimensions().x, 0);
+    rect[4].position = sf::Vector2f(getPosition());
+    rect[0].color = sf::Color(100, 100, 100);
+    rect[1].color = sf::Color(100, 100, 100);
+    rect[2].color = sf::Color(100, 100, 100);
+    rect[3].color = sf::Color(100, 100, 100);
+    rect[4].color = sf::Color(100, 100, 100);
+    window->draw(rect);
 
     if (quadsCreated) {
         for (int i = 0; i < 4; i++) {
