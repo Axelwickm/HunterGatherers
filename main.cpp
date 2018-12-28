@@ -30,12 +30,12 @@ int main(int argc, char *argv[]) {
 
     OpenCL_Wrapper cl(deviceName);
 
-    const sf::Vector2f dimensions(1920, 1080);
+    const sf::Vector2f worldDimensions(10000, 10000);
 
 
-    sf::RenderWindow window(sf::VideoMode(dimensions.x, dimensions.y), "Hunter Gatherers");
-    Camera camera(&window, dimensions);
-    World world(&window, dimensions, &cl);
+    sf::RenderWindow window(sf::VideoMode(1920, 1080), "Hunter Gatherers");
+    Camera camera(&window, sf::Vector2f(1920*10, 1080*10));
+    World world(&window, worldDimensions, &cl);
 
     sf::Clock deltaClock;
 
@@ -90,7 +90,8 @@ int main(int argc, char *argv[]) {
 
             // Mouse was scrolled
             else if (event.type == sf::Event::MouseWheelScrolled){
-                camera.zoomTo(event.mouseWheelScroll.delta, sf::Mouse::getPosition(window));
+                sf::Vector2<int> c =  sf::Mouse::getPosition(window);
+                camera.zoomTo(event.mouseWheelScroll.delta, c);
             }
 
             // A finger was placed on the screen

@@ -29,8 +29,8 @@ void Camera::zoomTo(float mouseWheelDelta,  sf::Vector2<int> mousePosition) {
     auto c2 = (sf::Vector2f) window->mapPixelToCoords(mousePosition, view);
     view.move(c1-c2);
 
-    view.setCenter((float) fmin(view.getCenter().x, window->getSize().x), (float) fmin(view.getCenter().y, window->getSize().y));
-    view.setCenter((float) fmax(view.getCenter().x, 0), (float) fmax(view.getCenter().y, 0));
+    //view.setCenter((float) fmin(view.getCenter().x, window->getSize().x), (float) fmin(view.getCenter().y, window->getSize().y));
+    //view.setCenter((float) fmax(view.getCenter().x, 0), (float) fmax(view.getCenter().y, 0));
 
     window->setView(view);
 }
