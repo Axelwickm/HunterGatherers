@@ -10,7 +10,7 @@ sf::Texture Mushroom::texture;
 void Mushroom::loadResources() {
     if (!loaded){
         loaded = true;
-        texture.loadFromFile("Mushroom.png");
+        texture.loadFromFile("resources/Mushroom.png");
     }
 }
 

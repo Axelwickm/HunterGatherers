@@ -18,7 +18,7 @@ sf::Texture Agent::walkingTexture;
 
 void Agent::loadResources() {
     if (!loaded){
-        Agent::walkingTexture.loadFromFile("WalkCycle.png");
+        Agent::walkingTexture.loadFromFile("resources/WalkCycle.png");
         loaded = true;
     }
 }
