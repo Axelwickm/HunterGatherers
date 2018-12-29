@@ -38,6 +38,7 @@ int main(int argc, char *argv[]) {
     World world(&window, worldDimensions, &cl);
 
     sf::Clock deltaClock;
+    bool paused = false;
 
     bool dragging = false;
     sf::Vector2<int> mousePosition = sf::Mouse::getPosition();
@@ -53,7 +54,10 @@ int main(int argc, char *argv[]) {
             // A key was pressed
             if (event.type == sf::Event::KeyPressed){
                 sf::Keyboard::Key code = event.key.code;
-                if (code == Controls::close){
+                if (code == Controls::pause){
+                    paused = !paused;
+                }
+                else if (code == Controls::close){
                     window.close();
                 }
             }
@@ -111,7 +115,9 @@ int main(int argc, char *argv[]) {
         }
 
         // Updating world
-        world.update(dt.asSeconds());
+        if (!paused){
+            world.update(dt.asSeconds());
+        }
 
         // Drawing
 

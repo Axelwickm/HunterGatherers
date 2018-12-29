@@ -14,6 +14,7 @@ namespace RenderSettings {
 };
 
 namespace Controls{
+    extern sf::Keyboard::Key pause;
     extern sf::Keyboard::Key close;
     extern float scrollFactor;
 };

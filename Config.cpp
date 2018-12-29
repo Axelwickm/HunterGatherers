@@ -10,7 +10,8 @@ namespace RenderSettings {
     bool showVision = true;
 };
 
-namespace Controls{
+namespace Controls {
+    sf::Keyboard::Key pause = sf::Keyboard::Space;
     sf::Keyboard::Key close = sf::Keyboard::Escape;
 
     float scrollFactor = 0.05;
