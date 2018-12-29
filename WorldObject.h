@@ -21,7 +21,7 @@ public:
 
     virtual void update(float deltaTime);
     virtual void update(float deltaTime, sf::Vector2f oldPosition);
-    virtual void draw(sf::RenderWindow *window, float deltaTime) = 0;
+    virtual void draw(sf::RenderWindow *window, float deltaTime);
 
     void setQuadtree(Quadtree<float> *quadtree, std::weak_ptr<WorldObject> object);
     Quadtree<float> *getQuadtree();
@@ -32,16 +32,22 @@ public:
     float getAccelerationFactor() const;
     void setAccelerationFactor(float accelerationFactor);
 
-    const sf::Vector2f &getPosition() const;
-    void setPosition(const sf::Vector2f &position);
 
+    const sf::IntRect &getBounds() const;
+    void setBounds(const sf::IntRect &bounds);
+
+    const sf::Vector2f &getPosition() const;
+
+    void setPosition(const sf::Vector2f &position);
 protected:
     World* world;
     std::weak_ptr<WorldObject> me;
-    Quadtree<float> *quadtree;
 
+    Quadtree<float> *quadtree;
     sf::Vector2f position;
     sf::Vector2f velocity;
+    sf::IntRect bounds;
+
     float accelerationFactor;
 
 

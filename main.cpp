@@ -30,7 +30,7 @@ int main(int argc, char *argv[]) {
 
     OpenCL_Wrapper cl(deviceName);
 
-    const sf::Vector2f worldDimensions(10000, 10000);
+    const sf::Vector2f worldDimensions(1000, 1000);
 
 
     sf::RenderWindow window(sf::VideoMode(1920, 1080), "Hunter Gatherers");
@@ -122,8 +122,7 @@ int main(int argc, char *argv[]) {
         // Drawing
 
         window.clear(sf::Color::Black);
-
-        world.draw(dt.asSeconds());
+        world.draw(paused ? 0 : dt.asSeconds());
 
         window.display();
     }

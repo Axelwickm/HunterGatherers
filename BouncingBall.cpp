@@ -9,6 +9,7 @@
 
 BouncingBall::BouncingBall(World* world, sf::Vector2f position, float radius) : WorldObject(world, position) {
     this->radius = radius;
+    setBounds(sf::IntRect(-radius, -radius, radius, radius));
 
     c.setRadius(radius);
     c.setFillColor(sf::Color::Magenta);
@@ -37,6 +38,23 @@ void BouncingBall::update(float deltaTime) {
                     c.setFillColor(sf::Color::Green);
                 }
             }
+            else if (n.get() != this){
+                sf::Vector2f topLeft1(getPosition().x + getBounds().left,
+                                        getPosition().y + getBounds().top);
+                sf::Vector2f dimensions1(getBounds().width - getBounds().left,
+                                           getBounds().height - getBounds().top);
+
+                sf::Vector2f topLeft2(n->getPosition().x + n->getBounds().left,
+                                      n->getPosition().y + n->getBounds().top);
+                sf::Vector2f dimensions2(n->getBounds().width - n->getBounds().left,
+                                         n->getBounds().height - n->getBounds().top);
+                c.setFillColor(sf::Color::Red);
+                if (boxesIntersect(topLeft1, dimensions1, topLeft2, dimensions2)){
+                    c.setFillColor(sf::Color::Cyan);
+                }
+
+            }
+
         }
     }
 }
@@ -44,7 +62,7 @@ void BouncingBall::update(float deltaTime) {
 void BouncingBall::draw(sf::RenderWindow *window, float deltaTime) {
     c.setPosition(getPosition());
     window->draw(c);
-
+    WorldObject::draw(window, deltaTime);
 }
 
 float BouncingBall::getRadius() {

@@ -33,6 +33,7 @@ Agent::Agent(World* world, sf::Vector2f position) : WorldObject(world, position)
     frame = sf::IntRect(0, 0, 32, 32);
     sprite = sf::Sprite(walkingTexture, frame);
     sprite.setOrigin(16, 5);
+    setBounds(sf::IntRect(-8, 10, 8, 27));
 
     visibility = 200;
     FOV = 110;
@@ -136,19 +137,20 @@ void Agent::update(float deltaTime) {
     WorldObject::update(deltaTime);
     // Apply actions
     sf::Vector2f vel = getVelocity();
-    float velocityFactor = fminf(actions.at(0)*0.75f - sqrtf(vel.x*vel.x+vel.y*vel.y)*1.f, 200.f);
+    float velocityFactor = fminf(actions.at(0)*3.f - sqrtf(vel.x*vel.x+vel.y*vel.y)*1.f, 200.f);
     sf::Vector2f orientationVector = {
             cosf(orientation*PI/180.f),
             sinf(orientation*PI/180.f)
     };
     setVelocity(getVelocity() + orientationVector * velocityFactor * deltaTime);
 
-    float turn = ((float) actions.at(1) - actions.at(2))*1.f*deltaTime;
-    orientation += turn;
+    float turn = ((float) actions.at(1) - actions.at(2))*0.3f;
+    orientation += turn*deltaTime;
 }
 
 void Agent::draw(sf::RenderWindow *window, float deltaTime) {
-    if (2500.f/actions.at(0) < frameTimer.getElapsedTime().asMilliseconds()){
+    frameTimer += deltaTime;
+    if (10000.f/actions.at(0) < frameTimer*1000.f){
         frameIndex = frameIndex % 12 + 1; // Skip the first frame
         frame.top = frameIndex * 32;
         sprite.setTextureRect(frame);
@@ -157,7 +159,7 @@ void Agent::draw(sf::RenderWindow *window, float deltaTime) {
         else if (o == 3) o = 1;
 
         frame.left = o*32;
-        frameTimer.restart();
+        frameTimer = 0;
     }
 
     sprite.setPosition(getPosition());
@@ -167,6 +169,7 @@ void Agent::draw(sf::RenderWindow *window, float deltaTime) {
         window->draw(lineOfVision, 2*receptors.size(), sf::Lines);
         window->draw(orientationLine, 2, sf::Lines);
     }
+    WorldObject::draw(window, deltaTime);
 }
 
 void Agent::updatePercept(float deltaTime) {

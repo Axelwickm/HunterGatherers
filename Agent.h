@@ -36,7 +36,7 @@ private:
     sf::Sprite sprite;
     sf::IntRect frame;
     unsigned frameIndex;
-    sf::Clock frameTimer;
+    float frameTimer;
     float orientation; // In degrees
 
     // AI

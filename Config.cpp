@@ -5,9 +5,11 @@
 #include <SFML/Graphics.hpp>
 
 namespace RenderSettings {
+    bool showWorldObjectBounds = true;
     bool showQuadtree = true;
-    bool showQuadtreeEntities = false;
+    bool showQuadtreeEntities = true;
     bool showVision = true;
+
 };
 
 namespace Controls {

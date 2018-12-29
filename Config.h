@@ -8,6 +8,7 @@
 #include <SFML/Graphics.hpp>
 
 namespace RenderSettings {
+    extern bool showWorldObjectBounds;
     extern bool showQuadtree;
     extern bool showQuadtreeEntities;
     extern bool showVision;
