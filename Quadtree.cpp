@@ -64,7 +64,7 @@ bool Quadtree<T>::hasQuads() {
 
 template<class T>
 bool Quadtree<T>::add(std::shared_ptr<WorldObject> worldObject) {
-    // Return false beacuse point is outside quadtree
+    // Return false because point is outside quadtree
     if (!contains(worldObject->getPosition())) {
         return false;
     }
@@ -72,7 +72,7 @@ bool Quadtree<T>::add(std::shared_ptr<WorldObject> worldObject) {
     // If there are no child-quads
     if (not quadsCreated) {
         // Add node here if the tree can't be divided further
-        if (dimensions.x / 2 < limit || dimensions.y / 2 < limit) {
+        if (dimensions.x / 2 < limit || dimensions.y / 2 < limit || nodes.empty()) {
             nodes.push_back(worldObject);
             return true;
         }
@@ -95,6 +95,15 @@ bool Quadtree<T>::add(std::shared_ptr<WorldObject> worldObject) {
             quads[3]->setLimit(limit);
 
             quadsCreated = true;
+
+            for (auto& node : nodes){
+                for (int i = 0; i < 4; i++) {
+                    if (quads[i]->add(node)) {
+                        break;
+                    }
+                }
+            }
+            nodes.clear();
 
         }
     }
@@ -137,10 +146,13 @@ bool Quadtree<T>::remove(WorldObject *worldObject) {
     }
 
     if (removed) {
-        // Check if it is even worth having quads, or if they should be deconstruced
-        if (quadsCreated and getSubNodeCount() == 0) {
+        // Check if it is even worth having quads, or if they should be deconstructed
+        if (quadsCreated and getSubNodeCount() <= 1) {
             quadsCreated = false;
             for (int i = 0; i < 4; i++) {
+                for (auto& node : quads[i]->getNodes()){
+                    nodes.push_back(node);
+                }
                 quads[i].reset();
             }
         }
@@ -176,11 +188,14 @@ bool Quadtree<T>::move(sf::Vector2f oldPosition, WorldObject* worldObject) {
             if (add(worldObject->getSharedPtr())) {
                 return false;
             } else {
-                // Check if it is even worth having quads, or if they should be deconstruced
-                if (quadsCreated and getSubNodeCount() == 0) {
+                // Check if it is even worth having quads, or if they should be deconstructed
+                if (quadsCreated and getSubNodeCount() <= 1) {
                     quadsCreated = false;
-                    for (int i = 0; i < 4; i++) {
-                        quads[i].reset();
+                    for (int j = 0; j < 4; j++){
+                        for (auto& node : quads[j]->getNodes()){
+                            nodes.push_back(node);
+                        }
+                        quads[j].reset();
                     }
                 }
 
@@ -198,6 +213,7 @@ bool Quadtree<T>::contains(sf::Vector2<T> position) {
            && position.x <= topLeft.x + dimensions.x && position.y <= topLeft.y + dimensions.y;
 }
 
+
 template<class T>
 std::vector<std::shared_ptr<WorldObject> > Quadtree<T>::searchNear(sf::Vector2<T> position, float distance) {
     if (boxesIntersect(topLeft, dimensions, sf::Vector2<T>(position.x - distance, position.y - distance),
@@ -210,6 +226,7 @@ std::vector<std::shared_ptr<WorldObject> > Quadtree<T>::searchNear(sf::Vector2<T
                 n1.insert(n1.end(), n2.begin(), n2.end());
             }
         }
+
 
         return n1;
     }
@@ -236,8 +253,8 @@ void Quadtree<T>::searchNearLine(std::vector<std::shared_ptr<WorldObject> > &wob
 template<class T>
 void Quadtree<T>::draw(sf::RenderWindow *window, bool entities) {
     sf::CircleShape c;
-    c.setRadius(5);
-    c.setFillColor(sf::Color::Red);
+    c.setRadius(3);
+    c.setFillColor(sf::Color::White);
     c.setOrigin(c.getRadius(), c.getRadius());
 
     if (entities) {
