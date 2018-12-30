@@ -17,6 +17,9 @@ void Populater::populate(float deltaT) {
             int newCount = d(randomEngine);
             for (unsigned i = 0; i < newCount; i++){
                 entry.second.count += world->spawn(entry.first);
+                if (entry.second.count == entry.second.targetCount){
+                    break;
+                }
             }
         }
     }
