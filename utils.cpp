@@ -10,9 +10,11 @@
 #define EPSILON 1e-6f
 
 template<class T>
-inline bool boxesIntersect(const sf::Vector2<T> &apos, const sf::Vector2<T> &adim, const sf::Vector2<T> &bpos, const sf::Vector2<T> &bdim) {
-    return (fabs(apos.x - bpos.x) * 1.f < (adim.x + bdim.x)) &&
-           (fabs(apos.y - bpos.y) * 1.f < (adim.y + bdim.y));
+inline bool boxesIntersect(const sf::Rect<T> a, const sf::Rect<T> b){
+    return !(b.left > a.left + a.width
+             || b.left + b.width < a.left
+             || b.top > a.top + a.height
+             || b.top + b.width < a.top);
 }
 
 template<class T>

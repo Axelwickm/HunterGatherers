@@ -29,27 +29,24 @@ void BouncingBall::update(float deltaTime) {
     }
 
     if (quadtree != nullptr) {
-        auto nl = quadtree->searchNear(newPos, radius);
-        c.setFillColor(sf::Color::Magenta);
+        auto nl = quadtree->searchNear(newPos, 4*radius);
+        c.setFillColor(sf::Color(20, 20, 20));
         for (auto &n : nl) {
             if (n.get() != this && typeid(*(n.get())) == typeid(BouncingBall)) {
                 sf::Vector2f v = n->getPosition() - position;
                 if (sqrtf(v.x * v.x + v.y * v.y) < ((BouncingBall *) n.get())->getRadius() + radius) {
-                    c.setFillColor(sf::Color::Green);
+                    //c.setFillColor(sf::Color::Green);
                 }
             }
             else if (n.get() != this){
-                sf::Vector2f topLeft1(getPosition().x + getBounds().left,
-                                        getPosition().y + getBounds().top);
-                sf::Vector2f dimensions1(getBounds().width - getBounds().left,
-                                           getBounds().height - getBounds().top);
+                sf::FloatRect a(position.x-radius, position.y-radius, 2*radius, 2*radius);
 
-                sf::Vector2f topLeft2(n->getPosition().x + n->getBounds().left,
-                                      n->getPosition().y + n->getBounds().top);
-                sf::Vector2f dimensions2(n->getBounds().width - n->getBounds().left,
-                                         n->getBounds().height - n->getBounds().top);
-                c.setFillColor(sf::Color::Red);
-                if (boxesIntersect(topLeft1, dimensions1, topLeft2, dimensions2)){
+                sf::FloatRect b(n->getPosition().x + n->getBounds().left,
+                    n->getPosition().y + n->getBounds().top,
+                    n->getBounds().width - n->getBounds().left,
+                    n->getBounds().height - n->getBounds().top);
+                c.setFillColor(sf::Color(100, 100, 100));
+                if (boxesIntersect(a, b)){
                     c.setFillColor(sf::Color::Cyan);
                 }
 
@@ -57,6 +54,8 @@ void BouncingBall::update(float deltaTime) {
 
         }
     }
+
+
 }
 
 void BouncingBall::draw(sf::RenderWindow *window, float deltaTime) {
