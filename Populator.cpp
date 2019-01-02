@@ -4,13 +4,13 @@
 
 #include <ctime>
 #include "World.h"
-#include "Populater.h"
+#include "Populator.h"
 
-std::mt19937 Populater::randomEngine = std::mt19937(static_cast<unsigned int>(time(nullptr)));
+std::mt19937 Populator::randomEngine = std::mt19937(static_cast<unsigned int>(time(nullptr)));
 
-Populater::Populater(World* world) : world(world) {}
+Populator::Populator(World* world) : world(world) {}
 
-void Populater::populate(float deltaT) {
+void Populator::populate(float deltaT) {
     for (auto& entry : frequencies){
         if (entry.second.count < entry.second.targetCount){
             auto d = std::poisson_distribution(entry.second.rate*deltaT);
@@ -25,10 +25,10 @@ void Populater::populate(float deltaT) {
     }
 }
 
-void Populater::addEntry(std::string type, Entry entry) {
+void Populator::addEntry(std::string type, Entry entry) {
     frequencies.insert(std::make_pair(type, entry));
 }
 
-void Populater::changeCount(std::string type, int deltaCount) {
+void Populator::changeCount(std::string type, int deltaCount) {
     frequencies.at(type).count += deltaCount;
 }

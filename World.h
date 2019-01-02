@@ -15,7 +15,7 @@
 #include "WorldObject.h"
 #include "Config.h"
 #include "OpenCL_Wrapper.h"
-#include "Populater.h"
+#include "Populator.h"
 
 
 class World {
@@ -42,7 +42,7 @@ private:
     sf::RenderWindow* window;
     const sf::Vector2f dimensions;
 
-    Populater populater;
+    Populator populator;
     std::set<std::shared_ptr<Agent>> agents;
     std::set<std::shared_ptr<WorldObject> > objects;
 

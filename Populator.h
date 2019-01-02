@@ -2,8 +2,8 @@
 // Created by axelw on 2018-12-26.
 //
 
-#ifndef HUNTERGATHERERS_POPULATER_H
-#define HUNTERGATHERERS_POPULATER_H
+#ifndef HUNTERGATHERERS_POPULATOR_H
+#define HUNTERGATHERERS_POPULATOR_H
 
 #include <string>
 #include <map>
@@ -11,9 +11,9 @@
 
 class World;
 
-class Populater {
+class Populator {
 public:
-    explicit Populater(World* world);
+    explicit Populator(World* world);
 
     struct Entry {
         unsigned count;
@@ -35,4 +35,4 @@ private:
 };
 
 
-#endif //HUNTERGATHERERS_POPULATER_H
+#endif //HUNTERGATHERERS_POPULATOR_H

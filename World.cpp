@@ -5,12 +5,12 @@
 #include "World.h"
 #include "Agent.h"
 #include "BouncingBall.h"
-#include "Populater.h"
+#include "Populator.h"
 #include "Mushroom.h"
 
 World::World(sf::RenderWindow *window, sf::Vector2f dimensions, OpenCL_Wrapper *openCL_wrapper):
 window(window), dimensions(dimensions), openCL_wrapper(openCL_wrapper),
-populater(this), quadtree(Quadtree<float>(sf::Vector2<float>(0, 0), dimensions)) {
+populator(this), quadtree(Quadtree<float>(sf::Vector2<float>(0, 0), dimensions)) {
     quadtree.setLimit(30);
 
     long long int now = std::chrono::time_point_cast<std::chrono::microseconds>(
@@ -18,19 +18,19 @@ populater(this), quadtree(Quadtree<float>(sf::Vector2<float>(0, 0), dimensions))
 
     srand(now);
 
-    populater.addEntry("Agent", {
+    populator.addEntry("Agent", {
             .count = 0,
             .targetCount = 25,
             .rate = 5
     });
 
-    populater.addEntry("Bouncing ball", {
+    populator.addEntry("Bouncing ball", {
             .count = 0,
             .targetCount = 0,
             .rate = 0.75
     });
 
-    populater.addEntry("Mushroom", {
+    populator.addEntry("Mushroom", {
             .count = 0,
             .targetCount = 10,
             .rate = 0.75
@@ -41,7 +41,7 @@ populater(this), quadtree(Quadtree<float>(sf::Vector2<float>(0, 0), dimensions))
 }
 
 void World::update(float deltaTime) {
-    populater.populate(deltaTime);
+    populator.populate(deltaTime);
 
     // AI updates
     for (auto& agent : agents){
@@ -85,7 +85,7 @@ bool World::addObject(std::shared_ptr<WorldObject> worldObject) {
 bool World::removeObject(std::shared_ptr<WorldObject> worldObject) {
     if (quadtree.remove(worldObject.get())){
         objects.erase(worldObject);
-        populater.changeCount(worldObject->type, -1);
+        populator.changeCount(worldObject->type, -1);
         return true;
     }
     return false;
