@@ -10,6 +10,7 @@
 #include "utils.cpp"
 #include "World.h"
 #include "Gene.h"
+#include "Mushroom.h"
 
 #define PI 3.14159265f
 
@@ -23,10 +24,11 @@ void Agent::loadResources() {
     }
 }
 
-Agent::Agent(World* world, sf::Vector2f position) : WorldObject(world, position) {
+Agent::Agent(World* world, sf::Vector2f position) : WorldObject("Agent", world, position) {
     loadResources();
 
     orientation = 75;
+    energy = 100;
     setAccelerationFactor(0.00000001);
 
     frameIndex = 0;
@@ -135,6 +137,7 @@ Agent::Agent(World* world, sf::Vector2f position) : WorldObject(world, position)
 
 void Agent::update(float deltaTime) {
     WorldObject::update(deltaTime);
+
     // Apply actions
     sf::Vector2f vel = getVelocity();
     float velocityFactor = fminf(actions.at(0)*3.f - sqrtf(vel.x*vel.x+vel.y*vel.y)*1.f, 200.f);
@@ -146,6 +149,39 @@ void Agent::update(float deltaTime) {
 
     float turn = ((float) actions.at(1) - actions.at(2))*0.3f;
     orientation += turn*deltaTime;
+
+    if (quadtree != nullptr){
+        auto near = quadtree->searchNear(getPosition(), 64);
+        for (auto &object : near) {
+            if (object.get() != this ){
+                sf::FloatRect a(getPosition().x + getBounds().left,
+                                getPosition().y + getBounds().top,
+                                getBounds().width - getBounds().left,
+                                getBounds().height - getBounds().top);
+
+                sf::FloatRect b(object->getPosition().x + object->getBounds().left,
+                                object->getPosition().y + object->getBounds().top,
+                                object->getBounds().width - object->getBounds().left,
+                                object->getBounds().height - object->getBounds().top);
+                if (boxesIntersect(a, b)){
+                    auto& type = typeid(*object.get());
+                    if (type == typeid(Agent)){
+                        // TODO: reproduce if willing (action 3)
+                    }
+                    else if (type == typeid(Mushroom)){
+                        world->removeObject(object->getSharedPtr());
+                        energy += 20;
+                    }
+                }
+            }
+        }
+    }
+
+    energy = fminf(energy, 100);
+    energy -= deltaTime*10.f;
+    if (energy <= 0){
+        world->removeObject(getSharedPtr());
+    }
 }
 
 void Agent::draw(sf::RenderWindow *window, float deltaTime) {
@@ -252,5 +288,13 @@ const std::vector<float> &Agent::getActions() const {
 
 void Agent::setActions(const std::vector<float> &action) {
     Agent::actions = action;
+}
+
+float Agent::getEnergy() const {
+    return energy;
+}
+
+void Agent::setEnergy(float energy) {
+    Agent::energy = energy;
 }
 

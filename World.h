@@ -28,7 +28,7 @@ public:
     void draw(float deltaTime);
 
     bool addObject(std::shared_ptr<WorldObject> worldObject);
-    bool removeObject(WorldObject* worldObject);
+    bool removeObject(std::shared_ptr<WorldObject> worldObject);
     bool spawn(std::string type);
 
 

@@ -7,7 +7,8 @@
 #include "Quadtree.h"
 #include "World.h"
 
-BouncingBall::BouncingBall(World* world, sf::Vector2f position, float radius) : WorldObject(world, position) {
+BouncingBall::BouncingBall(World* world, sf::Vector2f position, float radius) : WorldObject("BouncingBall",
+                                                                                            world, position) {
     this->radius = radius;
     setBounds(sf::IntRect(-radius, -radius, radius, radius));
 

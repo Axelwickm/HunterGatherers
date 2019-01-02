@@ -6,7 +6,7 @@
 #include "Quadtree.h"
 #include "World.h"
 
-WorldObject::WorldObject(World* world, sf::Vector2f position) {
+WorldObject::WorldObject(std::string type, World *world, sf::Vector2f position) : type(type) {
     this->position = position;
     this->quadtree = nullptr;
     this->world = world;

@@ -16,7 +16,8 @@ class World;
 
 class WorldObject {
 public:
-    explicit WorldObject(World* world, sf::Vector2f position);
+    explicit WorldObject(std::string type, World *world, sf::Vector2f position);
+    const std::string type;
     std::shared_ptr<WorldObject> getSharedPtr();
 
     virtual void update(float deltaTime);

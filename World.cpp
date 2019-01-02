@@ -20,20 +20,20 @@ populater(this), quadtree(Quadtree<float>(sf::Vector2<float>(0, 0), dimensions))
 
     populater.addEntry("Agent", {
             .count = 0,
-            .targetCount = 50,
-            .rate = 1
+            .targetCount = 25,
+            .rate = 5
     });
 
     populater.addEntry("Bouncing ball", {
             .count = 0,
-            .targetCount = 10,
-            .rate = 0.5
+            .targetCount = 0,
+            .rate = 0.75
     });
 
     populater.addEntry("Mushroom", {
             .count = 0,
-            .targetCount = 100,
-            .rate = 0.05
+            .targetCount = 10,
+            .rate = 0.75
     });
 
 
@@ -82,9 +82,10 @@ bool World::addObject(std::shared_ptr<WorldObject> worldObject) {
 
 }
 
-bool World::removeObject(WorldObject* worldObject) {
-    if (quadtree.remove(worldObject)){
-        objects.erase(std::shared_ptr<WorldObject>(worldObject));
+bool World::removeObject(std::shared_ptr<WorldObject> worldObject) {
+    if (quadtree.remove(worldObject.get())){
+        objects.erase(worldObject);
+        populater.changeCount(worldObject->type, -1);
         return true;
     }
     return false;

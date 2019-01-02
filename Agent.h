@@ -31,13 +31,19 @@ public:
     float getOrientation() const;
     void setOrientation(float orientation);
 
+    float getEnergy() const;
+    void setEnergy(float energy);
+
 private:
     // General
+    float orientation; // In degrees
+    float energy; // Between 0 and 100
+
+     // Rendering
     sf::Sprite sprite;
     sf::IntRect frame;
     unsigned frameIndex;
     float frameTimer;
-    float orientation; // In degrees
 
     // AI
     MapGenes genes;

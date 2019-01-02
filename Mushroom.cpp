@@ -14,14 +14,19 @@ void Mushroom::loadResources() {
     }
 }
 
-Mushroom::Mushroom(World *world, const sf::Vector2f &position) : WorldObject(world, position) {
+Mushroom::Mushroom(World *world, const sf::Vector2f &position) : WorldObject("Mushroom", world, position) {
     loadResources();
     sprite = sf::Sprite(texture);
+    sprite.setScale(0.5f, 0.5f);
+    sf::FloatRect localBounds = sprite.getLocalBounds();
+    setBounds(sf::IntRect(localBounds.left*0.5f, localBounds.top*0.5f,
+            localBounds.width*0.5f, localBounds.height*0.5f));
 }
 
 void Mushroom::draw(sf::RenderWindow *window, float deltaTime) {
     sprite.setPosition(getPosition());
     window->draw(sprite);
+    WorldObject::draw(window, deltaTime);
 }
 
 
