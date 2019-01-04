@@ -1,5 +1,6 @@
 #pragma OPENCL EXTENSION cl_arm_printf : enable
 #define RELU(x) (0 < x ? x : 0)
+#define SIGMOID(x) (1.0f / (1 + exp(-x)))
 
 __kernel void perceptron(__constant unsigned* layerSize, __constant float* layerWeight, __constant unsigned* layerBias,
                          unsigned layerIndex, unsigned layerOffset,
@@ -23,5 +24,6 @@ __kernel void perceptron(__constant unsigned* layerSize, __constant float* layer
     // Add layer weight to sum
     sum += layerWeight[layerIndex];
 
-    currentLayer[id] = RELU(sum);
+    //currentLayer[id] = RELU(sum);
+    currentLayer[id] = SIGMOID(sum);
 }

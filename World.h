@@ -31,6 +31,8 @@ public:
     bool removeObject(std::shared_ptr<WorldObject> worldObject);
     bool spawn(std::string type);
 
+    bool reproduce(Agent* a);
+
 
     const sf::RenderWindow *getWindow() const;
 

@@ -24,10 +24,10 @@ void Agent::loadResources() {
     }
 }
 
-Agent::Agent(World* world, sf::Vector2f position) : WorldObject("Agent", world, position) {
+Agent::Agent(World *world, sf::Vector2f position, float orientation) : WorldObject("Agent", world, position),
+orientation(orientation) {
     loadResources();
 
-    orientation = 75;
     energy = 100;
     setAccelerationFactor(0.00000001);
 
@@ -49,12 +49,12 @@ Agent::Agent(World* world, sf::Vector2f position) : WorldObject("Agent", world, 
     lineOfVision[0].color = sf::Color::Cyan;
     lineOfVision[1].color = sf::Color::Cyan;
 
-    int inputCount = 4;
-    int outputCount = 3;
+    std::size_t inputCount = 4;
+    std::size_t outputCount = 4;
 
-    percept = std::vector<float>(4);
+    percept = std::vector<float>(inputCount);
     std::fill(std::begin(percept), std::end(percept), 0.f);
-    actions = std::vector<float>(3);
+    actions = std::vector<float>(outputCount);
     std::fill(std::begin(actions), std::end(actions), 0.f);
 
     auto previousLayerPerceptronCountLambda = [](LambdaGene<int>& l, float mutationFactor){
@@ -108,21 +108,21 @@ Agent::Agent(World* world, sf::Vector2f position) : WorldObject("Agent", world, 
     auto perceptron = std::make_shared<MapGenes>();
     auto weightCount = std::make_shared<LambdaGene<int> >(previousLayerPerceptronCountLambda);
     perceptron->addGenes("WeightCount", weightCount);
-    auto weight = std::make_shared<FloatGene>(0, 1);
+    auto weight = std::make_shared<FloatGene>(-1, 1);
     auto weights = std::make_shared<ListGenes>(weight, "WeightCount");
     perceptron->addGenes("Weights", weights);
 
     auto layer = std::make_shared<MapGenes>();
-    auto mutatingPerceptronCount = std::make_shared<IntegerGene>(3, 20);
+    auto mutatingPerceptronCount = std::make_shared<IntegerGene>(3, 8);
     layer->addGenes("MutatingPerceptronCount", mutatingPerceptronCount);
     auto perceptronCount = std::make_shared<LambdaGene<int> >(perceptronCountLambda);
     layer->addGenes("PerceptronCount", perceptronCount);
-    auto bias = std::make_shared<FloatGene>(0, 1);
+    auto bias = std::make_shared<FloatGene>(-5, 5);
     layer->addGenes("Bias", bias);
     auto perceptrons = std::make_shared<ListGenes>(perceptron, "PerceptronCount");
     layer->addGenes("Perceptrons", perceptrons);
 
-    auto layerCount = std::make_shared<IntegerGene>(2, 8);
+    auto layerCount = std::make_shared<IntegerGene>(2, 5);
     genes.addGenes("LayerCount", layerCount);
     auto inputCountG = std::make_shared<IntegerGene>(inputCount, inputCount);
     genes.addGenes("InputCount", inputCountG);
@@ -139,15 +139,15 @@ void Agent::update(float deltaTime) {
     WorldObject::update(deltaTime);
 
     // Apply actions
-    sf::Vector2f vel = getVelocity();
-    float velocityFactor = fminf(actions.at(0)*3.f - sqrtf(vel.x*vel.x+vel.y*vel.y)*1.f, 200.f);
+    const sf::Vector2f vel = getVelocity();
+    float velocityFactor = fminf(actions.at(0)*500.f - sqrtf(vel.x*vel.x+vel.y*vel.y)*1.f, 1000.f);
     sf::Vector2f orientationVector = {
             cosf(orientation*PI/180.f),
             sinf(orientation*PI/180.f)
     };
     setVelocity(getVelocity() + orientationVector * velocityFactor * deltaTime);
 
-    float turn = ((float) actions.at(1) - actions.at(2))*0.3f;
+    float turn = ((float) actions.at(1) - actions.at(2))*40.0f;
     orientation += turn*deltaTime;
 
     if (quadtree != nullptr){
@@ -166,7 +166,9 @@ void Agent::update(float deltaTime) {
                 if (boxesIntersect(a, b)){
                     auto& type = typeid(*object.get());
                     if (type == typeid(Agent)){
-                        // TODO: reproduce if willing (action 3)
+                        if (0.5 < actions.at(3)){
+                            // TODO: Crossover reproduction.
+                        }
                     }
                     else if (type == typeid(Mushroom)){
                         world->removeObject(object->getSharedPtr());
@@ -178,7 +180,7 @@ void Agent::update(float deltaTime) {
     }
 
     energy = fminf(energy, 100);
-    energy -= deltaTime*10.f;
+    energy -= deltaTime*2.f;
     if (energy <= 0){
         world->removeObject(getSharedPtr());
     }
@@ -186,7 +188,7 @@ void Agent::update(float deltaTime) {
 
 void Agent::draw(sf::RenderWindow *window, float deltaTime) {
     frameTimer += deltaTime;
-    if (10000.f/actions.at(0) < frameTimer*1000.f){
+    if (actions.at(0)*100.f < frameTimer*1000.f){
         frameIndex = frameIndex % 12 + 1; // Skip the first frame
         frame.top = frameIndex * 32;
         sprite.setTextureRect(frame);

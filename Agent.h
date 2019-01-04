@@ -13,7 +13,7 @@
 
 class Agent : public WorldObject {
 public:
-    Agent(World* world, sf::Vector2f position);
+    Agent(World *world, sf::Vector2f position, float orientation);
     static void loadResources();
     const MapGenes &getGenes() const;
 

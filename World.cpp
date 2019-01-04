@@ -21,7 +21,7 @@ populator(this), quadtree(Quadtree<float>(sf::Vector2<float>(0, 0), dimensions))
     populator.addEntry("Agent", {
             .count = 0,
             .targetCount = 25,
-            .rate = 5
+            .rate = 3
     });
 
     populator.addEntry("Bouncing ball", {
@@ -32,8 +32,8 @@ populator(this), quadtree(Quadtree<float>(sf::Vector2<float>(0, 0), dimensions))
 
     populator.addEntry("Mushroom", {
             .count = 0,
-            .targetCount = 10,
-            .rate = 0.75
+            .targetCount = 50,
+            .rate = 3
     });
 
 
@@ -116,7 +116,7 @@ OpenCL_Wrapper *World::getOpenCL_wrapper() const {
 bool World::spawn(std::string type) {
     if (type == "Agent"){
         sf::Vector2<float> position(rand() % ((int) dimensions.x - 50) + 25, rand() % ((int) dimensions.y - 50) + 25);
-        auto agent = std::make_shared<Agent>(this, position);
+        auto agent = std::make_shared<Agent>(this, position, (float) rand()/RAND_MAX*360.f);
         agent->setVelocity(sf::Vector2f(0, 0));
         agents.insert(agent);
         return addObject(agent);
@@ -132,6 +132,10 @@ bool World::spawn(std::string type) {
         w->setVelocity({(float) rand() / RAND_MAX * 50.f - 25.f, (float) rand() / RAND_MAX * 50.f - 25.f});
         return addObject(w);
     }
+    return false;
+}
+
+bool World::reproduce(Agent *a) {
     return false;
 }
 
