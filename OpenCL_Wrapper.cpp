@@ -283,7 +283,7 @@ void OpenCL_Wrapper::think(Agent* agent, const std::vector<float>& percept) {
     // Buffer the percept
     // Note that this will probably not fill the whole buffer, but the kernel is fine with that.
     err = clEnqueueWriteBuffer(command_queue, agentEntry.netActivationA, CL_FALSE, 0,
-            sizeof(float)*agentEntry.maxLayerSize, &percept[0], 0, nullptr, &lastEvent);
+            sizeof(float)*agentEntry.maxLayerSize, &percept.at(0), 0, nullptr, &lastEvent);
 
     if (err){
         throw std::runtime_error("Failed to write to first net activation buffer: "+std::to_string(err));
@@ -317,13 +317,13 @@ void OpenCL_Wrapper::think(Agent* agent, const std::vector<float>& percept) {
 
         //printf("%d %d\n", i, globalSize);
 
-        err = clEnqueueNDRangeKernel(command_queue, perceptronKernel, 1, nullptr, &globalSize, &localSize, 0, nullptr,
+        err = clEnqueueNDRangeKernel(command_queue, perceptronKernel, 1, nullptr, &globalSize, &localSize, 1, &lastEvent,
                                &newEvent);
 
         if (err){
             throw std::runtime_error("Failed to enqueue perceptron ND Range kernels: "+std::to_string(err));
         }
-
+        clReleaseEvent(lastEvent);
         lastEvent = newEvent;
         layerOffset += agentEntry.layerSizes_Host[i] * agentEntry.layerSizes_Host[i+1];
 
@@ -345,8 +345,8 @@ void OpenCL_Wrapper::think(Agent* agent, const std::vector<float>& percept) {
     if (err){
         throw std::runtime_error("Failed to read output buffer from network: "+std::to_string(err));
     }
+    clReleaseEvent(lastEvent);
     lastEvent = newEvent;
-
 
     auto callbackData = new std::pair<Agent*, std::vector<float>*>;
     *callbackData = std::make_pair(agentEntry.agent, output);
@@ -363,6 +363,7 @@ void OpenCL_Wrapper::responseCallback(cl_event e, cl_int status, void *data) {
     p->first->setActions(*p->second);
     delete p->second;
     delete p;
+    clReleaseEvent(e);
 }
 
 

@@ -43,6 +43,8 @@ populator(this), quadtree(Quadtree<float>(sf::Vector2<float>(0, 0), dimensions))
 void World::update(float deltaTime) {
     populator.populate(deltaTime);
 
+    openCL_wrapper->clFinishAll(); // More optimized to have this here?
+
     // World updates
     for (auto &object : objects) {
         object->update(deltaTime);
@@ -53,8 +55,6 @@ void World::update(float deltaTime) {
         agent->updatePercept(deltaTime);
         openCL_wrapper->think(agent.get(), agent->getPercept());
     }
-
-    openCL_wrapper->clFinishAll();
 
 }
 
