@@ -134,6 +134,9 @@ OpenCL_Wrapper::OpenCL_Wrapper(std::string deviceToUse) {
 
 OpenCL_Wrapper::~OpenCL_Wrapper() {
     for (auto& agent : agentRegister){
+        clReleaseMemObject(agent.second.netActivationA);
+        clReleaseMemObject(agent.second.netActivationB);
+
         clReleaseMemObject(agent.second.layerSizes);
         clReleaseMemObject(agent.second.layerBiases);
         clReleaseMemObject(agent.second.layerWeights);
@@ -169,9 +172,9 @@ cl_program OpenCL_Wrapper::createAndCompileProgram(const std::string& source) {
     return program;
 }
 
-void OpenCL_Wrapper::addAgent(std::weak_ptr<Agent> agent) {
+void OpenCL_Wrapper::addAgent(Agent* agent) {
 
-    const MapGenes& genes = agent.lock()->getGenes();
+    const MapGenes& genes = agent->getGenes();
 
     AgentEntry agentEntry;
     agentEntry.agent = agent;
@@ -250,7 +253,18 @@ void OpenCL_Wrapper::addAgent(std::weak_ptr<Agent> agent) {
         throw std::runtime_error("Failed to create net activation buffer: "+std::to_string(err));
     }
 
-    agentRegister.insert({agent.lock().get(), agentEntry});
+    agentRegister.insert({agent, agentEntry});
+}
+
+void OpenCL_Wrapper::removeAgent(Agent* agent) {
+    AgentEntry a = agentRegister.at(agent);
+    clReleaseMemObject(a.netActivationA);
+    clReleaseMemObject(a.netActivationB);
+
+    clReleaseMemObject(a.layerSizes);
+    clReleaseMemObject(a.layerBiases);
+    clReleaseMemObject(a.layerWeights);
+    agentRegister.erase(agent);
 }
 
 void OpenCL_Wrapper::think(Agent* agent, const std::vector<float>& percept) {
@@ -335,7 +349,7 @@ void OpenCL_Wrapper::think(Agent* agent, const std::vector<float>& percept) {
 
 
     auto callbackData = new std::pair<Agent*, std::vector<float>*>;
-    *callbackData = std::make_pair(agentEntry.agent.lock().get(), output);
+    *callbackData = std::make_pair(agentEntry.agent, output);
 
     clSetEventCallback(lastEvent, CL_COMPLETE, responseCallback, (void*) callbackData);
 }
@@ -350,3 +364,5 @@ void OpenCL_Wrapper::responseCallback(cl_event e, cl_int status, void *data) {
     delete p->second;
     delete p;
 }
+
+

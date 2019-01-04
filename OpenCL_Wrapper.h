@@ -22,7 +22,7 @@
 
 
 struct AgentEntry {
-    std::weak_ptr<Agent> agent;
+    Agent* agent;
 
     unsigned outputBandwidth;
     unsigned layerCount;
@@ -43,7 +43,8 @@ public:
     explicit OpenCL_Wrapper(std::string deviceToUse);
     virtual ~OpenCL_Wrapper();
 
-    void addAgent(std::weak_ptr<Agent> agent);
+    void addAgent(Agent* agent);
+    void removeAgent(Agent* agent);
     void think(Agent* agent, const std::vector<float>& percept);
 
     void clFinishAll();

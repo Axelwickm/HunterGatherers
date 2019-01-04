@@ -43,6 +43,11 @@ populator(this), quadtree(Quadtree<float>(sf::Vector2<float>(0, 0), dimensions))
 void World::update(float deltaTime) {
     populator.populate(deltaTime);
 
+    // World updates
+    for (auto &object : objects) {
+        object->update(deltaTime);
+    }
+
     // AI updates
     for (auto& agent : agents){
         agent->updatePercept(deltaTime);
@@ -51,10 +56,6 @@ void World::update(float deltaTime) {
 
     openCL_wrapper->clFinishAll();
 
-    // World updates
-    for (auto &object : objects) {
-        object->update(deltaTime);
-    }
 }
 
 void World::draw(float deltaTime) {
@@ -75,7 +76,7 @@ bool World::addObject(std::shared_ptr<WorldObject> worldObject) {
     objects.insert(worldObject);
 
     if (typeid(*worldObject.get()) == typeid(Agent)){
-        openCL_wrapper->addAgent(std::weak_ptr<Agent>(std::dynamic_pointer_cast<Agent>(worldObject)));
+        openCL_wrapper->addAgent((Agent*) worldObject.get());
     }
 
     return true;
@@ -84,6 +85,11 @@ bool World::addObject(std::shared_ptr<WorldObject> worldObject) {
 
 bool World::removeObject(std::shared_ptr<WorldObject> worldObject) {
     if (quadtree.remove(worldObject.get())){
+        if (typeid(*worldObject.get()) == typeid(Agent)){
+            openCL_wrapper->removeAgent((Agent*) worldObject.get());
+            agents.erase(std::dynamic_pointer_cast<Agent>(worldObject));
+        }
+
         objects.erase(worldObject);
         populator.changeCount(worldObject->type, -1);
         return true;
