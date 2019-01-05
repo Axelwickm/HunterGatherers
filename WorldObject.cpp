@@ -6,7 +6,8 @@
 #include "Quadtree.h"
 #include "World.h"
 
-WorldObject::WorldObject(std::string type, World *world, sf::Vector2f position) : type(type) {
+WorldObject::WorldObject(std::string type, World *world, sf::Vector2f position, bool collider)
+: type(type), collider(collider) {
     this->position = position;
     this->quadtree = nullptr;
     this->world = world;
@@ -94,5 +95,9 @@ const sf::IntRect &WorldObject::getBounds() const {
 
 void WorldObject::setBounds(const sf::IntRect &bounds) {
     WorldObject::bounds = bounds;
+}
+
+const bool WorldObject::isCollider() const {
+    return collider;
 }
 

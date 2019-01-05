@@ -5,6 +5,7 @@
 #include "World.h"
 #include "BouncingBall.h"
 #include "Mushroom.h"
+#include "Heart.h"
 
 std::mt19937 World::randomEngine = std::mt19937(std::random_device()());
 
@@ -46,9 +47,12 @@ void World::draw(float deltaTime) {
 }
 
 bool World::addObject(std::shared_ptr<WorldObject> worldObject) {
-    if (!quadtree.add(worldObject)){
-        return false;
+    if (worldObject->isCollider()){
+        if (!quadtree.add(worldObject)){
+            return false;
+        }
     }
+
     worldObject->setQuadtree(&quadtree, worldObject);
     objects.insert(worldObject);
 
@@ -68,8 +72,8 @@ bool World::removeObject(std::shared_ptr<WorldObject> worldObject, bool performI
         deletionList.push_back(worldObject);
         return true;
     }
-
-    if (quadtree.remove(worldObject.get())){
+    bool success = worldObject->isCollider() ? quadtree.remove(worldObject.get()) : true;
+    if (success){
         if (typeid(*worldObject.get()) == typeid(Agent)){
             openCL_wrapper->removeAgent((Agent*) worldObject.get());
             agents.erase(std::dynamic_pointer_cast<Agent>(worldObject));
@@ -133,12 +137,13 @@ bool World::spawn(std::string type) {
     return false;
 }
 
-bool World::reproduce(Agent& a) {
+void World::reproduce(Agent &a) {
     auto agent = std::make_shared<Agent>(a);
     agent->getGenes()->mutate(0.1);
     agent->setEnergy(a.getEnergy()/2);
     a.setEnergy(a.getEnergy()/2);
-    return addObject(agent);
+    addObject(agent);
+    addObject(std::make_shared<Heart>(this, a.getPosition()));
 }
 
 

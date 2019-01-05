@@ -13,27 +13,27 @@ namespace GeneralSettings {
         populatorEntries:{{
             .type = "Agent",
             .count = 0,
-            .targetCount = 25,
+            .targetCount = 75,
             .rate = 3
         },{
             .type = "Mushroom",
             .count = 0,
-            .targetCount = 50,
+            .targetCount = 60,
             .rate = 3
         },{
             .type = "BouncingBall",
             .count = 0,
-            .targetCount = 5,
+            .targetCount = 0,
             .rate = 0.75
         }}
     };
 }
 
 namespace RenderSettings {
-    bool showWorldObjectBounds = true;
-    bool showQuadtree = true;
-    bool showQuadtreeEntities = true;
-    bool showVision = true;
+    bool showWorldObjectBounds = false;
+    bool showQuadtree = false;
+    bool showQuadtreeEntities = false;
+    bool showVision = false;
 
 };
 

@@ -16,7 +16,7 @@ class World;
 
 class WorldObject {
 public:
-    explicit WorldObject(std::string type, World *world, sf::Vector2f position);
+    explicit WorldObject(std::string type, World *world, sf::Vector2f position, bool collider);
     const std::string type;
     std::shared_ptr<WorldObject> getSharedPtr();
 
@@ -38,11 +38,14 @@ public:
     void setBounds(const sf::IntRect &bounds);
 
     const sf::Vector2f &getPosition() const;
-
     void setPosition(const sf::Vector2f &position);
+
+    const bool isCollider() const;
+
 protected:
     World* world;
     std::weak_ptr<WorldObject> me;
+    const bool collider;
 
     Quadtree<float> *quadtree;
     sf::Vector2f position;

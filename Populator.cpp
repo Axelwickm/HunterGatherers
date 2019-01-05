@@ -35,5 +35,8 @@ void Populator::addEntries(std::vector<Populator::Entry> entries) {
 }
 
 void Populator::changeCount(std::string type, int deltaCount) {
-    frequencies.at(type).count += deltaCount;
+    auto itr = frequencies.find(type);
+    if (itr != frequencies.end()){
+        frequencies.at(type).count += deltaCount;
+    }
 }

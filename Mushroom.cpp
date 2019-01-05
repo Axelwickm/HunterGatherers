@@ -14,7 +14,7 @@ void Mushroom::loadResources() {
     }
 }
 
-Mushroom::Mushroom(World *world, const sf::Vector2f &position) : WorldObject("Mushroom", world, position) {
+Mushroom::Mushroom(World *world, const sf::Vector2f &position) : WorldObject("Mushroom", world, position, true) {
     loadResources();
     sprite = sf::Sprite(texture);
     sprite.setScale(0.5f, 0.5f);

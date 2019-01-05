@@ -36,7 +36,7 @@ public:
     void performDeletions();
     bool spawn(std::string type);
 
-    bool reproduce(Agent& a);
+    void reproduce(Agent &a);
 
 
     const sf::RenderWindow *getWindow() const;

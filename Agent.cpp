@@ -24,7 +24,7 @@ void Agent::loadResources() {
     }
 }
 
-Agent::Agent(World *world, sf::Vector2f position, float orientation) : WorldObject("Agent", world, position),
+Agent::Agent(World *world, sf::Vector2f position, float orientation) : WorldObject("Agent", world, position, true),
 orientation(orientation) {
     loadResources();
 
@@ -136,7 +136,7 @@ orientation(orientation) {
 
 }
 
-Agent::Agent(const Agent& other) : WorldObject("Agent", other.world, other.position), orientation(other.orientation){
+Agent::Agent(const Agent& other) : WorldObject("Agent", other.world, other.position, true), orientation(other.orientation){
     loadResources();
     energy = other.energy;
 
