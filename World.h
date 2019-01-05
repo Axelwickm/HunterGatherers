@@ -28,10 +28,11 @@ public:
     void draw(float deltaTime);
 
     bool addObject(std::shared_ptr<WorldObject> worldObject);
-    bool removeObject(std::shared_ptr<WorldObject> worldObject);
+    bool removeObject(std::shared_ptr<WorldObject> worldObject, bool performImmediately = true);
+    void performDeletions();
     bool spawn(std::string type);
 
-    bool reproduce(Agent* a);
+    bool reproduce(Agent& a);
 
 
     const sf::RenderWindow *getWindow() const;
@@ -43,6 +44,8 @@ public:
 private:
     sf::RenderWindow* window;
     const sf::Vector2f dimensions;
+
+    std::list<std::shared_ptr<WorldObject>> deletionList;
 
     Populator populator;
     std::set<std::shared_ptr<Agent>> agents;

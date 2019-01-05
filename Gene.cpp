@@ -47,7 +47,7 @@ void Gene::setMutationWeight(float mutationWeight) {
 
 FloatGene::FloatGene(float minVal, float maxVal): Gene(typeid(FloatGene)), minVal(minVal), maxVal(maxVal) {}
 
-std::shared_ptr<Gene> FloatGene::Clone() const {
+std::shared_ptr<Gene> FloatGene::clone() const {
     return std::make_shared<FloatGene>(*this);;
 }
 
@@ -109,7 +109,7 @@ void FloatGene::setMaxVal(float maxVal) {
 
 IntegerGene::IntegerGene(int minVal, int maxVal) : Gene(typeid(IntegerGene)), minVal(minVal), maxVal(maxVal) {}
 
-std::shared_ptr<Gene> IntegerGene::Clone() const {
+std::shared_ptr<Gene> IntegerGene::clone() const {
     return std::make_shared<IntegerGene>(*this);;
 }
 
@@ -174,12 +174,12 @@ void IntegerGene::setMaxVal(int maxVal) {
 
 MapGenes::MapGenes() : Gene(typeid(MapGenes)) {}
 
-std::shared_ptr<Gene> MapGenes::Clone() const {
+std::shared_ptr<Gene> MapGenes::clone() const {
     std::shared_ptr<MapGenes> copy = std::make_shared<MapGenes>(*this);
     copy->genes = std::map<std::string, std::shared_ptr<Gene>>();
 
     for (auto& gene : genes){
-        auto geneCopy = gene.second->Clone();
+        auto geneCopy = gene.second->clone();
         geneCopy->setOwner(copy.get());
         copy->genes.emplace(gene.first, std::move(geneCopy));
     }
@@ -239,12 +239,12 @@ ListGenes::ListGenes(std::shared_ptr<Gene> templateGene, std::string countGeneNa
     ListGenes::templateGene->setOwner(this);
 }
 
-std::shared_ptr<Gene> ListGenes::Clone() const {
+std::shared_ptr<Gene> ListGenes::clone() const {
     std::shared_ptr<ListGenes> copy = std::make_shared<ListGenes>(*this);
     copy->genes = std::list<std::shared_ptr<Gene>>();
 
     for (auto& gene : genes){
-        auto geneCopy = gene->Clone();
+        auto geneCopy = gene->clone();
         geneCopy->setOwner(copy.get());
         copy->genes.push_back(geneCopy);
     }
@@ -259,7 +259,7 @@ void ListGenes::generate() {
     updateCount();
 
     for (int i = 0; i < count; i++){
-        auto n = templateGene->Clone();
+        auto n = templateGene->clone();
         n->setOwner(this);
         genes.push_back(n);
     }
@@ -298,7 +298,7 @@ void ListGenes::mutate(float factor) {
                 i++;
                 itr = std::next(itr);
             }
-            genes.insert(itr, templateGene->Clone());
+            genes.insert(itr, templateGene->clone());
         }
     }
     int i = 0;
@@ -374,7 +374,7 @@ LambdaGene<T>::LambdaGene(std::function<T(LambdaGene<T>&, float)> lambda) : Gene
 }
 
 template <class T>
-std::shared_ptr<Gene> LambdaGene<T>::Clone() const {
+std::shared_ptr<Gene> LambdaGene<T>::clone() const {
     return std::make_shared<LambdaGene>(*this);
 }
 

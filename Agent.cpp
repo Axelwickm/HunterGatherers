@@ -45,7 +45,7 @@ orientation(orientation) {
     std::fill(std::begin(receptors), std::end(receptors), 0.f);
 
     lineOfVision[0] = sf::Vertex(sf::Vector2f(0,0));
-    lineOfVision[1] = sf::Vector2f(0,0);
+    lineOfVision[1] = sf::Vertex(sf::Vector2f(0,0));
     lineOfVision[0].color = sf::Color::Cyan;
     lineOfVision[1].color = sf::Color::Cyan;
 
@@ -122,18 +122,51 @@ orientation(orientation) {
     auto perceptrons = std::make_shared<ListGenes>(perceptron, "PerceptronCount");
     layer->addGenes("Perceptrons", perceptrons);
 
+    genes = std::make_shared<MapGenes>();
     auto layerCount = std::make_shared<IntegerGene>(2, 5);
-    genes.addGenes("LayerCount", layerCount);
+    genes->addGenes("LayerCount", layerCount);
     auto inputCountG = std::make_shared<IntegerGene>(inputCount, inputCount);
-    genes.addGenes("InputCount", inputCountG);
+    genes->addGenes("InputCount", inputCountG);
     auto outputCountG = std::make_shared<IntegerGene>(outputCount, outputCount);
-    genes.addGenes("OutputCount", outputCountG);
+    genes->addGenes("OutputCount", outputCountG);
     auto layers = std::make_shared<ListGenes>(layer, "LayerCount");
-    genes.addGenes("Layers", layers);
+    genes->addGenes("Layers", layers);
 
-    genes.generate();
+    genes->generate();
 
 }
+
+Agent::Agent(const Agent& other) : WorldObject("Agent", other.world, other.position), orientation(other.orientation){
+    loadResources();
+    energy = other.energy;
+
+    frameIndex = 0;
+    frame = sf::IntRect(0, 0, 32, 32);
+    sprite = sf::Sprite(walkingTexture, frame);
+    setBounds(other.getBounds());
+
+    genes = std::dynamic_pointer_cast<MapGenes>(other.genes->clone());
+
+    percept.resize(other.percept.size());
+    actions.resize(other.actions.size());
+
+    receptors.resize(acuity);
+    std::fill(std::begin(receptors), std::end(receptors), 0.f);
+
+
+    // Vision variables,
+    visibility = other.visibility;
+    visualReactivity = other.visualReactivity;
+    FOV = other.FOV;
+
+    lineOfVision[0] = sf::Vertex(sf::Vector2f(0,0));
+    lineOfVision[1] = sf::Vertex(sf::Vector2f(0,0));
+    lineOfVision[0].color = sf::Color::Cyan;
+    lineOfVision[1].color = sf::Color::Cyan;
+    sf::Vertex orientationLine[2];
+
+}
+
 
 void Agent::update(float deltaTime) {
     WorldObject::update(deltaTime);
@@ -149,6 +182,11 @@ void Agent::update(float deltaTime) {
 
     float turn = ((float) actions.at(1) - actions.at(2))*40.0f;
     orientation += turn*deltaTime;
+
+    if (0.9 < actions.at(3) && 80 < energy){
+        printf("Reproduce\n");
+        world->reproduce(*this);
+    }
 
     if (quadtree != nullptr){
         auto near = quadtree->searchNear(getPosition(), 64);
@@ -171,7 +209,7 @@ void Agent::update(float deltaTime) {
                         }
                     }
                     else if (type == typeid(Mushroom)){
-                        world->removeObject(object->getSharedPtr());
+                        world->removeObject(object->getSharedPtr(), false);
                         energy += 20;
                     }
                 }
@@ -182,7 +220,7 @@ void Agent::update(float deltaTime) {
     energy = fminf(energy, 100);
     energy -= deltaTime*2.f;
     if (energy <= 0){
-        world->removeObject(getSharedPtr());
+        world->removeObject(getSharedPtr(), false);
     }
 }
 
@@ -264,8 +302,8 @@ void Agent::updatePercept(float deltaTime) {
     }
 }
 
-const MapGenes &Agent::getGenes() const {
-    return genes;
+MapGenes* Agent::getGenes() const {
+    return genes.get();
 }
 
 float Agent::getOrientation() const {

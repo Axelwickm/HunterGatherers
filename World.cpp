@@ -41,9 +41,11 @@ populator(this), quadtree(Quadtree<float>(sf::Vector2<float>(0, 0), dimensions))
 }
 
 void World::update(float deltaTime) {
-    populator.populate(deltaTime);
-
     openCL_wrapper->clFinishAll(); // More optimized to have this here?
+
+    performDeletions();
+
+    populator.populate(deltaTime);
 
     // World updates
     for (auto &object : objects) {
@@ -53,8 +55,9 @@ void World::update(float deltaTime) {
     // AI updates
     for (auto& agent : agents){
         agent->updatePercept(deltaTime);
-        openCL_wrapper->think(agent.get(), agent->getPercept());
+        openCL_wrapper->think(agent, agent->getPercept());
     }
+
 
 }
 
@@ -76,14 +79,22 @@ bool World::addObject(std::shared_ptr<WorldObject> worldObject) {
     objects.insert(worldObject);
 
     if (typeid(*worldObject.get()) == typeid(Agent)){
+        agents.insert(std::dynamic_pointer_cast<Agent>(worldObject));
         openCL_wrapper->addAgent((Agent*) worldObject.get());
     }
+
+    populator.changeCount(worldObject->type, 1);
 
     return true;
 
 }
 
-bool World::removeObject(std::shared_ptr<WorldObject> worldObject) {
+bool World::removeObject(std::shared_ptr<WorldObject> worldObject, bool performImmediately) {
+    if (!performImmediately){
+        deletionList.push_back(worldObject);
+        return true;
+    }
+
     if (quadtree.remove(worldObject.get())){
         if (typeid(*worldObject.get()) == typeid(Agent)){
             openCL_wrapper->removeAgent((Agent*) worldObject.get());
@@ -95,6 +106,14 @@ bool World::removeObject(std::shared_ptr<WorldObject> worldObject) {
         return true;
     }
     return false;
+}
+
+void World::performDeletions() {
+    for (auto& worldObject : deletionList){
+        removeObject(worldObject, true);
+    }
+
+    deletionList.clear();
 }
 
 const sf::RenderWindow *World::getWindow() const {
@@ -118,7 +137,6 @@ bool World::spawn(std::string type) {
         sf::Vector2<float> position(rand() % ((int) dimensions.x - 50) + 25, rand() % ((int) dimensions.y - 50) + 25);
         auto agent = std::make_shared<Agent>(this, position, (float) rand()/RAND_MAX*360.f);
         agent->setVelocity(sf::Vector2f(0, 0));
-        agents.insert(agent);
         return addObject(agent);
     }
     else if (type == "Mushroom"){
@@ -135,7 +153,12 @@ bool World::spawn(std::string type) {
     return false;
 }
 
-bool World::reproduce(Agent *a) {
-    return false;
+bool World::reproduce(Agent& a) {
+    auto agent = std::make_shared<Agent>(a);
+    agent->getGenes()->mutate(0.1);
+    agent->setEnergy(a.getEnergy()/2);
+    a.setEnergy(a.getEnergy()/2);
+    return addObject(agent);
 }
+
 

@@ -174,7 +174,7 @@ cl_program OpenCL_Wrapper::createAndCompileProgram(const std::string& source) {
 
 void OpenCL_Wrapper::addAgent(Agent* agent) {
 
-    const MapGenes& genes = agent->getGenes();
+    const MapGenes& genes = *agent->getGenes();
 
     AgentEntry agentEntry;
     agentEntry.agent = agent;
@@ -267,8 +267,8 @@ void OpenCL_Wrapper::removeAgent(Agent* agent) {
     agentRegister.erase(agent);
 }
 
-void OpenCL_Wrapper::think(Agent* agent, const std::vector<float>& percept) {
-    AgentEntry& agentEntry  = agentRegister.at(agent);
+void OpenCL_Wrapper::think(std::shared_ptr<Agent> agent, const std::vector<float> &percept) {
+    AgentEntry& agentEntry  = agentRegister.at(agent.get());
     cl_event lastEvent;
     cl_event newEvent;
 
@@ -348,8 +348,8 @@ void OpenCL_Wrapper::think(Agent* agent, const std::vector<float>& percept) {
     clReleaseEvent(lastEvent);
     lastEvent = newEvent;
 
-    auto callbackData = new std::pair<Agent*, std::vector<float>*>;
-    *callbackData = std::make_pair(agentEntry.agent, output);
+    auto callbackData = new std::pair<std::shared_ptr<Agent>, std::vector<float>*>;
+    *callbackData = std::make_pair(agent, output);
 
     clSetEventCallback(lastEvent, CL_COMPLETE, responseCallback, (void*) callbackData);
 }
@@ -359,7 +359,7 @@ void OpenCL_Wrapper::clFinishAll() {
 }
 
 void OpenCL_Wrapper::responseCallback(cl_event e, cl_int status, void *data) {
-    auto p = static_cast<std::pair<Agent*, std::vector<float>*>* > (data);
+    auto p = static_cast<std::pair<std::shared_ptr<Agent>, std::vector<float>*>* > (data);
     p->first->setActions(*p->second);
     delete p->second;
     delete p;

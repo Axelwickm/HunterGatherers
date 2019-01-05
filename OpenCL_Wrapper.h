@@ -45,7 +45,7 @@ public:
 
     void addAgent(Agent* agent);
     void removeAgent(Agent* agent);
-    void think(Agent* agent, const std::vector<float>& percept);
+    void think(std::shared_ptr<Agent> agent, const std::vector<float> &percept);
 
     void clFinishAll();
 

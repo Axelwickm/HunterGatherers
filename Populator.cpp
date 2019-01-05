@@ -16,8 +16,8 @@ void Populator::populate(float deltaT) {
             auto d = std::poisson_distribution(entry.second.rate*deltaT);
             int newCount = d(randomEngine);
             for (unsigned i = 0; i < newCount; i++){
-                entry.second.count += world->spawn(entry.first);
-                if (entry.second.count == entry.second.targetCount){
+                world->spawn(entry.first);
+                if (entry.second.targetCount <= entry.second.count ){
                     break;
                 }
             }

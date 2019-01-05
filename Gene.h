@@ -20,7 +20,7 @@ public:
     explicit Gene(const std::type_info& type);
     const std::type_info& type;
 
-    virtual std::shared_ptr<Gene> Clone() const = 0;
+    virtual std::shared_ptr<Gene> clone() const = 0;
     virtual void generate() = 0;
     virtual void mutate(float factor) = 0;
     virtual void evaluate(float mutationFactor, unsigned version) = 0;
@@ -72,7 +72,7 @@ class FloatGene : public Gene {
 public:
     FloatGene(float minVal, float maxVal);
 
-    std::shared_ptr<Gene> Clone() const override;
+    std::shared_ptr<Gene> clone() const override;
     void generate() override;
     void mutate(float factor) override;
     void evaluate(float mutationFactor, unsigned version) override;
@@ -96,7 +96,7 @@ class IntegerGene : public Gene {
 public:
     IntegerGene(int minVal, int maxVal);
 
-    std::shared_ptr<Gene> Clone() const override;
+    std::shared_ptr<Gene> clone() const override;
     void generate() override;
     void mutate(float factor) override;
     void evaluate(float mutationFactor, unsigned version) override;
@@ -120,7 +120,7 @@ class LambdaGene : public Gene {
 public:
     explicit LambdaGene(std::function<T(LambdaGene<T>&, float)> lambda);
 
-    std::shared_ptr<Gene> Clone() const override;
+    std::shared_ptr<Gene> clone() const override;
     void generate() override;
     void evaluate(float mutationFactor, unsigned version) override;
 
@@ -143,8 +143,9 @@ template class LambdaGene<void*>;
 class MapGenes : public Gene {
 public:
     MapGenes();
+    ~MapGenes() = default;
 
-    std::shared_ptr<Gene> Clone() const override;
+    std::shared_ptr<Gene> clone() const override;
     void generate() override;
     void mutate(float factor) override;
     void evaluate(float mutationFactor, unsigned version) override;
@@ -175,7 +176,7 @@ public:
     ListGenes(std::shared_ptr<Gene> templateGene, std::size_t count);
     ListGenes(std::shared_ptr<Gene> templateGene, std::string countGeneName);
 
-    std::shared_ptr<Gene> Clone() const override;
+    std::shared_ptr<Gene> clone() const override;
     void generate() override;
     void mutate(float factor) override;
     void evaluate(float mutationFactor, unsigned version) override;

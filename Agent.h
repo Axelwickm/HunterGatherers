@@ -14,8 +14,10 @@
 class Agent : public WorldObject {
 public:
     Agent(World *world, sf::Vector2f position, float orientation);
+    Agent(const Agent& other);
+
     static void loadResources();
-    const MapGenes &getGenes() const;
+    MapGenes* getGenes() const;
 
     void update(float deltaTime) override;
     void draw(sf::RenderWindow *window, float deltaTime) override;
@@ -46,19 +48,19 @@ private:
     float frameTimer;
 
     // AI
-    MapGenes genes;
+    std::shared_ptr<MapGenes> genes;
     std::vector<float> percept;
     std::vector<float> actions;
+    std::vector<float> receptors;
 
-    // Vision variables
+
+    // Vision variables,
     float visibility;
     float visualReactivity;
     float FOV;
     const unsigned static acuity = 4;
     sf::Vertex lineOfVision[acuity*2];
     sf::Vertex orientationLine[2];
-
-    std::vector<float> receptors;
 
     static bool loaded;
     static sf::Texture walkingTexture;
