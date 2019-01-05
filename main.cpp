@@ -1,11 +1,8 @@
 #include <iostream>
 #include <memory>
-#include <string>
 
 #include "Camera.h"
-#include "Config.h"
 #include "World.h"
-#include "OpenCL_Wrapper.h"
 
 int main(int argc, char *argv[]) {
     // Figure out which OpenCL accelerator device to use
@@ -39,6 +36,7 @@ int main(int argc, char *argv[]) {
     // Game loop variables
 
     sf::Clock deltaClock;
+    float timeFactor = 1;
     bool paused = false;
 
     bool dragging = false;
@@ -60,6 +58,24 @@ int main(int argc, char *argv[]) {
                 }
                 else if (code == Controls::close){
                     window.close();
+                }
+                else if (code == Controls::up){
+                    camera.move(sf::Vector2f(0, Controls::upAmount));
+                }
+                else if (code == Controls::down){
+                    camera.move(sf::Vector2f(0, Controls::downAmount));
+                }
+                else if (code == Controls::left){
+                    camera.move(sf::Vector2f(Controls::leftAmount, 0));
+                }
+                else if (code == Controls::right){
+                    camera.move(sf::Vector2f(Controls::rightAmount, 0));
+                }
+                else if (code == Controls::slowDown){
+                    timeFactor = fmaxf(Controls::timeFactorDelta, timeFactor-Controls::timeFactorDelta);
+                }
+                else if (code == Controls::speedUp){
+                    timeFactor = fminf(Controls::timeFactorMax, timeFactor+Controls::timeFactorDelta);
                 }
             }
 
@@ -117,13 +133,13 @@ int main(int argc, char *argv[]) {
 
         // Updating world
         if (!paused){
-            world.update(dt.asSeconds());
+            world.update(dt.asSeconds()*timeFactor);
         }
 
         // Rendering
 
         window.clear(sf::Color::Black);
-        world.draw(paused ? 0 : dt.asSeconds());
+        world.draw(paused ? 0 : dt.asSeconds()*timeFactor);
         window.display();
     }
 

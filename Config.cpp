@@ -41,5 +41,19 @@ namespace Controls {
     sf::Keyboard::Key pause = sf::Keyboard::Space;
     sf::Keyboard::Key close = sf::Keyboard::Escape;
 
+    sf::Keyboard::Key up = sf::Keyboard::Up;
+    float upAmount = -15;
+    sf::Keyboard::Key down = sf::Keyboard::Down;
+    float downAmount = 15;
+    sf::Keyboard::Key left = sf::Keyboard::Left;
+    float leftAmount = -15;
+    sf::Keyboard::Key right = sf::Keyboard::Right;
+    float rightAmount = 15;
+
+    sf::Keyboard::Key slowDown = sf::Keyboard::Comma;
+    sf::Keyboard::Key speedUp = sf::Keyboard::Period;
+
+    float timeFactorDelta = 0.1;
+    float timeFactorMax = 20;
     float scrollFactor = 0.05;
 };

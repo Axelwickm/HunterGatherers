@@ -24,6 +24,20 @@ namespace RenderSettings {
 namespace Controls {
     extern sf::Keyboard::Key pause;
     extern sf::Keyboard::Key close;
+
+    extern sf::Keyboard::Key up;
+    extern float upAmount;
+    extern sf::Keyboard::Key down;
+    extern float downAmount;
+    extern sf::Keyboard::Key left;
+    extern float leftAmount;
+    extern sf::Keyboard::Key right;
+    extern float rightAmount;
+
+    extern sf::Keyboard::Key slowDown;
+    extern sf::Keyboard::Key speedUp;
+    extern float timeFactorDelta;
+    extern float timeFactorMax;
     extern float scrollFactor;
 };
 
