@@ -16,6 +16,7 @@ public:
     explicit Populator(World* world);
 
     struct Entry {
+        std::string type;
         unsigned count;
         unsigned targetCount;
         float rate;
@@ -23,7 +24,8 @@ public:
 
     void populate(float deltaT);
     void changeCount(std::string type, int deltaCount);
-    void addEntry(std::string type, Entry entry);
+    void addEntry(Entry entry);
+    void addEntries(std::vector<Populator::Entry> entries);
 
 private:
 

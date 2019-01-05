@@ -8,6 +8,7 @@
 #include "OpenCL_Wrapper.h"
 
 int main(int argc, char *argv[]) {
+    // Figure out which OpenCL accelerator device to use
     std::string deviceName;
 
     for (int i = 0; i < argc; i++){
@@ -28,14 +29,14 @@ int main(int argc, char *argv[]) {
         }
     }
 
+    // Create main objects
+    sf::RenderWindow window(sf::VideoMode(GeneralSettings::windowSize.x, GeneralSettings::windowSize.y),
+            "Hunter Gatherers");
+    Camera camera(&window, sf::Vector2f(GeneralSettings::windowSize.x*10, GeneralSettings::windowSize.y*10));
     OpenCL_Wrapper cl(deviceName);
+    World world(&window, &cl, GeneralSettings::options);
 
-    const sf::Vector2f worldDimensions(2000, 2000);
-
-
-    sf::RenderWindow window(sf::VideoMode(1920, 1080), "Hunter Gatherers");
-    Camera camera(&window, sf::Vector2f(1920*10, 1080*10));
-    World world(&window, worldDimensions, &cl);
+    // Game loop variables
 
     sf::Clock deltaClock;
     bool paused = false;
@@ -119,11 +120,10 @@ int main(int argc, char *argv[]) {
             world.update(dt.asSeconds());
         }
 
-        // Drawing
+        // Rendering
 
         window.clear(sf::Color::Black);
         world.draw(paused ? 0 : dt.asSeconds());
-
         window.display();
     }
 

@@ -8,42 +8,22 @@
 #include "Populator.h"
 #include "Mushroom.h"
 
-World::World(sf::RenderWindow *window, sf::Vector2f dimensions, OpenCL_Wrapper *openCL_wrapper):
-window(window), dimensions(dimensions), openCL_wrapper(openCL_wrapper),
+World::World(sf::RenderWindow *window, OpenCL_Wrapper *openCL_wrapper, const WorldOptions& options):
+window(window), dimensions(options.dimensions), openCL_wrapper(openCL_wrapper),
 populator(this), quadtree(Quadtree<float>(sf::Vector2<float>(0, 0), dimensions)) {
-    quadtree.setLimit(30);
+    quadtree.setLimit(options.quadtreeLimit);
 
     long long int now = std::chrono::time_point_cast<std::chrono::microseconds>(
             std::chrono::system_clock::now()).time_since_epoch().count();
 
     srand(now);
 
-    populator.addEntry("Agent", {
-            .count = 0,
-            .targetCount = 25,
-            .rate = 3
-    });
-
-    populator.addEntry("Bouncing ball", {
-            .count = 0,
-            .targetCount = 0,
-            .rate = 0.75
-    });
-
-    populator.addEntry("Mushroom", {
-            .count = 0,
-            .targetCount = 50,
-            .rate = 3
-    });
-
-
+    populator.addEntries(options.populatorEntries);
 
 }
 
 void World::update(float deltaTime) {
     openCL_wrapper->clFinishAll(); // More optimized to have this here?
-
-    performDeletions();
 
     populator.populate(deltaTime);
 
@@ -58,6 +38,7 @@ void World::update(float deltaTime) {
         openCL_wrapper->think(agent, agent->getPercept());
     }
 
+    performDeletions();
 
 }
 

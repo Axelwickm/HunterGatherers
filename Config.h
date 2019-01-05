@@ -7,6 +7,13 @@
 
 #include <SFML/Graphics.hpp>
 
+struct WorldOptions;
+
+namespace GeneralSettings {
+    extern sf::Vector2u windowSize;
+    extern WorldOptions options;
+}
+
 namespace RenderSettings {
     extern bool showWorldObjectBounds;
     extern bool showQuadtree;
@@ -14,7 +21,7 @@ namespace RenderSettings {
     extern bool showVision;
 };
 
-namespace Controls{
+namespace Controls {
     extern sf::Keyboard::Key pause;
     extern sf::Keyboard::Key close;
     extern float scrollFactor;

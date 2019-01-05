@@ -25,8 +25,14 @@ void Populator::populate(float deltaT) {
     }
 }
 
-void Populator::addEntry(std::string type, Entry entry) {
-    frequencies.insert(std::make_pair(type, entry));
+void Populator::addEntry(Entry entry) {
+    frequencies.insert(std::make_pair(entry.type, entry));
+}
+
+void Populator::addEntries(std::vector<Populator::Entry> entries) {
+    for (auto&e : entries){
+        addEntry(e);
+    }
 }
 
 void Populator::changeCount(std::string type, int deltaCount) {

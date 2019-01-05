@@ -18,9 +18,15 @@
 #include "Populator.h"
 
 
+struct WorldOptions {
+    sf::Vector2f dimensions;
+    float quadtreeLimit;
+    std::vector<Populator::Entry> populatorEntries;
+};
+
 class World {
 public:
-    World(sf::RenderWindow* window, sf::Vector2f dimensions, OpenCL_Wrapper *openCL_wrapper);
+    World(sf::RenderWindow* window, OpenCL_Wrapper *openCL_wrapper, const WorldOptions& options);
 
     OpenCL_Wrapper *getOpenCL_wrapper() const;
 
