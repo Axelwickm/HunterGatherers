@@ -3,23 +3,16 @@
 //
 
 #include "World.h"
-#include "Agent.h"
 #include "BouncingBall.h"
-#include "Populator.h"
 #include "Mushroom.h"
+
+std::mt19937 World::randomEngine = std::mt19937(std::random_device()());
 
 World::World(sf::RenderWindow *window, OpenCL_Wrapper *openCL_wrapper, const WorldOptions& options):
 window(window), dimensions(options.dimensions), openCL_wrapper(openCL_wrapper),
 populator(this), quadtree(Quadtree<float>(sf::Vector2<float>(0, 0), dimensions)) {
     quadtree.setLimit(options.quadtreeLimit);
-
-    long long int now = std::chrono::time_point_cast<std::chrono::microseconds>(
-            std::chrono::system_clock::now()).time_since_epoch().count();
-
-    srand(now);
-
     populator.addEntries(options.populatorEntries);
-
 }
 
 void World::update(float deltaTime) {
@@ -114,21 +107,27 @@ OpenCL_Wrapper *World::getOpenCL_wrapper() const {
 }
 
 bool World::spawn(std::string type) {
+    std::uniform_real_distribution<float> spawnX(25, dimensions.x-50);
+    std::uniform_real_distribution<float> spawnY(25, dimensions.y-50);
+
+
     if (type == "Agent"){
-        sf::Vector2<float> position(rand() % ((int) dimensions.x - 50) + 25, rand() % ((int) dimensions.y - 50) + 25);
-        auto agent = std::make_shared<Agent>(this, position, (float) rand()/RAND_MAX*360.f);
+        sf::Vector2<float> position(spawnX(randomEngine), spawnY(randomEngine));
+        float orientation = std::uniform_real_distribution<float>(0, 360)(randomEngine);
+        auto agent = std::make_shared<Agent>(this, position, orientation);
         agent->setVelocity(sf::Vector2f(0, 0));
         return addObject(agent);
     }
     else if (type == "Mushroom"){
-        sf::Vector2<float> position(rand() % ((int) dimensions.x - 50) + 25, rand() % ((int) dimensions.y - 50) + 25);
+        sf::Vector2<float> position(spawnX(randomEngine), spawnY(randomEngine));
         std::shared_ptr<Mushroom> w(new Mushroom(this, position));
         return addObject(w);
     }
-    else if (type == "Bouncing ball"){
-        sf::Vector2<float> position(rand() % ((int) dimensions.x - 50) + 25, rand() % ((int) dimensions.y - 50) + 25);
+    else if (type == "BouncingBall"){
+        sf::Vector2<float> position(spawnX(randomEngine), spawnY(randomEngine));
         std::shared_ptr<BouncingBall> w(new BouncingBall(this, position, 10.f));
-        w->setVelocity({(float) rand() / RAND_MAX * 50.f - 25.f, (float) rand() / RAND_MAX * 50.f - 25.f});
+        std::uniform_real_distribution<float> velocity(-30, 30);
+        w->setVelocity({velocity(randomEngine), velocity(randomEngine)});
         return addObject(w);
     }
     return false;

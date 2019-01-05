@@ -2,12 +2,11 @@
 // Created by Axel on 2018-12-03.
 //
 
-#include <time.h>
+
 #include "Gene.h"
 
 
-std::mt19937 Gene::randomEngine = std::mt19937(static_cast<unsigned int>(time(nullptr)));
-
+std::mt19937 Gene::randomEngine = std::mt19937(std::random_device()());
 
 Gene::Gene(const std::type_info& type): type(type), state(UNEVALUATED), evaluationCount(0), mutationWeight(1){}
 

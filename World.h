@@ -4,8 +4,6 @@
 
 #include <memory>
 #include <set>
-#include <random>
-#include <chrono>
 
 #ifndef HUNTERGATHERERS_WORLD_H
 #define HUNTERGATHERERS_WORLD_H
@@ -42,9 +40,7 @@ public:
 
 
     const sf::RenderWindow *getWindow() const;
-
     const sf::Vector2f &getDimensions() const;
-
     const Quadtree<float> &getQuadtree() const;
 
 private:
@@ -59,7 +55,7 @@ private:
 
     Quadtree<float> quadtree;
     OpenCL_Wrapper *openCL_wrapper;
-
+    static std::mt19937 randomEngine;
 };
 
 

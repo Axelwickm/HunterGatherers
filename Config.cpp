@@ -21,9 +21,9 @@ namespace GeneralSettings {
             .targetCount = 50,
             .rate = 3
         },{
-            .type = "Bouncing ball",
+            .type = "BouncingBall",
             .count = 0,
-            .targetCount = 0,
+            .targetCount = 5,
             .rate = 0.75
         }}
     };

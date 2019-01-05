@@ -4,9 +4,8 @@
 
 #include <ctime>
 #include "World.h"
-#include "Populator.h"
 
-std::mt19937 Populator::randomEngine = std::mt19937(static_cast<unsigned int>(time(nullptr)));
+std::mt19937 Populator::randomEngine = std::mt19937(std::random_device()());
 
 Populator::Populator(World* world) : world(world) {}
 
