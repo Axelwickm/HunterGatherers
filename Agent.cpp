@@ -250,6 +250,7 @@ void Agent::draw(sf::RenderWindow *window, float deltaTime) {
 }
 
 void Agent::updatePercept(float deltaTime) {
+    auto perceptIterator = percept.begin();
 
     // Calculate perceptors
 
@@ -257,7 +258,7 @@ void Agent::updatePercept(float deltaTime) {
     sf::Vector2f dV = visionEnd - getPosition();
 
     for (size_t i = 0; i < receptors.size(); i++){
-        float angle = (orientation - FOV/2.f + FOV*((float) i/receptors.size()))*PI/180.f;
+        float angle = (orientation - FOV/2.f + FOV*((float) i/(receptors.size()-1)))*PI/180.f;
         sf::Vector2f lineEnd = {
                 dV.x * cosf(angle) - dV.y * sinf(angle),
                 dV.x * sinf(angle) - dV.y * cosf(angle)
@@ -268,8 +269,12 @@ void Agent::updatePercept(float deltaTime) {
 
         for (auto &n : nl){
             if (n.get() != this){
-                sf::Vector2f a = n->getPosition();
-                sf::Vector2f b = n->getPosition() + sf::Vector2f(10, 10);
+                sf::Vector2f a = sf::Vector2f(n->getPosition().x + n->getBounds().left,
+                                              n->getPosition().y + n->getBounds().top);
+
+                sf::Vector2f b = sf::Vector2f(n->getBounds().width - n->getBounds().left,
+                                              n->getBounds().height - n->getBounds().top);
+
                 if (lineIntersectWithBox(getPosition(), getPosition()+lineEnd, a, b)){
                     sf::Vector2f dPos = n->getPosition() - getPosition();
                     float change = deltaTime*visualReactivity*(1.f-(dPos.x*dPos.x+dPos.y*dPos.y)/(visibility*visibility));
@@ -279,13 +284,14 @@ void Agent::updatePercept(float deltaTime) {
         }
 
         receptors[i] = (1-deltaTime*visualReactivity)*receptors[i] + 0;
-        percept.at(i) = receptors[i];
+        *perceptIterator = receptors[i];
+        perceptIterator++;
 
         if (RenderSettings::showVision) {
             lineOfVision[i*2].position = getPosition();
             lineOfVision[i*2+1].position = getPosition() + lineEnd;
-            lineOfVision[i*2].color =   sf::Color(245*receptors[i]+10, 245*receptors[i]+10, 245*receptors[i]+10, 255);
-            lineOfVision[i*2+1].color = sf::Color(245*receptors[i]+10, 245*receptors[i]+10, 245*receptors[i]+10, 255);
+            lineOfVision[i*2].color = sf::Color(155*receptors[i]+100, 10, 10, 255);
+            lineOfVision[i*2+1].color = lineOfVision[i*2].color;
         }
 
     }
@@ -298,8 +304,12 @@ void Agent::updatePercept(float deltaTime) {
 
         orientationLine[0].position = getPosition();
         orientationLine[1].position = getPosition() + lineEnd;
-        orientationLine[0].color =   sf::Color(120, 120, 200);
-        orientationLine[1].color =   sf::Color(120, 120, 120);
+        orientationLine[0].color = sf::Color(100, 100, 200);
+        orientationLine[1].color = orientationLine[0].color;
+    }
+
+    if (perceptIterator != percept.end()){
+        throw std::runtime_error("All percept values not updated.\n");
     }
 }
 
