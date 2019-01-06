@@ -7,13 +7,23 @@
 #include "World.h"
 
 WorldObject::WorldObject(std::string type, World *world, sf::Vector2f position, bool collider)
-: type(type), collider(collider) {
+: type(std::move(type)), collider(collider) {
     this->position = position;
     this->quadtree = nullptr;
     this->world = world;
     velocity = sf::Vector2f(0, 0);
     accelerationFactor = 1.f;
     bounds = sf::IntRect(0, 0, 0, 0);
+}
+
+WorldObject::WorldObject(const WorldObject& other)
+: type(other.type), collider(other.collider) {
+    this->position = other.position;
+    this->quadtree = other.quadtree;
+    this->world = other.world;
+    velocity = other.velocity;
+    accelerationFactor = other.accelerationFactor;
+    bounds = other.bounds;
 }
 
 std::shared_ptr<WorldObject> WorldObject::getSharedPtr() {

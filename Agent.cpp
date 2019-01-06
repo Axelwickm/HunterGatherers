@@ -136,19 +136,17 @@ orientation(orientation) {
 
 }
 
-Agent::Agent(const Agent& other) : WorldObject("Agent", other.world, other.position, true), orientation(other.orientation){
+Agent::Agent(const Agent& other) : WorldObject(other), orientation(other.orientation){
     loadResources();
     energy = other.energy;
 
     frameIndex = 0;
     frame = sf::IntRect(0, 0, 32, 32);
     sprite = sf::Sprite(walkingTexture, frame);
+    sprite.setOrigin(other.sprite.getOrigin());
     setBounds(other.getBounds());
 
     genes = std::dynamic_pointer_cast<MapGenes>(other.genes->clone());
-
-    percept.resize(other.percept.size());
-    actions.resize(other.actions.size());
 
     receptors.resize(acuity);
     std::fill(std::begin(receptors), std::end(receptors), 0.f);
@@ -156,15 +154,18 @@ Agent::Agent(const Agent& other) : WorldObject("Agent", other.world, other.posit
 
     // Vision variables,
     visibility = other.visibility;
-    visualReactivity = other.visualReactivity;
     FOV = other.FOV;
+    visualReactivity = other.visualReactivity;
 
     lineOfVision[0] = sf::Vertex(sf::Vector2f(0,0));
     lineOfVision[1] = sf::Vertex(sf::Vector2f(0,0));
     lineOfVision[0].color = sf::Color::Cyan;
     lineOfVision[1].color = sf::Color::Cyan;
-    sf::Vertex orientationLine[2];
 
+    percept.resize(other.percept.size());
+    actions.resize(other.actions.size());
+
+    sf::Vertex orientationLine[2];
 }
 
 

@@ -17,6 +17,7 @@ class World;
 class WorldObject {
 public:
     explicit WorldObject(std::string type, World *world, sf::Vector2f position, bool collider);
+    WorldObject(const WorldObject& other);
     const std::string type;
     std::shared_ptr<WorldObject> getSharedPtr();
 

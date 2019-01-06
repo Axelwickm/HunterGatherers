@@ -139,6 +139,7 @@ bool World::spawn(std::string type) {
 
 void World::reproduce(Agent &a) {
     auto agent = std::make_shared<Agent>(a);
+    agent->setQuadtree(&quadtree, agent);
     agent->getGenes()->mutate(0.1);
     agent->setEnergy(a.getEnergy()/2);
     a.setEnergy(a.getEnergy()/2);
