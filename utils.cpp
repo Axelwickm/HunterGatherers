@@ -17,6 +17,12 @@ inline bool boxesIntersect(const sf::Rect<T> a, const sf::Rect<T> b){
              || b.top + b.width < a.top);
 }
 
+template <class T>
+inline bool pointInBox(const sf::Vector2<T> p, const sf::Rect<T> a){
+    return a.left < p.x && a.top < p.y
+           && p.x <= a.left + a.width && p.y <= a.top + a.height;
+}
+
 template<class T>
 inline bool clipT(const T &n, const T &d, sf::Vector2<T>* c){
     sf::Vector2<T> c2(*c);

@@ -103,6 +103,22 @@ const sf::IntRect &WorldObject::getBounds() const {
     return bounds;
 }
 
+const sf::IntRect WorldObject::getWorldBounds() const {
+    return sf::IntRect(getPosition().x + getBounds().left,
+                       getPosition().y + getBounds().top,
+                       getBounds().width - getBounds().left,
+                       getBounds().height - getBounds().top);
+}
+
+const sf::FloatRect WorldObject::getWorldBoundsf() const {
+    return sf::FloatRect(getPosition().x + getBounds().left,
+                       getPosition().y + getBounds().top,
+                       getBounds().width - getBounds().left,
+                       getBounds().height - getBounds().top);
+}
+
+
+
 void WorldObject::setBounds(const sf::IntRect &bounds) {
     WorldObject::bounds = bounds;
 }
@@ -110,4 +126,5 @@ void WorldObject::setBounds(const sf::IntRect &bounds) {
 const bool WorldObject::isCollider() const {
     return collider;
 }
+
 

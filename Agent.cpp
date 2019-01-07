@@ -28,7 +28,8 @@ Agent::Agent(World *world, sf::Vector2f position, float orientation) : WorldObje
 orientation(orientation) {
     loadResources();
 
-    energy = 100;
+    maxEnergy = 100;
+    energy = maxEnergy;
     setAccelerationFactor(0.00000001);
 
     frameIndex = 0;
@@ -138,6 +139,7 @@ orientation(orientation) {
 
 Agent::Agent(const Agent& other) : WorldObject(other), orientation(other.orientation){
     loadResources();
+    maxEnergy = other.maxEnergy;
     energy = other.energy;
 
     frameIndex = 0;
@@ -347,5 +349,13 @@ float Agent::getEnergy() const {
 
 void Agent::setEnergy(float energy) {
     Agent::energy = energy;
+}
+
+float Agent::getMaxEnergy() const {
+    return maxEnergy;
+}
+
+void Agent::setMaxEnergy(float maxEnergy) {
+    Agent::maxEnergy = maxEnergy;
 }
 

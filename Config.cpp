@@ -13,7 +13,7 @@ namespace GeneralSettings {
         populatorEntries:{{
             .type = "Agent",
             .count = 0,
-            .targetCount = 75,
+            .targetCount = 5,
             .rate = 3
         },{
             .type = "Mushroom",
@@ -30,10 +30,10 @@ namespace GeneralSettings {
 }
 
 namespace RenderSettings {
-    bool showWorldObjectBounds = false;
-    bool showQuadtree = false;
+    bool showWorldObjectBounds = true;
+    bool showQuadtree = true;
     bool showQuadtreeEntities = false;
-    bool showVision = false;
+    bool showVision = true;
 
 };
 

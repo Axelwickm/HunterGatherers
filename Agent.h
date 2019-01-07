@@ -33,13 +33,18 @@ public:
     float getOrientation() const;
     void setOrientation(float orientation);
 
+
     float getEnergy() const;
     void setEnergy(float energy);
+
+    float getMaxEnergy() const;
+    void setMaxEnergy(float maxEnergy);
 
 private:
     // General
     float orientation; // In degrees
-    float energy; // Between 0 and 100
+    float maxEnergy;
+    float energy; // Between 0 and maxEnergy
 
      // Rendering
     sf::Sprite sprite;

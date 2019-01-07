@@ -216,7 +216,7 @@ bool Quadtree<T>::contains(sf::Vector2<T> position) {
 
 template<class T>
 std::vector<std::shared_ptr<WorldObject> >
-Quadtree<T>::searchNear(sf::Vector2<T> position, float distance) { // sf::Vector2<T>(position.x - distance*0.5, position.y - distance*0.5),
+Quadtree<T>::searchNear(sf::Vector2<T> position, float distance) const { // sf::Vector2<T>(position.x - distance*0.5, position.y - distance*0.5),
     if (boxesIntersect(sf::FloatRect(topLeft.x, topLeft.y, dimensions.x, dimensions.y),
             sf::FloatRect(position.x-distance, position.y-distance, 2*distance, 2*distance))) {
         std::vector<std::shared_ptr<WorldObject> > n1 = nodes;

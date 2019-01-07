@@ -99,7 +99,7 @@ OpenCL_Wrapper::OpenCL_Wrapper(std::string deviceToUse) {
         throw std::runtime_error("Specified device not found.");
     }
 
-    // Print selected device name
+    // Print selectedText device name
     clGetDeviceInfo(device_id, CL_DEVICE_NAME, 0, nullptr, &valueSize);
     char* name = (char*) malloc(valueSize);
     clGetDeviceInfo(device_id, CL_DEVICE_NAME, valueSize, name, nullptr);

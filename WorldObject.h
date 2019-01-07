@@ -33,8 +33,8 @@ public:
 
     float getAccelerationFactor() const;
     void setAccelerationFactor(float accelerationFactor);
-
-
+    const sf::IntRect getWorldBounds() const;
+    const sf::FloatRect getWorldBoundsf() const;
     const sf::IntRect &getBounds() const;
     void setBounds(const sf::IntRect &bounds);
 
@@ -59,6 +59,7 @@ protected:
 private:
 
 };
+
 
 
 #endif //FAMILYISEVERYTHING_WORLDOBJECT_H

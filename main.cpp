@@ -3,6 +3,7 @@
 
 #include "Camera.h"
 #include "World.h"
+#include "GUI.h"
 
 int main(int argc, char *argv[]) {
     // Figure out which OpenCL accelerator device to use
@@ -29,6 +30,7 @@ int main(int argc, char *argv[]) {
     // Create main objects
     sf::RenderWindow window(sf::VideoMode(GeneralSettings::windowSize.x, GeneralSettings::windowSize.y),
             "Hunter Gatherers");
+    GUI gui(&window);
     Camera camera(&window, sf::Vector2f(GeneralSettings::windowSize.x*10, GeneralSettings::windowSize.y*10));
     OpenCL_Wrapper cl(deviceName);
     World world(&window, &cl, GeneralSettings::options);
@@ -59,19 +61,19 @@ int main(int argc, char *argv[]) {
                 else if (code == Controls::close){
                     window.close();
                 }
-                else if (code == Controls::up){
+                if (code == Controls::up){
                     camera.move(sf::Vector2f(0, Controls::upAmount));
                 }
-                else if (code == Controls::down){
+                if (code == Controls::down){
                     camera.move(sf::Vector2f(0, Controls::downAmount));
                 }
-                else if (code == Controls::left){
+                if (code == Controls::left){
                     camera.move(sf::Vector2f(Controls::leftAmount, 0));
                 }
-                else if (code == Controls::right){
+                if (code == Controls::right){
                     camera.move(sf::Vector2f(Controls::rightAmount, 0));
                 }
-                else if (code == Controls::slowDown){
+                if (code == Controls::slowDown){
                     timeFactor = fmaxf(Controls::timeFactorDelta, timeFactor-Controls::timeFactorDelta);
                 }
                 else if (code == Controls::speedUp){
@@ -90,7 +92,21 @@ int main(int argc, char *argv[]) {
             else if (event.type == sf::Event::MouseButtonReleased){
                 if (event.mouseButton.button == sf::Mouse::Button::Left && !dragging){
                     // Click!
-                    std::cout<<"Click!\n";
+                    auto mapPos = (sf::Vector2f) window.mapPixelToCoords(mousePosition);
+                    auto hits = world.getQuadtree().searchNear(mapPos, 0.1);
+                    bool selected = false;
+                    for (auto& hit : hits){
+                        if (pointInBox(mapPos, hit->getWorldBoundsf())) {
+                            if (hit != gui.getSelectedAgent() && typeid(*hit) == typeid(Agent)) {
+                                gui.selectAgent(std::dynamic_pointer_cast<Agent>(hit));
+                                selected = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (!selected){
+                        gui.selectAgent(nullptr);
+                    }
                 }
             }
 
@@ -140,6 +156,7 @@ int main(int argc, char *argv[]) {
 
         window.clear(sf::Color::Black);
         world.draw(paused ? 0 : dt.asSeconds()*timeFactor);
+        gui.draw(paused ? 0 : dt.asSeconds()*timeFactor);
         window.display();
     }
 
