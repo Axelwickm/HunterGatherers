@@ -5,6 +5,8 @@
 #include <memory>
 #include <set>
 
+
+
 #ifndef HUNTERGATHERERS_WORLD_H
 #define HUNTERGATHERERS_WORLD_H
 
@@ -18,6 +20,7 @@
 
 struct WorldOptions {
     sf::Vector2f dimensions;
+    unsigned terrainSquare;
     float quadtreeLimit;
     std::vector<Populator::Entry> populatorEntries;
 };
@@ -46,6 +49,8 @@ public:
 private:
     sf::RenderWindow* window;
     const sf::Vector2f dimensions;
+    sf::Texture terrainTexture;
+    sf::Sprite terrain;
 
     std::list<std::shared_ptr<WorldObject>> deletionList;
 
@@ -56,6 +61,8 @@ private:
     Quadtree<float> quadtree;
     OpenCL_Wrapper *openCL_wrapper;
     static std::mt19937 randomEngine;
+
+    void generateTerrain(const WorldOptions &options);
 };
 
 

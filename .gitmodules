@@ -1,0 +1,3 @@
+[submodule "PerlinNoise"]
+	path = PerlinNoise
+	url = https://github.com/Reputeless/PerlinNoise/

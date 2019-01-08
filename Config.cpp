@@ -9,6 +9,7 @@ namespace GeneralSettings {
     sf::Vector2u windowSize(1920, 1080);
     WorldOptions options = {
         dimensions : sf::Vector2f(2000, 2000),
+        terrainSquare : 40,
         quadtreeLimit : 30,
         populatorEntries:{{
             .type = "Agent",
@@ -30,10 +31,10 @@ namespace GeneralSettings {
 }
 
 namespace RenderSettings {
-    bool showWorldObjectBounds = true;
-    bool showQuadtree = true;
+    bool showWorldObjectBounds = false;
+    bool showQuadtree = false;
     bool showQuadtreeEntities = false;
-    bool showVision = true;
+    bool showVision = false;
 
 };
 

@@ -7,6 +7,8 @@
 #include "Mushroom.h"
 #include "Heart.h"
 
+#include "PerlinNoise/PerlinNoise.hpp"
+
 std::mt19937 World::randomEngine = std::mt19937(std::random_device()());
 
 World::World(sf::RenderWindow *window, OpenCL_Wrapper *openCL_wrapper, const WorldOptions& options):
@@ -14,6 +16,30 @@ window(window), dimensions(options.dimensions), openCL_wrapper(openCL_wrapper),
 populator(this), quadtree(Quadtree<float>(sf::Vector2<float>(0, 0), dimensions)) {
     quadtree.setLimit(options.quadtreeLimit);
     populator.addEntries(options.populatorEntries);
+    generateTerrain(options);
+
+}
+
+void World::generateTerrain(const WorldOptions &options) {
+    float f = 10;
+    siv::PerlinNoise perlinNoise1;
+    siv::PerlinNoise perlinNoise2;
+    sf::Image background;
+    background.create(options.terrainSquare, options.terrainSquare, sf::Color::Black);
+    for (unsigned x = 0; x < background.getSize().x; x++){
+        for (unsigned y = 0; y < background.getSize().y; y++){
+            double n1 = perlinNoise1.octaveNoise((float) x / (float) background.getSize().x * f, (float) y / (float) background.getSize().y * f, 20) + 1;
+            double n2 = perlinNoise2.octaveNoise((float) x / (float) background.getSize().x * f * 0.3, (float) y / (float) background.getSize().y * f * 0.3, 2);
+            background.setPixel(x, y, sf::Color( 20 + n1*2, 30 + n1 * 15, 20 + n1*2));
+            if (n2 < -0.1){
+                background.setPixel(x, y, sf::Color(10 + n2*2, 14 + n2*3, 10 + n2*2));
+            }
+        }
+    }
+
+    terrainTexture.loadFromImage(background);
+    terrain = sf::Sprite(terrainTexture);
+    terrain.setScale(dimensions.x / options.terrainSquare, dimensions.y / options.terrainSquare);
 }
 
 void World::update(float deltaTime) {
@@ -37,6 +63,8 @@ void World::update(float deltaTime) {
 }
 
 void World::draw(float deltaTime) {
+    window->draw(terrain);
+
     for (auto &object : objects) {
         object->draw(window, deltaTime);
     }
@@ -47,6 +75,7 @@ void World::draw(float deltaTime) {
 }
 
 bool World::addObject(std::shared_ptr<WorldObject> worldObject) {
+
     if (worldObject->isCollider()){
         if (!quadtree.add(worldObject)){
             return false;
