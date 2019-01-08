@@ -16,6 +16,8 @@ public:
     Agent(World *world, sf::Vector2f position, float orientation);
     Agent(const Agent& other);
 
+    const std::string &getName() const;
+
     static void loadResources();
     MapGenes* getGenes() const;
 
@@ -42,6 +44,7 @@ public:
 
 private:
     // General
+    std::string name;
     float orientation; // In degrees
     float maxEnergy;
     float energy; // Between 0 and maxEnergy

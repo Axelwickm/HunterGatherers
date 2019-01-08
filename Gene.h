@@ -24,6 +24,7 @@ public:
     virtual void generate() = 0;
     virtual void mutate(float factor) = 0;
     virtual void evaluate(float mutationFactor, unsigned version) = 0;
+    virtual void writeNormal(std::vector<double>& vector);
 
     float getMutationWeight() const;
     void setMutationWeight(float mutationWeight);
@@ -76,6 +77,7 @@ public:
     void generate() override;
     void mutate(float factor) override;
     void evaluate(float mutationFactor, unsigned version) override;
+    void writeNormal(std::vector<double> &vector) override;
 
     float getValue() const;
     void setValue(float value);
@@ -100,6 +102,7 @@ public:
     void generate() override;
     void mutate(float factor) override;
     void evaluate(float mutationFactor, unsigned version) override;
+    void writeNormal(std::vector<double> &vector) override;
 
     int getValue() const;
     void setValue(int value);
@@ -150,6 +153,8 @@ public:
     void mutate(float factor) override;
     void evaluate(float mutationFactor, unsigned version) override;
 
+    void writeNormal(std::vector<double> &vector) override;
+
     void addGenes(const std::string& name, std::shared_ptr<Gene> gene);
     Gene* getGene(const std::string& name) const {
         return genes.at(name).get();
@@ -180,6 +185,8 @@ public:
     void generate() override;
     void mutate(float factor) override;
     void evaluate(float mutationFactor, unsigned version) override;
+
+    void writeNormal(std::vector<double> &vector) override;
 
     size_t getCount() const;
     void setCount(size_t count);

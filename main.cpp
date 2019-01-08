@@ -4,6 +4,7 @@
 #include "Camera.h"
 #include "World.h"
 #include "GUI.h"
+#include "MarkovNames.h"
 
 int main(int argc, char *argv[]) {
     printf("Using seed: %lu\n", GeneralSettings::seed);
@@ -28,6 +29,9 @@ int main(int argc, char *argv[]) {
             i++;
         }
     }
+
+    MarkovNames::loadResources();
+    MarkovNames markovNames(true);
 
     // Create main objects
     sf::RenderWindow window(sf::VideoMode(GeneralSettings::windowSize.x, GeneralSettings::windowSize.y),

@@ -11,6 +11,7 @@
 #include "World.h"
 #include "Gene.h"
 #include "Mushroom.h"
+#include "MarkovNames.h"
 
 #define PI 3.14159265f
 
@@ -134,6 +135,11 @@ orientation(orientation) {
     genes->addGenes("Layers", layers);
 
     genes->generate();
+
+    MarkovNames nameGenerator(false);
+    std::vector<double> genome;
+    genes->writeNormal(genome);
+    name = nameGenerator.generate(genome);
 
 }
 
@@ -357,5 +363,9 @@ float Agent::getMaxEnergy() const {
 
 void Agent::setMaxEnergy(float maxEnergy) {
     Agent::maxEnergy = maxEnergy;
+}
+
+const std::string &Agent::getName() const {
+    return name;
 }
 

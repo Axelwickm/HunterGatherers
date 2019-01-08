@@ -11,7 +11,7 @@ GUI::GUI(sf::RenderWindow* window) : window(window), view(window->getDefaultView
 
     // TODO: monitor size scaling
     // Agent info
-    agentInfo.agentIdentifier = sf::Text("AgentID", font);
+    agentInfo.agentIdentifier = sf::Text("", font);
     agentInfo.agentIdentifier.setCharacterSize(40);
     agentInfo.agentIdentifier.setStyle(sf::Text::Bold);
     agentInfo.agentIdentifier.setFillColor(gray);
@@ -72,9 +72,9 @@ void GUI::selectAgent(std::shared_ptr<Agent> agent) {
     else {
         selectedAgent = agent;
 
-        std::ostringstream address;
-        address << (void const *) agent.get();
-        agentInfo.agentIdentifier.setString(address.str());
+        /*std::ostringstream address;
+        address << (void const *) agent.get();*/
+        agentInfo.agentIdentifier.setString(agent->getName());
     }
 }
 

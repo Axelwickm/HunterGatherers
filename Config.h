@@ -10,6 +10,7 @@
 struct WorldOptions;
 
 namespace GeneralSettings {
+    extern long unsigned int seed;
     extern sf::Vector2u windowSize;
     extern WorldOptions options;
 }

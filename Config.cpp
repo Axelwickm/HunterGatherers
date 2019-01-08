@@ -3,9 +3,11 @@
 //
 
 #include <SFML/Graphics.hpp>
+#include <chrono>
 #include "World.h"
 
 namespace GeneralSettings {
+    long unsigned int seed = static_cast<long unsigned int>(std::chrono::high_resolution_clock::now().time_since_epoch().count());
     sf::Vector2u windowSize(1920, 1080);
     WorldOptions options = {
         dimensions : sf::Vector2f(2000, 2000),
@@ -14,7 +16,7 @@ namespace GeneralSettings {
         populatorEntries:{{
             .type = "Agent",
             .count = 0,
-            .targetCount = 5,
+            .targetCount = 20,
             .rate = 3
         },{
             .type = "Mushroom",
@@ -29,6 +31,7 @@ namespace GeneralSettings {
         }}
     };
 }
+
 
 namespace RenderSettings {
     bool showWorldObjectBounds = false;

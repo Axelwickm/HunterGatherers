@@ -42,6 +42,10 @@ void Gene::setMutationWeight(float mutationWeight) {
     Gene::mutationWeight = mutationWeight;
 }
 
+void Gene::writeNormal(std::vector<double> &vector) {
+
+}
+
 
 // Float gene
 
@@ -102,6 +106,13 @@ float FloatGene::getMaxVal() const {
 
 void FloatGene::setMaxVal(float maxVal) {
     FloatGene::maxVal = maxVal;
+}
+
+void FloatGene::writeNormal(std::vector<double> &vector) {
+    float val = (value-minVal)/(maxVal-minVal);
+    if (val == val){ // Nan check
+        vector.push_back(val);
+    }
 }
 
 
@@ -169,6 +180,14 @@ void IntegerGene::setMaxVal(int maxVal) {
     IntegerGene::maxVal = maxVal;
 }
 
+void IntegerGene::writeNormal(std::vector<double> &vector) {
+    double val = (double) (value-minVal)/(maxVal-minVal);
+    if (val == val){ // Nan check
+        vector.push_back(val);
+    }
+
+}
+
 
 // Map genes
 
@@ -224,6 +243,12 @@ void MapGenes::evaluate(float mutationFactor, unsigned version) {
 void MapGenes::addGenes(const std::string& name, std::shared_ptr<Gene> gene) {
     genes.emplace(name, gene);
     genes.at(name)->setOwner(this);
+}
+
+void MapGenes::writeNormal(std::vector<double> &vector) {
+    for (auto &gene: genes) {
+        gene.second->writeNormal(vector);
+    }
 }
 
 
@@ -360,6 +385,12 @@ void ListGenes::updateCount(){
                                      std::string(typeid(countGene->type).name()));
         }
 
+    }
+}
+
+void ListGenes::writeNormal(std::vector<double> &vector) {
+    for (auto &gene: genes){
+        gene->writeNormal(vector);
     }
 }
 
