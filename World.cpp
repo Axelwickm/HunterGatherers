@@ -9,7 +9,7 @@
 
 #include "PerlinNoise/PerlinNoise.hpp"
 
-std::mt19937 World::randomEngine = std::mt19937(std::random_device()());
+std::mt19937 World::randomEngine = std::mt19937(GeneralSettings::seed++);
 
 World::World(sf::RenderWindow *window, OpenCL_Wrapper *openCL_wrapper, const WorldOptions& options):
 window(window), dimensions(options.dimensions), openCL_wrapper(openCL_wrapper),

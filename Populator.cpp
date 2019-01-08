@@ -5,7 +5,7 @@
 #include <ctime>
 #include "World.h"
 
-std::mt19937 Populator::randomEngine = std::mt19937(std::random_device()());
+std::mt19937 Populator::randomEngine = std::mt19937(GeneralSettings::seed++);
 
 Populator::Populator(World* world) : world(world) {}
 

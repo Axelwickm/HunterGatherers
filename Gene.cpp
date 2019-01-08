@@ -4,9 +4,10 @@
 
 
 #include "Gene.h"
+#include "Config.h"
 
 
-std::mt19937 Gene::randomEngine = std::mt19937(std::random_device()());
+std::mt19937 Gene::randomEngine = std::mt19937(GeneralSettings::seed++);
 
 Gene::Gene(const std::type_info& type): type(type), state(UNEVALUATED), evaluationCount(0), mutationWeight(1){}
 

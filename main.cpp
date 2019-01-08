@@ -6,6 +6,8 @@
 #include "GUI.h"
 
 int main(int argc, char *argv[]) {
+    printf("Using seed: %lu\n", GeneralSettings::seed);
+
     // Figure out which OpenCL accelerator device to use
     std::string deviceName;
 
