@@ -176,10 +176,13 @@ void OpenCL_Wrapper::addAgent(Agent* agent) {
 
     const MapGenes& genes = *agent->getGenes();
 
-    AgentEntry agentEntry;
+    agentRegister[agent] = AgentEntry();
+    AgentEntry& agentEntry = agentRegister.at(agent);
     agentEntry.agent = agent;
 
+
     agentEntry.outputBandwidth = (unsigned int) genes.getGene<IntegerGene>("OutputCount")->getValue();
+    agentEntry.output.resize(agentEntry.outputBandwidth, 0);
     agentEntry.layerCount = (unsigned int) genes.getGene<IntegerGene>("LayerCount")->getValue();
 
     auto layersList = genes.getGene<ListGenes>("Layers")->getList().begin();
@@ -189,6 +192,7 @@ void OpenCL_Wrapper::addAgent(Agent* agent) {
         layersList++;
         return g->getValue();
     });
+
 
     layersList = genes.getGene<ListGenes>("Layers")->getList().begin();
     std::vector<unsigned> layerSizes;
@@ -201,6 +205,7 @@ void OpenCL_Wrapper::addAgent(Agent* agent) {
         agentEntry.maxLayerSize = agentEntry.maxLayerSize < val ? val : agentEntry.maxLayerSize;
         return val;
     });
+
     agentEntry.layerSizes_Host = layerSizes;
 
     std::vector<float> layerWeights;
@@ -253,22 +258,32 @@ void OpenCL_Wrapper::addAgent(Agent* agent) {
         throw std::runtime_error("Failed to create net activation buffer: "+std::to_string(err));
     }
 
-    agentRegister.insert({agent, agentEntry});
+    printf("Register insert %p %d\n", agent, agentRegister.size());
 }
 
 void OpenCL_Wrapper::removeAgent(Agent* agent) {
     AgentEntry a = agentRegister.at(agent);
-    clReleaseMemObject(a.netActivationA);
-    clReleaseMemObject(a.netActivationB);
 
-    clReleaseMemObject(a.layerSizes);
-    clReleaseMemObject(a.layerBiases);
-    clReleaseMemObject(a.layerWeights);
-    agentRegister.erase(agent);
+    cl_int err = clReleaseMemObject(a.netActivationA);
+    err |= clReleaseMemObject(a.netActivationB);
+
+    err |= clReleaseMemObject(a.layerSizes);
+    err |= clReleaseMemObject(a.layerBiases);
+    err |= clReleaseMemObject(a.layerWeights);
+    if (err){
+        throw std::runtime_error("Failed to release memory objects: "+std::to_string(err));
+    }
+
+    printf("Register erase %d %p\n", agentRegister.erase(agent), agent);
 }
 
 void OpenCL_Wrapper::think(std::shared_ptr<Agent> agent, const std::vector<float> &percept) {
+    auto iter = agentRegister.find(agent.get());
+    if (iter == agentRegister.end()){
+        printf("NOT FOUND\n");
+    }
     AgentEntry& agentEntry  = agentRegister.at(agent.get());
+
     cl_event lastEvent;
     cl_event newEvent;
 
@@ -281,17 +296,17 @@ void OpenCL_Wrapper::think(std::shared_ptr<Agent> agent, const std::vector<float
     }
 
     // Buffer the percept
-    // Note that this will probably not fill the whole buffer, but the kernel is fine with that.
-    err = clEnqueueWriteBuffer(command_queue, agentEntry.netActivationA, CL_FALSE, 0,
-            sizeof(float)*agentEntry.maxLayerSize, &percept.at(0), 0, nullptr, &lastEvent);
+    // This will probably not fill the whole buffer, but the kernel is fine with that.
+    err = clEnqueueWriteBuffer(command_queue, agentEntry.netActivationA, CL_TRUE, 0,
+            sizeof(float)*agentEntry.maxLayerSize, &percept.at(0), 0, nullptr, nullptr); // TODO: should be 0, nullptr, &lastEvent
 
     if (err){
         throw std::runtime_error("Failed to write to first net activation buffer: "+std::to_string(err));
     }
 
-
     unsigned layerOffset = 0;
     for (unsigned i = 0; i < agentEntry.layerCount; i++){
+        break;
         err =  clSetKernelArg(perceptronKernel, 3, sizeof(unsigned), &i);
         err |= clSetKernelArg(perceptronKernel, 4, sizeof(unsigned), &layerOffset);
 
@@ -317,41 +332,56 @@ void OpenCL_Wrapper::think(std::shared_ptr<Agent> agent, const std::vector<float
 
         //printf("%d %d\n", i, globalSize);
 
-        err = clEnqueueNDRangeKernel(command_queue, perceptronKernel, 1, nullptr, &globalSize, &localSize, 1, &lastEvent,
-                               &newEvent);
+        err = clEnqueueNDRangeKernel(command_queue, perceptronKernel, 1, nullptr, &globalSize, &localSize,
+                1, &lastEvent, &newEvent);
+        clFinishAll();
 
         if (err){
             throw std::runtime_error("Failed to enqueue perceptron ND Range kernels: "+std::to_string(err));
         }
-        clReleaseEvent(lastEvent);
+        err = clReleaseEvent(lastEvent);
+
+        if (err){
+            throw std::runtime_error("Failed to release event: "+std::to_string(err));
+        }
         lastEvent = newEvent;
         layerOffset += agentEntry.layerSizes_Host[i] * agentEntry.layerSizes_Host[i+1];
 
 
     }
 
-    auto output = new std::vector<float>();
-    output->resize(agentEntry.outputBandwidth);
+    /*cl_uint references;
+    clGetEventInfo(agentEntry.lastEvent, CL_EVENT_REFERENCE_COUNT, sizeof(cl_uint), &references, nullptr);
+    printf("add %p outb %u lc %u mlc %u reff %u oadd %p\n", agentEntry.agent, agentEntry.outputBandwidth, agentEntry.layerCount, agentEntry.maxLayerSize, references, &(agentEntry.output[0]));*/
 
-    if (agentEntry.layerCount-1 % 2 == 0){
-        err = clEnqueueReadBuffer(command_queue, agentEntry.netActivationA, CL_FALSE, 0,
-                            sizeof(float)*agentEntry.outputBandwidth, &output->front(), 1, &lastEvent, &newEvent);
+    /*if (agentEntry.layerCount-1 % 2 == 0){
+        err = clEnqueueReadBuffer(command_queue, agentEntry.netActivationA, CL_TRUE, 0,
+                            sizeof(float)*agentEntry.output.size(), &agentEntry.output.front(), 0, nullptr, nullptr);
     }
     else {
-        err = clEnqueueReadBuffer(command_queue, agentEntry.netActivationB, CL_FALSE, 0,
-                            sizeof(float)*agentEntry.outputBandwidth, &output->front(), 1, &lastEvent, &newEvent);
-    }
+        err = clEnqueueReadBuffer(command_queue, agentEntry.netActivationB, CL_TRUE, 0,
+                            sizeof(float)*agentEntry.output.size(), &agentEntry.output.front(), 0, nullptr, nullptr);
+    }*/
 
-    if (err){
+    float ob[agentEntry.output.size()];
+    err = clEnqueueReadBuffer(command_queue, agentEntry.netActivationA, CL_TRUE, 0,
+                              sizeof(ob), &ob[0], 0, nullptr, nullptr);
+
+    if (err == -30){
+        printf("Err -30: add %p outb %u lc %u mlc %u os %llu\n", agentEntry.agent, agentEntry.outputBandwidth, agentEntry.layerCount, agentEntry.maxLayerSize, agentEntry.output.size());
+        throw std::runtime_error("dd\n");
+
+    }
+    else if (err){
         throw std::runtime_error("Failed to read output buffer from network: "+std::to_string(err));
     }
-    clReleaseEvent(lastEvent);
-    lastEvent = newEvent;
 
-    auto callbackData = new std::pair<std::shared_ptr<Agent>, std::vector<float>*>;
-    *callbackData = std::make_pair(agent, output);
+    /*clReleaseEvent(agentEntry.lastEvent);
+    agentEntry.lastEvent = newEvent;*/
 
-    clSetEventCallback(lastEvent, CL_COMPLETE, responseCallback, (void*) callbackData);
+
+    //clSetEventCallback(lastEvent, CL_COMPLETE, responseCallback, (void*) &agentEntry);
+
 }
 
 void OpenCL_Wrapper::clFinishAll() {
@@ -359,10 +389,8 @@ void OpenCL_Wrapper::clFinishAll() {
 }
 
 void OpenCL_Wrapper::responseCallback(cl_event e, cl_int status, void *data) {
-    auto p = static_cast<std::pair<std::shared_ptr<Agent>, std::vector<float>*>* > (data);
-    p->first->setActions(*p->second);
-    delete p->second;
-    delete p;
+    auto entry = (AgentEntry*) data;
+    entry->agent->setActions(entry->output);
     clReleaseEvent(e);
 }
 

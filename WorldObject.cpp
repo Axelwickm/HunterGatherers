@@ -45,7 +45,8 @@ void WorldObject::update(float deltaTime) {
 }
 
 void WorldObject::update(float deltaTime, sf::Vector2f oldPosition) {
-    velocity *= powf(accelerationFactor, deltaTime);
+
+    velocity *= powf(accelerationFactor, deltaTime); // TODO: put this here instead: velocity += sf::Vector2f(deltaTime * accelerationFactor, deltaTime * accelerationFactor);
     position += velocity * deltaTime;
     position = sf::Vector2f((float) fmin(position.x, world->getDimensions().x), (float) fmin(position.y, world->getDimensions().y));
     position = sf::Vector2f((float) fmax(position.x, 1), (float) fmax(position.y, 1));

@@ -23,6 +23,7 @@
 
 struct AgentEntry {
     Agent* agent;
+    std::vector<float> output;
 
     unsigned outputBandwidth;
     unsigned layerCount;
@@ -48,6 +49,7 @@ public:
     void think(std::shared_ptr<Agent> agent, const std::vector<float> &percept);
 
     void clFinishAll();
+    std::unordered_map<Agent*, AgentEntry> agentRegister;
 
 private:
     cl_device_id device_id;
@@ -60,7 +62,7 @@ private:
     const std::string loadFile(std::string filename);
     cl_program createAndCompileProgram(const std::string& source);
 
-    std::unordered_map<Agent*, AgentEntry> agentRegister;
+
     static void responseCallback(cl_event e, cl_int status, void* data);
 
 };
