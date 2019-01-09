@@ -31,7 +31,10 @@ std::string MarkovNames::generate(const std::vector<double> genome) {
     std::string name = "";
     std::string last = "START";
 
-    const int decisions = 10;
+    const int decisions = 8;
+    const float k = 10;
+    const double commonBias = 1.15;
+
     std::vector<double> reducedGenome;
     reducedGenome.reserve(decisions);
     for (std::size_t i = 0; i < decisions; i++){
@@ -41,8 +44,11 @@ std::string MarkovNames::generate(const std::vector<double> genome) {
         }
     }
 
+
     for (double &itr : reducedGenome) {
-        // TODO: make variables be uniform instead of Bates distributed.
+        // Logistic function to make values more uniform
+        itr = pow(itr, commonBias);
+        itr = 1.f / (1.f + expf(float(-k * (itr - 0.5f))));
     }
 
     int lookback = 4;
@@ -74,11 +80,15 @@ std::string MarkovNames::generate(const std::vector<double> genome) {
         }
         else {
             index = static_cast<size_t>(floor((*itr) * weights.size()));
+            if (index == chain[last].size()){
+                index--;
+            }
             itr++;
             if (itr == reducedGenome.end()){
                 itr = reducedGenome.begin();
             }
         };
+
         auto newLast = chain[last][index][0].get<std::string>();
         name = name.append(newLast);
 
