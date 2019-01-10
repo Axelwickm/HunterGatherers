@@ -56,15 +56,11 @@ void World::update(float deltaTime) {
 
     performDeletions();
 
-    printf("Think\n");
-
     // AI updates
     for (auto& agent : agents){
         agent->updatePercept(deltaTime);
         openCL_wrapper->think(agent, agent->getPercept());
     }
-    printf("End think\n");
-
 
 }
 
@@ -105,7 +101,6 @@ bool World::addObject(std::shared_ptr<WorldObject> worldObject) {
 bool World::removeObject(std::shared_ptr<WorldObject> worldObject, bool performImmediately) {
     if (!performImmediately){
         deletionList.push_back(worldObject);
-        printf("Push back delete %p\n", worldObject.get());
         return true;
     }
     bool success = worldObject->isCollider() ? quadtree.remove(worldObject.get()) : true;
@@ -183,7 +178,7 @@ void World::reproduce(Agent &a) {
     a.setEnergy(a.getEnergy()/2);
     addObject(agent);
     addObject(std::make_shared<Heart>(this, a.getPosition()));
-    printf("Reproduced %d\n", agent->getGeneration());
+    printf("Reproduced to gen %u : %s -> %s\n", agent->getGeneration(), a.getName().c_str(), agent->getName().c_str());
 }
 
 

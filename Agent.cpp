@@ -27,7 +27,6 @@ void Agent::loadResources() {
 
 Agent::Agent(World *world, sf::Vector2f position, float orientation) : WorldObject("Agent", world, position, true),
 orientation(orientation) {
-    printf("Spawn %p\n", this);
     loadResources();
 
     generation = 0;
@@ -62,7 +61,6 @@ orientation(orientation) {
     std::fill(std::begin(actions), std::end(actions), 0.f);
 
     auto previousLayerPerceptronCountLambda = [](LambdaGene<int>& l, float mutationFactor){
-        auto layersa = l.getOwner<MapGenes>()->getOwner<ListGenes>();
         auto layers = l.getOwner<MapGenes>()->getOwner<ListGenes>()->getOwner<MapGenes>()->getOwner<ListGenes>();
         auto thisLayer = l.getOwner<MapGenes>()->getOwner<ListGenes>()->getOwner<MapGenes>();
 
@@ -100,11 +98,12 @@ orientation(orientation) {
             itr++;
         }
 
-        if (itr == layers->getList().end()){
+        if (++itr == layers->getList().end()){
             auto count = layers->getOwner<MapGenes>()->getGene<IntegerGene>("OutputCount");
             count->evaluate(mutationFactor, l.getEvaluationCount());
             return count->getValue();
         }
+
         auto count = l.getOwner<MapGenes>()->getGene<IntegerGene>("MutatingPerceptronCount");
         count->evaluate(mutationFactor, l.getEvaluationCount());
         return count->getValue();
@@ -147,7 +146,6 @@ orientation(orientation) {
 }
 
 Agent::Agent(const Agent& other) : WorldObject(other), orientation(other.orientation){
-    printf("Reproduce %p\n", this);
     loadResources();
     generation = other.generation;
     maxEnergy = other.maxEnergy;

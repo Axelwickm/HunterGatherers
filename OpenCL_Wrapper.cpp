@@ -258,7 +258,6 @@ void OpenCL_Wrapper::addAgent(Agent* agent) {
         throw std::runtime_error("Failed to create net activation buffer: "+std::to_string(err));
     }
 
-    printf("Register insert %p %d\n", agent, agentRegister.size());
 }
 
 void OpenCL_Wrapper::removeAgent(Agent* agent) {
@@ -273,15 +272,9 @@ void OpenCL_Wrapper::removeAgent(Agent* agent) {
     if (err){
         throw std::runtime_error("Failed to release memory objects: "+std::to_string(err));
     }
-
-    printf("Register erase %d %p\n", agentRegister.erase(agent), agent);
 }
 
 void OpenCL_Wrapper::think(std::shared_ptr<Agent> agent, const std::vector<float> &percept) {
-    auto iter = agentRegister.find(agent.get());
-    if (iter == agentRegister.end()){
-        printf("NOT FOUND\n");
-    }
     AgentEntry& agentEntry  = agentRegister.at(agent.get());
 
     cl_event lastEvent;
@@ -297,8 +290,8 @@ void OpenCL_Wrapper::think(std::shared_ptr<Agent> agent, const std::vector<float
 
     // Buffer the percept
     // This will probably not fill the whole buffer, but the kernel is fine with that.
-    err = clEnqueueWriteBuffer(command_queue, agentEntry.netActivationA, CL_TRUE, 0,
-            sizeof(float)*agentEntry.maxLayerSize, &percept.at(0), 0, nullptr, nullptr); // TODO: should be 0, nullptr, &lastEvent
+    err = clEnqueueWriteBuffer(command_queue, agentEntry.netActivationA, CL_FALSE, 0,
+            sizeof(float)*agentEntry.maxLayerSize, &percept.at(0), 0, nullptr, &lastEvent);
 
     if (err){
         throw std::runtime_error("Failed to write to first net activation buffer: "+std::to_string(err));
@@ -306,7 +299,6 @@ void OpenCL_Wrapper::think(std::shared_ptr<Agent> agent, const std::vector<float
 
     unsigned layerOffset = 0;
     for (unsigned i = 0; i < agentEntry.layerCount; i++){
-        break;
         err =  clSetKernelArg(perceptronKernel, 3, sizeof(unsigned), &i);
         err |= clSetKernelArg(perceptronKernel, 4, sizeof(unsigned), &layerOffset);
 
@@ -334,7 +326,6 @@ void OpenCL_Wrapper::think(std::shared_ptr<Agent> agent, const std::vector<float
 
         err = clEnqueueNDRangeKernel(command_queue, perceptronKernel, 1, nullptr, &globalSize, &localSize,
                 1, &lastEvent, &newEvent);
-        clFinishAll();
 
         if (err){
             throw std::runtime_error("Failed to enqueue perceptron ND Range kernels: "+std::to_string(err));
@@ -350,37 +341,29 @@ void OpenCL_Wrapper::think(std::shared_ptr<Agent> agent, const std::vector<float
 
     }
 
-    /*cl_uint references;
-    clGetEventInfo(agentEntry.lastEvent, CL_EVENT_REFERENCE_COUNT, sizeof(cl_uint), &references, nullptr);
-    printf("add %p outb %u lc %u mlc %u reff %u oadd %p\n", agentEntry.agent, agentEntry.outputBandwidth, agentEntry.layerCount, agentEntry.maxLayerSize, references, &(agentEntry.output[0]));*/
 
-    /*if (agentEntry.layerCount-1 % 2 == 0){
-        err = clEnqueueReadBuffer(command_queue, agentEntry.netActivationA, CL_TRUE, 0,
-                            sizeof(float)*agentEntry.output.size(), &agentEntry.output.front(), 0, nullptr, nullptr);
+    if (agentEntry.layerCount-1 % 2 == 0){
+        err = clEnqueueReadBuffer(command_queue, agentEntry.netActivationA, CL_FALSE, 0,
+                            sizeof(float)*agentEntry.output.size(), &agentEntry.output.front(), 1, &lastEvent, &newEvent);
     }
     else {
-        err = clEnqueueReadBuffer(command_queue, agentEntry.netActivationB, CL_TRUE, 0,
-                            sizeof(float)*agentEntry.output.size(), &agentEntry.output.front(), 0, nullptr, nullptr);
-    }*/
-
-    float ob[agentEntry.output.size()];
-    err = clEnqueueReadBuffer(command_queue, agentEntry.netActivationA, CL_TRUE, 0,
-                              sizeof(ob), &ob[0], 0, nullptr, nullptr);
+        err = clEnqueueReadBuffer(command_queue, agentEntry.netActivationB, CL_FALSE, 0,
+                            sizeof(float)*agentEntry.output.size(), &agentEntry.output.front(), 1, &lastEvent, &newEvent);
+    }
 
     if (err == -30){
-        printf("Err -30: add %p outb %u lc %u mlc %u os %llu\n", agentEntry.agent, agentEntry.outputBandwidth, agentEntry.layerCount, agentEntry.maxLayerSize, agentEntry.output.size());
-        throw std::runtime_error("dd\n");
+        throw std::runtime_error("Err -30 D: <- me");
 
     }
     else if (err){
         throw std::runtime_error("Failed to read output buffer from network: "+std::to_string(err));
     }
 
-    /*clReleaseEvent(agentEntry.lastEvent);
-    agentEntry.lastEvent = newEvent;*/
+    clReleaseEvent(lastEvent);
+    lastEvent = newEvent;
 
 
-    //clSetEventCallback(lastEvent, CL_COMPLETE, responseCallback, (void*) &agentEntry);
+    clSetEventCallback(lastEvent, CL_COMPLETE, responseCallback, (void*) &agentEntry);
 
 }
 
