@@ -127,7 +127,7 @@ orientation(orientation) {
     layer->addGenes("Perceptrons", perceptrons);
 
     genes = std::make_shared<MapGenes>();
-    auto layerCount = std::make_shared<IntegerGene>(2, 2);
+    auto layerCount = std::make_shared<IntegerGene>(3, 6);
     genes->addGenes("LayerCount", layerCount);
     auto inputCountG = std::make_shared<IntegerGene>(inputCount, inputCount);
     genes->addGenes("InputCount", inputCountG);
@@ -137,6 +137,7 @@ orientation(orientation) {
     genes->addGenes("Layers", layers);
 
     genes->generate();
+    genes->mutate(0);
 
     MarkovNames nameGenerator(false);
     std::vector<double> genome;

@@ -16,13 +16,13 @@ namespace GeneralSettings {
         populatorEntries:{{
             .type = "Agent",
             .count = 0,
-            .targetCount = 65,
+            .targetCount = 10,
             .rate = 5
         },{
             .type = "Mushroom",
             .count = 0,
-            .targetCount = 150,
-            .rate = 5
+            .targetCount = 175,
+            .rate = 20
         },{
             .type = "BouncingBall",
             .count = 0,

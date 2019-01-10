@@ -337,7 +337,7 @@ void OpenCL_Wrapper::think(std::shared_ptr<Agent> agent, const std::vector<float
     }
 
 
-    if (agentEntry.layerCount-1 % 2 == 0){
+    if (agentEntry.layerCount % 2 == 0){
         err = clEnqueueReadBuffer(command_queue, agentEntry.netActivationA, CL_FALSE, 0,
                             sizeof(float)*agentEntry.output.size(), &agentEntry.output.front(), 1, &lastEvent, &newEvent);
     }
@@ -357,7 +357,6 @@ void OpenCL_Wrapper::think(std::shared_ptr<Agent> agent, const std::vector<float
     clReleaseEvent(lastEvent);
     lastEvent = newEvent;
 
-
     clSetEventCallback(lastEvent, CL_COMPLETE, responseCallback, (void*) &agentEntry);
 
 }
@@ -368,6 +367,11 @@ void OpenCL_Wrapper::clFinishAll() {
 
 void OpenCL_Wrapper::responseCallback(cl_event e, cl_int status, void *data) {
     auto entry = (AgentEntry*) data;
+    //printf("net out: %f, ", entry->output[0]);
+    for (float& f : entry->output){
+        f = 1.f / (1.f + expf(-f));
+    }
+    //printf("normalized: %f\n", entry->output[0]);
     entry->agent->setActions(entry->output);
     clReleaseEvent(e);
 }
