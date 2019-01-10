@@ -134,12 +134,7 @@ OpenCL_Wrapper::OpenCL_Wrapper(std::string deviceToUse) {
 
 OpenCL_Wrapper::~OpenCL_Wrapper() {
     for (auto& agent : agentRegister){
-        clReleaseMemObject(agent.second.netActivationA);
-        clReleaseMemObject(agent.second.netActivationB);
-
-        clReleaseMemObject(agent.second.layerSizes);
-        clReleaseMemObject(agent.second.layerBiases);
-        clReleaseMemObject(agent.second.layerWeights);
+        removeAgent(agent.first);
     }
 }
 
@@ -201,7 +196,7 @@ void OpenCL_Wrapper::addAgent(Agent* agent) {
     std::generate_n(std::back_inserter(layerSizes), agentEntry.layerCount, [&]{
         auto g = ((MapGenes*) layersList->get())->getGene<LambdaGene<int> >("PerceptronCount");
         layersList++;
-        unsigned val = g->getValue();
+        int val = g->getValue();
         agentEntry.maxLayerSize = agentEntry.maxLayerSize < val ? val : agentEntry.maxLayerSize;
         return val;
     });
@@ -261,7 +256,7 @@ void OpenCL_Wrapper::addAgent(Agent* agent) {
 }
 
 void OpenCL_Wrapper::removeAgent(Agent* agent) {
-    AgentEntry a = agentRegister.at(agent);
+    AgentEntry& a = agentRegister.at(agent);
 
     cl_int err = clReleaseMemObject(a.netActivationA);
     err |= clReleaseMemObject(a.netActivationB);
