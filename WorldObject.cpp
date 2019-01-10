@@ -12,7 +12,8 @@ WorldObject::WorldObject(std::string type, World *world, sf::Vector2f position, 
     this->quadtree = nullptr;
     this->world = world;
     velocity = sf::Vector2f(0, 0);
-    accelerationFactor = 1.f;
+    mass = 1.f;
+    friction = 0.f;
     bounds = sf::IntRect(0, 0, 0, 0);
 }
 
@@ -22,7 +23,7 @@ WorldObject::WorldObject(const WorldObject& other)
     this->quadtree = other.quadtree;
     this->world = other.world;
     velocity = other.velocity;
-    accelerationFactor = other.accelerationFactor;
+    mass = other.mass;
     bounds = other.bounds;
 }
 
@@ -45,7 +46,7 @@ void WorldObject::update(float deltaTime) {
 }
 
 void WorldObject::update(float deltaTime, sf::Vector2f oldPosition) {
-    velocity *= powf(accelerationFactor, deltaTime);
+    velocity *= powf(friction, deltaTime);
     position += velocity * deltaTime;
     position = sf::Vector2f((float) fmin(position.x, world->getDimensions().x), (float) fmin(position.y, world->getDimensions().y));
     position = sf::Vector2f((float) fmax(position.x, 1), (float) fmax(position.y, 1));
@@ -53,6 +54,10 @@ void WorldObject::update(float deltaTime, sf::Vector2f oldPosition) {
         quadtree->move(oldPosition, this);
     }
 
+}
+
+void WorldObject::applyForce(float deltaTime, const sf::Vector2f force) {
+    velocity += force/mass*deltaTime;
 }
 
 void WorldObject::draw(sf::RenderWindow *window, float deltaTime) {
@@ -91,12 +96,12 @@ void WorldObject::setVelocity(const sf::Vector2f &velocity) {
     WorldObject::velocity = velocity;
 }
 
-float WorldObject::getAccelerationFactor() const {
-    return accelerationFactor;
+float WorldObject::getMass() const {
+    return mass;
 }
 
-void WorldObject::setAccelerationFactor(float accelerationFactor) {
-    WorldObject::accelerationFactor = accelerationFactor;
+void WorldObject::setMass(float accelerationFactor) {
+    WorldObject::mass = accelerationFactor;
 }
 
 const sf::IntRect &WorldObject::getBounds() const {
@@ -126,5 +131,14 @@ void WorldObject::setBounds(const sf::IntRect &bounds) {
 const bool WorldObject::isCollider() const {
     return collider;
 }
+
+float WorldObject::getFriction() const {
+    return friction;
+}
+
+void WorldObject::setFriction(float friction) {
+    WorldObject::friction = friction;
+}
+
 
 

@@ -31,7 +31,8 @@ orientation(orientation) {
 
     maxEnergy = 100;
     energy = maxEnergy;
-    setAccelerationFactor(0.00000001);
+    setMass(1);
+    setFriction(0.01);
 
     frameIndex = 0;
     frame = sf::IntRect(0, 0, 32, 32);
@@ -187,7 +188,8 @@ void Agent::update(float deltaTime) {
             cosf(orientation*PI/180.f),
             sinf(orientation*PI/180.f)
     };
-    setVelocity(getVelocity() + orientationVector * velocityFactor * deltaTime);
+
+    applyForce(deltaTime, orientationVector * velocityFactor);
 
     float turn = ((float) actions.at(1) - actions.at(2))*40.0f;
     orientation += turn*deltaTime;

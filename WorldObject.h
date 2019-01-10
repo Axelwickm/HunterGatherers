@@ -31,10 +31,18 @@ public:
     const sf::Vector2f &getVelocity() const;
     void setVelocity(const sf::Vector2f &velocity);
 
-    float getAccelerationFactor() const;
-    void setAccelerationFactor(float accelerationFactor);
+    float getMass() const;
+    void setMass(float accelerationFactor);
+
+    float getFriction() const;
+
+    void setFriction(float friction);
+
+    void applyForce(float deltaTime, const sf::Vector2f force);
+
     const sf::IntRect getWorldBounds() const;
     const sf::FloatRect getWorldBoundsf() const;
+
     const sf::IntRect &getBounds() const;
     void setBounds(const sf::IntRect &bounds);
 
@@ -53,7 +61,8 @@ protected:
     sf::Vector2f velocity;
     sf::IntRect bounds;
 
-    float accelerationFactor;
+    float mass;
+    float friction;
 
 
 private:
