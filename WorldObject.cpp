@@ -17,7 +17,7 @@ WorldObject::WorldObject(std::string type, World *world, sf::Vector2f position, 
     bounds = sf::IntRect(0, 0, 0, 0);
 }
 
-WorldObject::WorldObject(const WorldObject& other)
+WorldObject::WorldObject(const WorldObject &other)
 : type(other.type), collider(other.collider) {
     this->position = other.position;
     this->quadtree = other.quadtree;

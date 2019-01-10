@@ -17,7 +17,7 @@ int main(int argc, char *argv[]) {
         if (s == "-CL_DEVICE"){
             deviceName = std::string(argv[i+1]);
             while (true){
-                auto c = deviceName.find("_");
+                auto c = deviceName.find('_');
                 if (c == std::string::npos){
                     break;
                 }
@@ -101,7 +101,7 @@ int main(int argc, char *argv[]) {
                     auto mapPos = (sf::Vector2f) window.mapPixelToCoords(mousePosition);
                     auto hits = world.getQuadtree().searchNear(mapPos, 0.1);
                     bool selected = false;
-                    for (auto& hit : hits){
+                    for (auto &hit : hits) {
                         if (pointInBox(mapPos, hit->getWorldBoundsf())) {
                             if (hit != gui.getSelectedAgent() && typeid(*hit) == typeid(Agent)) {
                                 gui.selectAgent(std::dynamic_pointer_cast<Agent>(hit));

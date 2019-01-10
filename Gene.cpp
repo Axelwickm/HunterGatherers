@@ -9,9 +9,9 @@
 
 std::mt19937 Gene::randomEngine = std::mt19937(GeneralSettings::seed++);
 
-Gene::Gene(const std::type_info& type): type(type), state(UNEVALUATED), evaluationCount(0), mutationWeight(1){}
+Gene::Gene(const std::type_info &type) : type(type), state(UNEVALUATED), evaluationCount(0), mutationWeight(1) {}
 
-void Gene::setOwner(Gene* owner) {
+void Gene::setOwner(Gene *owner) {
     Gene::owner = owner;
     evaluationCount = owner->getEvaluationCount();
 }
@@ -197,7 +197,7 @@ std::shared_ptr<Gene> MapGenes::clone() const {
     std::shared_ptr<MapGenes> copy = std::make_shared<MapGenes>(*this);
     copy->genes = std::map<std::string, std::shared_ptr<Gene>>();
 
-    for (auto& gene : genes){
+    for (auto &gene : genes) {
         auto geneCopy = gene.second->clone();
         geneCopy->setOwner(copy.get());
         copy->genes.emplace(gene.first, std::move(geneCopy));
@@ -240,7 +240,7 @@ void MapGenes::evaluate(float mutationFactor, unsigned version) {
 }
 
 
-void MapGenes::addGenes(const std::string& name, std::shared_ptr<Gene> gene) {
+void MapGenes::addGenes(const std::string &name, std::shared_ptr<Gene> gene) {
     genes.emplace(name, gene);
     genes.at(name)->setOwner(this);
 }
@@ -268,7 +268,7 @@ std::shared_ptr<Gene> ListGenes::clone() const {
     std::shared_ptr<ListGenes> copy = std::make_shared<ListGenes>(*this);
     copy->genes = std::list<std::shared_ptr<Gene>>();
 
-    for (auto& gene : genes){
+    for (auto &gene : genes) {
         auto geneCopy = gene->clone();
         geneCopy->setOwner(copy.get());
         copy->genes.push_back(geneCopy);
@@ -357,18 +357,18 @@ void ListGenes::setCount(size_t count) {
     ListGenes::count = count;
 }
 
-const std::list<std::shared_ptr<Gene>>& ListGenes::getList() const {
+const std::list<std::shared_ptr<Gene>> &ListGenes::getList() const {
     return genes;
 }
 
 void ListGenes::updateCount(){
     if (!staticCount){
-        Gene* countGene;
+        Gene *countGene;
 
         try {
             countGene = getOwner<MapGenes>()->getGene(countGeneName);
         }
-        catch (const std::runtime_error& error){
+        catch (const std::runtime_error &error) {
             throw std::runtime_error("Looking for count gene "+countGeneName+", but owner isn't map.\n");
         }
 

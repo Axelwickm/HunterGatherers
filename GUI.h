@@ -11,19 +11,19 @@
 
 class GUI {
 public:
-    explicit GUI(sf::RenderWindow* window);
+    explicit GUI(sf::RenderWindow *window);
     void draw(float deltaTime);
     void selectAgent(std::shared_ptr<Agent> agent);
 
     const std::shared_ptr<Agent> &getSelectedAgent() const;
 
 private:
-    sf::RenderWindow* window;
-    const sf::View& view;
+    sf::RenderWindow *window;
+    const sf::View &view;
     sf::Font font;
 
     struct VectorRenderer {
-        void draw(sf::RenderWindow* window, const std::vector<float> &vec);
+        void draw(sf::RenderWindow *window, const std::vector<float> &vec);
 
         sf::Rect<float> bounds;
         std::vector<sf::RectangleShape> rectangles;

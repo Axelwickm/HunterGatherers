@@ -12,7 +12,7 @@
 
 class BouncingBall : public WorldObject {
 public:
-    BouncingBall(World* world, sf::Vector2f position, float radius);
+    BouncingBall(World *world, sf::Vector2f position, float radius);
 
     void update(float deltaTime) override;
 

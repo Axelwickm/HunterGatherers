@@ -17,7 +17,8 @@ class World;
 class WorldObject {
 public:
     explicit WorldObject(std::string type, World *world, sf::Vector2f position, bool collider);
-    WorldObject(const WorldObject& other);
+
+    WorldObject(const WorldObject &other);
     const std::string type;
     std::shared_ptr<WorldObject> getSharedPtr();
 
@@ -38,7 +39,7 @@ public:
 
     void setFriction(float friction);
 
-    void applyForce(float deltaTime, const sf::Vector2f force);
+    void applyForce(float deltaTime, sf::Vector2f force);
 
     const sf::IntRect getWorldBounds() const;
     const sf::FloatRect getWorldBoundsf() const;
@@ -52,7 +53,7 @@ public:
     const bool isCollider() const;
 
 protected:
-    World* world;
+    World *world;
     std::weak_ptr<WorldObject> me;
     const bool collider;
 

@@ -11,7 +11,7 @@
 
 std::mt19937 World::randomEngine = std::mt19937(GeneralSettings::seed++);
 
-World::World(sf::RenderWindow *window, OpenCL_Wrapper *openCL_wrapper, const WorldOptions& options):
+World::World(sf::RenderWindow *window, OpenCL_Wrapper *openCL_wrapper, const WorldOptions &options) :
 window(window), dimensions(options.dimensions), openCL_wrapper(openCL_wrapper),
 populator(this), quadtree(Quadtree<float>(sf::Vector2<float>(0, 0), dimensions)) {
     quadtree.setLimit(options.quadtreeLimit);
@@ -57,7 +57,7 @@ void World::update(float deltaTime) {
     performDeletions();
 
     // AI updates
-    for (auto& agent : agents){
+    for (auto &agent : agents) {
         agent->updatePercept(deltaTime);
         openCL_wrapper->think(agent, agent->getPercept());
     }
@@ -118,7 +118,7 @@ bool World::removeObject(std::shared_ptr<WorldObject> worldObject, bool performI
 }
 
 void World::performDeletions() {
-    for (auto& worldObject : deletionList){
+    for (auto &worldObject : deletionList) {
         removeObject(worldObject, true);
     }
 

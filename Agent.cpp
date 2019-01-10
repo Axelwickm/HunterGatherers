@@ -9,7 +9,6 @@
 #include "Config.h"
 #include "utils.cpp"
 #include "World.h"
-#include "Gene.h"
 #include "Mushroom.h"
 #include "MarkovNames.h"
 
@@ -61,12 +60,12 @@ orientation(orientation) {
     actions = std::vector<float>(outputCount);
     std::fill(std::begin(actions), std::end(actions), 0.f);
 
-    auto previousLayerPerceptronCountLambda = [](LambdaGene<int>& l, float mutationFactor){
+    auto previousLayerPerceptronCountLambda = [](LambdaGene<int> &l, float mutationFactor) {
         auto layers = l.getOwner<MapGenes>()->getOwner<ListGenes>()->getOwner<MapGenes>()->getOwner<ListGenes>();
         auto thisLayer = l.getOwner<MapGenes>()->getOwner<ListGenes>()->getOwner<MapGenes>();
 
         auto itr = layers->getList().begin();
-        for (auto& _ : layers->getList()){
+        for (auto &_ : layers->getList()) {
             if (itr->get() == thisLayer){
                 break;
             }
@@ -87,12 +86,12 @@ orientation(orientation) {
 
     };
 
-    auto perceptronCountLambda = [](LambdaGene<int>& l, float mutationFactor){
+    auto perceptronCountLambda = [](LambdaGene<int> &l, float mutationFactor) {
         auto layers = l.getOwner<MapGenes>()->getOwner<ListGenes>();
         auto thisLayer = l.getOwner<MapGenes>();
 
         auto itr = layers->getList().begin();
-        for (auto& _ : layers->getList()){
+        for (auto &_ : layers->getList()) {
             if (itr->get() == thisLayer){
                 break;
             }
@@ -147,7 +146,7 @@ orientation(orientation) {
 
 }
 
-Agent::Agent(const Agent& other) : WorldObject(other), orientation(other.orientation){
+Agent::Agent(const Agent &other) : WorldObject(other), orientation(other.orientation) {
     loadResources();
     generation = other.generation;
     maxEnergy = other.maxEnergy;
@@ -221,7 +220,7 @@ void Agent::update(float deltaTime) {
                                 object->getBounds().width - object->getBounds().left,
                                 object->getBounds().height - object->getBounds().top);
                 if (boxesIntersect(a, b)){
-                    auto& type = typeid(*object.get());
+                    auto &type = typeid(*object.get());
                     if (type == typeid(Agent)){
                         if (0.5 < actions.at(3)){
                             // TODO: Crossover reproduction.
@@ -331,7 +330,7 @@ void Agent::updatePercept(float deltaTime) {
     }
 }
 
-MapGenes* Agent::getGenes() const {
+MapGenes *Agent::getGenes() const {
     return genes.get();
 }
 

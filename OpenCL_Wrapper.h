@@ -22,7 +22,7 @@
 
 
 struct AgentEntry {
-    Agent* agent;
+    Agent *agent;
     std::vector<float> output;
 
     unsigned outputBandwidth;
@@ -44,8 +44,9 @@ public:
     explicit OpenCL_Wrapper(std::string deviceToUse);
     virtual ~OpenCL_Wrapper();
 
-    void addAgent(Agent* agent);
-    void removeAgent(Agent* agent);
+    void addAgent(Agent *agent);
+
+    void removeAgent(Agent *agent);
     void think(std::shared_ptr<Agent> agent, const std::vector<float> &percept);
 
     void clFinishAll();
@@ -61,10 +62,11 @@ private:
     std::unordered_map<Agent*, AgentEntry> agentRegister;
 
     const std::string loadFile(std::string filename);
-    cl_program createAndCompileProgram(const std::string& source);
+
+    cl_program createAndCompileProgram(const std::string &source);
 
 
-    static void responseCallback(cl_event e, cl_int status, void* data);
+    static void responseCallback(cl_event e, cl_int status, void *data);
 
 };
 

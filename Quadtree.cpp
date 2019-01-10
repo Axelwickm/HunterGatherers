@@ -96,7 +96,7 @@ bool Quadtree<T>::add(std::shared_ptr<WorldObject> worldObject) {
 
             quadsCreated = true;
 
-            for (auto& node : nodes){
+            for (auto &node : nodes) {
                 for (int i = 0; i < 4; i++) {
                     if (quads[i]->add(node)) {
                         break;
@@ -150,7 +150,7 @@ bool Quadtree<T>::remove(WorldObject *worldObject) {
         if (quadsCreated and getSubNodeCount() <= 1) {
             quadsCreated = false;
             for (int i = 0; i < 4; i++) {
-                for (auto& node : quads[i]->getNodes()){
+                for (auto &node : quads[i]->getNodes()) {
                     nodes.push_back(node);
                 }
                 quads[i].reset();
@@ -163,7 +163,7 @@ bool Quadtree<T>::remove(WorldObject *worldObject) {
 }
 
 template<class T>
-bool Quadtree<T>::move(sf::Vector2f oldPosition, WorldObject* worldObject) {
+bool Quadtree<T>::move(sf::Vector2f oldPosition, WorldObject *worldObject) {
     // Does not contain
     if (!contains(oldPosition)) {
         return false;
@@ -192,7 +192,7 @@ bool Quadtree<T>::move(sf::Vector2f oldPosition, WorldObject* worldObject) {
                 if (quadsCreated and getSubNodeCount() <= 1) {
                     quadsCreated = false;
                     for (int j = 0; j < 4; j++){
-                        for (auto& node : quads[j]->getNodes()){
+                        for (auto &node : quads[j]->getNodes()) {
                             nodes.push_back(node);
                         }
                         quads[j].reset();

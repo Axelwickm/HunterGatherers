@@ -24,7 +24,7 @@ inline bool pointInBox(const sf::Vector2<T> p, const sf::Rect<T> a){
 }
 
 template<class T>
-inline bool clipT(const T &n, const T &d, sf::Vector2<T>* c){
+inline bool clipT(const T &n, const T &d, sf::Vector2<T> *c) {
     sf::Vector2<T> c2(*c);
     if (abs(d) < EPSILON){
         return n < 0;

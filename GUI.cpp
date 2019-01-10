@@ -5,7 +5,7 @@
 #include <sstream>
 #include "GUI.h"
 
-GUI::GUI(sf::RenderWindow* window) : window(window), view(window->getDefaultView()){
+GUI::GUI(sf::RenderWindow *window) : window(window), view(window->getDefaultView()) {
     font.loadFromFile(R"(C:\Windows\Fonts\consola.ttf)");
     sf::Color gray(120, 120, 120);
 
@@ -82,7 +82,7 @@ const std::shared_ptr<Agent> &GUI::getSelectedAgent() const {
     return selectedAgent;
 }
 
-void GUI::VectorRenderer::draw(sf::RenderWindow* window, const std::vector<float> &vec) {
+void GUI::VectorRenderer::draw(sf::RenderWindow *window, const std::vector<float> &vec) {
     if (vec.size() != rectangles.size()){
         rectangles.clear();
         const auto c = vec.size();

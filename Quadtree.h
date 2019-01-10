@@ -38,7 +38,8 @@ public:
 
     bool add(std::shared_ptr<WorldObject> worldObject);
     bool remove(WorldObject *worldObject);
-    bool move(sf::Vector2f oldPosition, WorldObject* worldObject);
+
+    bool move(sf::Vector2f oldPosition, WorldObject *worldObject);
 
     void draw(sf::RenderWindow *window, bool entities);
 

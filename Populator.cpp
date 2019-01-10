@@ -7,10 +7,10 @@
 
 std::mt19937 Populator::randomEngine = std::mt19937(GeneralSettings::seed++);
 
-Populator::Populator(World* world) : world(world) {}
+Populator::Populator(World *world) : world(world) {}
 
 void Populator::populate(float deltaT) {
-    for (auto& entry : frequencies){
+    for (auto &entry : frequencies) {
         if (entry.second.count < entry.second.targetCount){
             auto d = std::poisson_distribution(entry.second.rate*deltaT);
             int newCount = d(randomEngine);

@@ -17,25 +17,27 @@
 class Gene {
 public:
 
-    explicit Gene(const std::type_info& type);
-    const std::type_info& type;
+    explicit Gene(const std::type_info &type);
+
+    const std::type_info &type;
 
     virtual std::shared_ptr<Gene> clone() const = 0;
     virtual void generate() = 0;
     virtual void mutate(float factor) = 0;
     virtual void evaluate(float mutationFactor, unsigned version) = 0;
-    virtual void writeNormal(std::vector<double>& vector);
+
+    virtual void writeNormal(std::vector<double> &vector);
 
     float getMutationWeight() const;
     void setMutationWeight(float mutationWeight);
 
 
-    Gene* getOwner() const {
+    Gene *getOwner() const {
         return owner;
     }
 
     template <class T>
-    T* getOwner() const {
+    T *getOwner() const {
         if (owner->type != typeid(T)){
             throw std::runtime_error("Requested owner gene of type "+std::string(owner->type.name())
                   + ", not " + typeid(T).name() + ".");
@@ -44,7 +46,7 @@ public:
 
     }
 
-    void setOwner(Gene* owner);
+    void setOwner(Gene *owner);
 
     enum State {
         UNEVALUATED,
@@ -61,7 +63,7 @@ public:
     static std::mt19937 randomEngine;
 
 private:
-    Gene* owner;
+    Gene *owner;
 
     State state;
     unsigned evaluationCount;
@@ -155,15 +157,16 @@ public:
 
     void writeNormal(std::vector<double> &vector) override;
 
-    void addGenes(const std::string& name, std::shared_ptr<Gene> gene);
-    Gene* getGene(const std::string& name) const {
+    void addGenes(const std::string &name, std::shared_ptr<Gene> gene);
+
+    Gene *getGene(const std::string &name) const {
         return genes.at(name).get();
     }
 
     template <class T>
-    T* getGene(const std::string& name) const {
-        Gene* g = genes.at(name).get();
-        const  std::type_info& c = g->type;
+    T *getGene(const std::string &name) const {
+        Gene *g = genes.at(name).get();
+        const std::type_info &c = g->type;
         if (g->type != typeid(T)){
             throw std::runtime_error("Requested gene "+name+" of type "+g->type.name()+", not "+ typeid(T).name()+".");
         }

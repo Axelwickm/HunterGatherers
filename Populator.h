@@ -13,7 +13,7 @@ class World;
 
 class Populator {
 public:
-    explicit Populator(World* world);
+    explicit Populator(World *world);
 
     struct Entry {
         std::string type;
@@ -32,7 +32,7 @@ private:
 
     std::map<std::string, Entry> frequencies;
 
-    World* world;
+    World *world;
     static std::mt19937 randomEngine;
 };
 

@@ -14,12 +14,14 @@
 class Agent : public WorldObject {
 public:
     Agent(World *world, sf::Vector2f position, float orientation);
-    Agent(const Agent& other);
+
+    Agent(const Agent &other);
 
     const std::string &getName() const;
 
     static void loadResources();
-    MapGenes* getGenes() const;
+
+    MapGenes *getGenes() const;
 
     unsigned int getGeneration() const;
     void setGeneration(unsigned int generation);

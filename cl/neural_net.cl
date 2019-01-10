@@ -7,9 +7,9 @@
 #define ARCTAN(x) atan(x)
 
 
-__kernel void perceptron(__constant unsigned* layerSize, __constant float* layerWeight, __constant unsigned* layerBias,
+__kernel void perceptron(__constant unsigned *layerSize, __constant float *layerWeight, __constant unsigned *layerBias,
                          unsigned layerIndex, unsigned layerOffset,
-                         __global float* previousLayer, __global float* currentLayer){
+                         __global float *previousLayer, __global float *currentLayer) {
     size_t id = get_global_id(0);
     size_t previousLayerSize = layerSize[layerIndex];
     size_t thisLayerSize = layerSize[layerIndex+1];

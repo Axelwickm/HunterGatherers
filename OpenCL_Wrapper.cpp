@@ -3,8 +3,6 @@
 //
 
 #include <fstream>
-#include <streambuf>
-#include <stdexcept>
 #include <sstream>
 #include <functional>
 
@@ -16,16 +14,16 @@ OpenCL_Wrapper::OpenCL_Wrapper(std::string deviceToUse) {
     int err;
     size_t valueSize;
     cl_uint platformCount;
-    cl_platform_id* platforms;
+    cl_platform_id *platforms;
     cl_uint deviceCount;
-    cl_device_id* devices;
+    cl_device_id *devices;
     cl_uint maxMaxComputeUnits = 0;
 
     device_id = nullptr;
 
     // Get platforms
     clGetPlatformIDs(0, nullptr, &platformCount);
-    platforms = (cl_platform_id*) malloc(sizeof(cl_platform_id) * platformCount);
+    platforms = (cl_platform_id *) malloc(sizeof(cl_platform_id) * platformCount);
     clGetPlatformIDs(platformCount, platforms, nullptr);
 
     for (int i = 0; i < platformCount; i++) {
@@ -37,7 +35,7 @@ OpenCL_Wrapper::OpenCL_Wrapper(std::string deviceToUse) {
 
         for (int j = 0; j < deviceCount; j++) {
 
-            char* value;
+            char *value;
             clGetDeviceInfo(devices[j], CL_DEVICE_NAME, 0, nullptr, &valueSize);
             value = (char*) malloc(valueSize);
             clGetDeviceInfo(devices[j], CL_DEVICE_NAME, valueSize, value, nullptr);
@@ -65,7 +63,7 @@ OpenCL_Wrapper::OpenCL_Wrapper(std::string deviceToUse) {
             if (!deviceToUse.empty()){
                 // Get device name and see if it matches
                 clGetDeviceInfo(devices[j], CL_DEVICE_NAME, 0, nullptr, &valueSize);
-                char* name = (char*) malloc(valueSize);
+                auto name = (char *) malloc(valueSize);
                 clGetDeviceInfo(devices[j], CL_DEVICE_NAME, valueSize, name, nullptr);
 
                 if (std::string(name) == deviceToUse){
@@ -101,7 +99,7 @@ OpenCL_Wrapper::OpenCL_Wrapper(std::string deviceToUse) {
 
     // Print selectedText device name
     clGetDeviceInfo(device_id, CL_DEVICE_NAME, 0, nullptr, &valueSize);
-    char* name = (char*) malloc(valueSize);
+    auto name = (char *) malloc(valueSize);
     clGetDeviceInfo(device_id, CL_DEVICE_NAME, valueSize, name, nullptr);
     printf("Using OpenCL on device: %s\n", name);
     printf("OpenCL device max compute units: %d\n", maxComputeUnits);
@@ -133,7 +131,7 @@ OpenCL_Wrapper::OpenCL_Wrapper(std::string deviceToUse) {
 }
 
 OpenCL_Wrapper::~OpenCL_Wrapper() {
-    for (auto& agent : agentRegister){
+    for (auto &agent : agentRegister) {
         removeAgent(agent.first);
     }
 }
@@ -147,9 +145,9 @@ const std::string OpenCL_Wrapper::loadFile(std::string filename) {
     return str;
 }
 
-cl_program OpenCL_Wrapper::createAndCompileProgram(const std::string& source) {
-    const char* source_data = source.data();
-    const char** source_data_p = &source_data;
+cl_program OpenCL_Wrapper::createAndCompileProgram(const std::string &source) {
+    const char *source_data = source.data();
+    const char **source_data_p = &source_data;
     cl_int err;
     cl_program program = clCreateProgramWithSource(context, 1, source_data_p, nullptr, &err);
 
@@ -167,12 +165,12 @@ cl_program OpenCL_Wrapper::createAndCompileProgram(const std::string& source) {
     return program;
 }
 
-void OpenCL_Wrapper::addAgent(Agent* agent) {
+void OpenCL_Wrapper::addAgent(Agent *agent) {
 
-    const MapGenes& genes = *agent->getGenes();
+    const MapGenes &genes = *agent->getGenes();
 
     agentRegister[agent] = AgentEntry();
-    AgentEntry& agentEntry = agentRegister.at(agent);
+    AgentEntry &agentEntry = agentRegister.at(agent);
     agentEntry.agent = agent;
 
 
@@ -204,9 +202,9 @@ void OpenCL_Wrapper::addAgent(Agent* agent) {
     agentEntry.layerSizes_Host = layerSizes;
 
     std::vector<float> layerWeights;
-    for (auto& layer : genes.getGene<ListGenes>("Layers")->getList()){
-        for (auto& perceptron : ((MapGenes*) layer.get())->getGene<ListGenes>("Perceptrons")->getList()){
-            for (auto& weight : ((MapGenes*) perceptron.get())->getGene<ListGenes>("Weights")->getList()){
+    for (auto &layer : genes.getGene<ListGenes>("Layers")->getList()) {
+        for (auto &perceptron : ((MapGenes *) layer.get())->getGene<ListGenes>("Perceptrons")->getList()) {
+            for (auto &weight : ((MapGenes *) perceptron.get())->getGene<ListGenes>("Weights")->getList()) {
                 layerWeights.push_back(((FloatGene*) weight.get())->getValue());
             }
         }
@@ -255,8 +253,8 @@ void OpenCL_Wrapper::addAgent(Agent* agent) {
 
 }
 
-void OpenCL_Wrapper::removeAgent(Agent* agent) {
-    AgentEntry& a = agentRegister.at(agent);
+void OpenCL_Wrapper::removeAgent(Agent *agent) {
+    AgentEntry &a = agentRegister.at(agent);
 
     cl_int err = clReleaseMemObject(a.netActivationA);
     err |= clReleaseMemObject(a.netActivationB);
@@ -270,7 +268,7 @@ void OpenCL_Wrapper::removeAgent(Agent* agent) {
 }
 
 void OpenCL_Wrapper::think(std::shared_ptr<Agent> agent, const std::vector<float> &percept) {
-    AgentEntry& agentEntry  = agentRegister.at(agent.get());
+    AgentEntry &agentEntry = agentRegister.at(agent.get());
 
     cl_event lastEvent;
     cl_event newEvent;
@@ -368,7 +366,7 @@ void OpenCL_Wrapper::clFinishAll() {
 void OpenCL_Wrapper::responseCallback(cl_event e, cl_int status, void *data) {
     auto entry = (AgentEntry*) data;
     //printf("net out: %f, ", entry->output[0]);
-    for (float& f : entry->output){
+    for (float &f : entry->output) {
         f = 1.f / (1.f + expf(-f));
     }
     //printf("normalized: %f\n", entry->output[0]);

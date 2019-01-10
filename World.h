@@ -27,7 +27,7 @@ struct WorldOptions {
 
 class World {
 public:
-    World(sf::RenderWindow* window, OpenCL_Wrapper *openCL_wrapper, const WorldOptions& options);
+    World(sf::RenderWindow *window, OpenCL_Wrapper *openCL_wrapper, const WorldOptions &options);
 
     OpenCL_Wrapper *getOpenCL_wrapper() const;
 
@@ -47,7 +47,7 @@ public:
     const Quadtree<float> &getQuadtree() const;
 
 private:
-    sf::RenderWindow* window;
+    sf::RenderWindow *window;
     const sf::Vector2f dimensions;
     sf::Texture terrainTexture;
     sf::Sprite terrain;
