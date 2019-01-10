@@ -55,7 +55,7 @@ std::string MarkovNames::generate(const std::vector<double> genome) {
     int i = 0;
     auto itr = reducedGenome.begin();
 
-    while (name.back() != '\n'){
+    while (true){
         std::vector<float> weights;
         weights.reserve(chain[last].size());
 
@@ -90,6 +90,9 @@ std::string MarkovNames::generate(const std::vector<double> genome) {
         };
 
         auto newLast = chain[last][index][0].get<std::string>();
+        if (newLast == "\n"){
+            break;
+        }
         name = name.append(newLast);
 
         last = name.substr(fmaxf((float) name.size() - lookback, 0), std::string::npos);
