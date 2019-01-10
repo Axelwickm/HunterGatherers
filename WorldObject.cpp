@@ -24,6 +24,7 @@ WorldObject::WorldObject(const WorldObject& other)
     this->world = other.world;
     velocity = other.velocity;
     mass = other.mass;
+    friction = other.friction;
     bounds = other.bounds;
 }
 

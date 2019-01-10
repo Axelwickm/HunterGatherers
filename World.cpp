@@ -24,6 +24,8 @@ void World::generateTerrain(const WorldOptions &options) {
     float f = 10;
     siv::PerlinNoise perlinNoise1;
     siv::PerlinNoise perlinNoise2;
+    perlinNoise1.reseed(GeneralSettings::seed++);
+    perlinNoise2.reseed(GeneralSettings::seed++);
     sf::Image background;
     background.create(options.terrainSquare, options.terrainSquare, sf::Color::Black);
     for (unsigned x = 0; x < background.getSize().x; x++){
@@ -52,13 +54,13 @@ void World::update(float deltaTime) {
         object->update(deltaTime);
     }
 
+    performDeletions();
+
     // AI updates
     for (auto& agent : agents){
         agent->updatePercept(deltaTime);
         openCL_wrapper->think(agent, agent->getPercept());
     }
-
-    performDeletions();
 
 }
 
@@ -168,12 +170,15 @@ bool World::spawn(std::string type) {
 
 void World::reproduce(Agent &a) {
     auto agent = std::make_shared<Agent>(a);
+    agent->setGeneration(agent->getGeneration()+1);
     agent->setQuadtree(&quadtree, agent);
     agent->getGenes()->mutate(0.1);
     agent->setEnergy(a.getEnergy()/2);
+    agent->setOrientation(std::uniform_real_distribution<float>(0, 360)(randomEngine));
     a.setEnergy(a.getEnergy()/2);
     addObject(agent);
     addObject(std::make_shared<Heart>(this, a.getPosition()));
+    printf("Reproduced to gen %u : %s -> %s\n", agent->getGeneration(), a.getName().c_str(), agent->getName().c_str());
 }
 
 

@@ -10,19 +10,19 @@ namespace GeneralSettings {
     long unsigned int seed = static_cast<long unsigned int>(std::chrono::high_resolution_clock::now().time_since_epoch().count());
     sf::Vector2u windowSize(1920, 1080);
     WorldOptions options = {
-        dimensions : sf::Vector2f(2000, 2000),
+        dimensions : sf::Vector2f(2500, 2500),
         terrainSquare : 40,
         quadtreeLimit : 30,
         populatorEntries:{{
             .type = "Agent",
             .count = 0,
-            .targetCount = 20,
-            .rate = 3
+            .targetCount = 10,
+            .rate = 5
         },{
             .type = "Mushroom",
             .count = 0,
-            .targetCount = 60,
-            .rate = 3
+            .targetCount = 175,
+            .rate = 20
         },{
             .type = "BouncingBall",
             .count = 0,
@@ -32,12 +32,11 @@ namespace GeneralSettings {
     };
 }
 
-
 namespace RenderSettings {
     bool showWorldObjectBounds = false;
     bool showQuadtree = false;
     bool showQuadtreeEntities = false;
-    bool showVision = false;
+    bool showVision = true;
 
 };
 

@@ -23,6 +23,7 @@
 
 struct AgentEntry {
     Agent* agent;
+    std::vector<float> output;
 
     unsigned outputBandwidth;
     unsigned layerCount;
@@ -57,10 +58,12 @@ private:
 
     cl_kernel perceptronKernel;
 
+    std::unordered_map<Agent*, AgentEntry> agentRegister;
+
     const std::string loadFile(std::string filename);
     cl_program createAndCompileProgram(const std::string& source);
 
-    std::unordered_map<Agent*, AgentEntry> agentRegister;
+
     static void responseCallback(cl_event e, cl_int status, void* data);
 
 };

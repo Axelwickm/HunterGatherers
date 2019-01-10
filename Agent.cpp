@@ -29,6 +29,7 @@ Agent::Agent(World *world, sf::Vector2f position, float orientation) : WorldObje
 orientation(orientation) {
     loadResources();
 
+    generation = 0;
     maxEnergy = 100;
     energy = maxEnergy;
     setMass(1);
@@ -52,7 +53,7 @@ orientation(orientation) {
     lineOfVision[0].color = sf::Color::Cyan;
     lineOfVision[1].color = sf::Color::Cyan;
 
-    std::size_t inputCount = 4;
+    std::size_t inputCount = 5;
     std::size_t outputCount = 4;
 
     percept = std::vector<float>(inputCount);
@@ -98,11 +99,12 @@ orientation(orientation) {
             itr++;
         }
 
-        if (itr == layers->getList().end()){
+        if (++itr == layers->getList().end()){
             auto count = layers->getOwner<MapGenes>()->getGene<IntegerGene>("OutputCount");
             count->evaluate(mutationFactor, l.getEvaluationCount());
             return count->getValue();
         }
+
         auto count = l.getOwner<MapGenes>()->getGene<IntegerGene>("MutatingPerceptronCount");
         count->evaluate(mutationFactor, l.getEvaluationCount());
         return count->getValue();
@@ -120,13 +122,13 @@ orientation(orientation) {
     layer->addGenes("MutatingPerceptronCount", mutatingPerceptronCount);
     auto perceptronCount = std::make_shared<LambdaGene<int> >(perceptronCountLambda);
     layer->addGenes("PerceptronCount", perceptronCount);
-    auto bias = std::make_shared<FloatGene>(-5, 5);
+    auto bias = std::make_shared<FloatGene>(-1, 1);
     layer->addGenes("Bias", bias);
     auto perceptrons = std::make_shared<ListGenes>(perceptron, "PerceptronCount");
     layer->addGenes("Perceptrons", perceptrons);
 
     genes = std::make_shared<MapGenes>();
-    auto layerCount = std::make_shared<IntegerGene>(2, 5);
+    auto layerCount = std::make_shared<IntegerGene>(3, 6);
     genes->addGenes("LayerCount", layerCount);
     auto inputCountG = std::make_shared<IntegerGene>(inputCount, inputCount);
     genes->addGenes("InputCount", inputCountG);
@@ -136,6 +138,7 @@ orientation(orientation) {
     genes->addGenes("Layers", layers);
 
     genes->generate();
+    genes->mutate(0);
 
     MarkovNames nameGenerator(false);
     std::vector<double> genome;
@@ -146,6 +149,7 @@ orientation(orientation) {
 
 Agent::Agent(const Agent& other) : WorldObject(other), orientation(other.orientation){
     loadResources();
+    generation = other.generation;
     maxEnergy = other.maxEnergy;
     energy = other.energy;
 
@@ -156,6 +160,11 @@ Agent::Agent(const Agent& other) : WorldObject(other), orientation(other.orienta
     setBounds(other.getBounds());
 
     genes = std::dynamic_pointer_cast<MapGenes>(other.genes->clone());
+
+    MarkovNames nameGenerator(false);
+    std::vector<double> genome;
+    genes->writeNormal(genome);
+    name = nameGenerator.generate(genome);
 
     receptors.resize(acuity);
     std::fill(std::begin(receptors), std::end(receptors), 0.f);
@@ -183,7 +192,7 @@ void Agent::update(float deltaTime) {
 
     // Apply actions
     const sf::Vector2f vel = getVelocity();
-    float velocityFactor = fminf(actions.at(0)*500.f - sqrtf(vel.x*vel.x+vel.y*vel.y)*1.f, 1000.f);
+    float velocityFactor = fminf(actions.at(0)*1000.f - sqrtf(vel.x*vel.x+vel.y*vel.y)*1.f, 1000.f);
     sf::Vector2f orientationVector = {
             cosf(orientation*PI/180.f),
             sinf(orientation*PI/180.f)
@@ -194,8 +203,7 @@ void Agent::update(float deltaTime) {
     float turn = ((float) actions.at(1) - actions.at(2))*40.0f;
     orientation += turn*deltaTime;
 
-    if (0.9 < actions.at(3) && 80 < energy){
-        printf("Reproduce\n");
+    if (0.7 < actions.at(3) && 80 < energy){
         world->reproduce(*this);
     }
 
@@ -221,7 +229,7 @@ void Agent::update(float deltaTime) {
                     }
                     else if (type == typeid(Mushroom)){
                         world->removeObject(object->getSharedPtr(), false);
-                        energy += 20;
+                        energy += 30;
                     }
                 }
             }
@@ -229,7 +237,7 @@ void Agent::update(float deltaTime) {
     }
 
     energy = fminf(energy, 100);
-    energy -= deltaTime*2.f;
+    energy -= deltaTime*2.0f;
     if (energy <= 0){
         world->removeObject(getSharedPtr(), false);
     }
@@ -278,7 +286,7 @@ void Agent::updatePercept(float deltaTime) {
         quadtree->searchNearLine(nl, getPosition(), getPosition()+lineEnd);
 
         for (auto &n : nl){
-            if (n.get() != this){
+            if (n.get() != this && typeid(*n.get()) == typeid(Mushroom)){
                 sf::Vector2f a = sf::Vector2f(n->getPosition().x + n->getBounds().left,
                                               n->getPosition().y + n->getBounds().top);
 
@@ -369,5 +377,13 @@ void Agent::setMaxEnergy(float maxEnergy) {
 
 const std::string &Agent::getName() const {
     return name;
+}
+
+unsigned int Agent::getGeneration() const {
+    return generation;
+}
+
+void Agent::setGeneration(unsigned int generation) {
+    Agent::generation = generation;
 }
 

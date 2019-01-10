@@ -21,6 +21,9 @@ public:
     static void loadResources();
     MapGenes* getGenes() const;
 
+    unsigned int getGeneration() const;
+    void setGeneration(unsigned int generation);
+
     void update(float deltaTime) override;
     void draw(sf::RenderWindow *window, float deltaTime) override;
 
@@ -44,6 +47,7 @@ public:
 
 private:
     // General
+    unsigned generation;
     std::string name;
     float orientation; // In degrees
     float maxEnergy;
@@ -66,7 +70,7 @@ private:
     float visibility;
     float visualReactivity;
     float FOV;
-    const unsigned static acuity = 4;
+    const unsigned static acuity = 5;
     sf::Vertex lineOfVision[acuity*2];
     sf::Vertex orientationLine[2];
 
