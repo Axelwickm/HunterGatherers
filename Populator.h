@@ -33,7 +33,7 @@ private:
     std::map<std::string, Entry> frequencies;
 
     World *world;
-    static std::mt19937 randomEngine;
+    std::mt19937 randomEngine;
 };
 
 

@@ -24,15 +24,17 @@ void Agent::loadResources() {
     }
 }
 
-Agent::Agent(World *world, sf::Vector2f position, float orientation) : WorldObject("Agent", world, position, true),
-orientation(orientation) {
+Agent::Agent(const AgentSettings &settings, World *world, sf::Vector2f position, float orientation)
+        : WorldObject("Agent", world, position, true),
+          orientation(orientation) {
     loadResources();
 
     generation = 0;
     maxEnergy = 100;
     energy = maxEnergy;
-    setMass(1);
-    setFriction(0.01);
+    setMass(settings.mass);
+    setFriction(settings.friction);
+    maxSpeed = settings.maxSpeed;
 
     frameIndex = 0;
     frame = sf::IntRect(0, 0, 32, 32);
@@ -40,26 +42,79 @@ orientation(orientation) {
     sprite.setOrigin(16, 5);
     setBounds(sf::IntRect(-8, 10, 8, 27));
 
-    visibility = 200;
-    FOV = 110;
-    visualReactivity = 3;
+    receptorCount = settings.receptorCount;
+    FOV = settings.FOV;
+    visibilityDistance = settings.visibilityDistance;
+    visualReactivity = settings.visualReactivity;
 
-    receptors.resize(acuity);
+    receptors.resize(receptorCount);
     std::fill(std::begin(receptors), std::end(receptors), 0.f);
 
-    lineOfVision[0] = sf::Vertex(sf::Vector2f(0,0));
-    lineOfVision[1] = sf::Vertex(sf::Vector2f(0,0));
-    lineOfVision[0].color = sf::Color::Cyan;
-    lineOfVision[1].color = sf::Color::Cyan;
+    lineOfSight.resize(receptorCount*2);
+    lineOfSight[0] = sf::Vertex(sf::Vector2f(0,0));
+    lineOfSight[1] = sf::Vertex(sf::Vector2f(0,0));
+    lineOfSight[0].color = sf::Color::Cyan;
+    lineOfSight[1].color = sf::Color::Cyan;
 
-    std::size_t inputCount = 5;
     std::size_t outputCount = 4;
+    std::size_t inputCount = receptors.size() + 1;
 
     percept = std::vector<float>(inputCount);
     std::fill(std::begin(percept), std::end(percept), 0.f);
     actions = std::vector<float>(outputCount);
     std::fill(std::begin(actions), std::end(actions), 0.f);
 
+    constructGenome(inputCount, outputCount);
+
+    MarkovNames nameGenerator(false, world->getConfig().seed++);
+    std::vector<double> genome;
+    genes->writeNormal(genome);
+    name = nameGenerator.generate(genome);
+
+}
+
+Agent::Agent(const Agent &other) : WorldObject(other), orientation(other.orientation) {
+    loadResources();
+    generation = other.generation;
+    maxEnergy = other.maxEnergy;
+    energy = other.energy;
+
+    frameIndex = 0;
+    frame = sf::IntRect(0, 0, 32, 32);
+    sprite = sf::Sprite(walkingTexture, frame);
+    sprite.setOrigin(other.sprite.getOrigin());
+    setBounds(other.getBounds());
+
+    genes = std::dynamic_pointer_cast<MapGenes>(other.genes->clone());
+
+    MarkovNames nameGenerator(false, world->getConfig().seed++);
+    std::vector<double> genome;
+    genes->writeNormal(genome);
+    name = nameGenerator.generate(genome);
+
+    // Vision variables
+    receptorCount = other.receptorCount;
+    visibilityDistance = other.visibilityDistance;
+    FOV = other.FOV;
+    visualReactivity = other.visualReactivity;
+
+    receptors.resize(receptorCount);
+    std::fill(std::begin(receptors), std::end(receptors), 0.f);
+
+    lineOfSight.resize(receptorCount*2);
+    lineOfSight[0] = sf::Vertex(sf::Vector2f(0,0));
+    lineOfSight[1] = sf::Vertex(sf::Vector2f(0,0));
+    lineOfSight[0].color = sf::Color::Cyan;
+    lineOfSight[1].color = sf::Color::Cyan;
+
+    percept.resize(other.percept.size());
+    actions.resize(other.actions.size());
+
+    sf::Vertex orientationLine[2];
+}
+
+
+void Agent::constructGenome(size_t inputCount, size_t outputCount) {
     auto previousLayerPerceptronCountLambda = [](LambdaGene<int> &l, float mutationFactor) {
         auto layers = l.getOwner<MapGenes>()->getOwner<ListGenes>()->getOwner<MapGenes>()->getOwner<ListGenes>();
         auto thisLayer = l.getOwner<MapGenes>()->getOwner<ListGenes>()->getOwner<MapGenes>();
@@ -109,25 +164,27 @@ orientation(orientation) {
         return count->getValue();
     };
 
+    auto& aConfig = world->getConfig().agents;
+
     auto perceptron = std::make_shared<MapGenes>();
     auto weightCount = std::make_shared<LambdaGene<int> >(previousLayerPerceptronCountLambda);
     perceptron->addGenes("WeightCount", weightCount);
-    auto weight = std::make_shared<FloatGene>(-1, 1);
+    auto weight = std::make_shared<FloatGene>(aConfig.weightMin, aConfig.weightMax);
     auto weights = std::make_shared<ListGenes>(weight, "WeightCount");
     perceptron->addGenes("Weights", weights);
 
     auto layer = std::make_shared<MapGenes>();
-    auto mutatingPerceptronCount = std::make_shared<IntegerGene>(3, 8);
+    auto mutatingPerceptronCount = std::make_shared<IntegerGene>(aConfig.perceptronPerLayerMin, aConfig.perceptronPerLayerMax);
     layer->addGenes("MutatingPerceptronCount", mutatingPerceptronCount);
     auto perceptronCount = std::make_shared<LambdaGene<int> >(perceptronCountLambda);
     layer->addGenes("PerceptronCount", perceptronCount);
-    auto bias = std::make_shared<FloatGene>(-1, 1);
+    auto bias = std::make_shared<FloatGene>(aConfig.biasMin, aConfig.biasMax);
     layer->addGenes("Bias", bias);
     auto perceptrons = std::make_shared<ListGenes>(perceptron, "PerceptronCount");
     layer->addGenes("Perceptrons", perceptrons);
 
     genes = std::make_shared<MapGenes>();
-    auto layerCount = std::make_shared<IntegerGene>(3, 6);
+    auto layerCount = std::make_shared<IntegerGene>(aConfig.layersMin, aConfig.layersMax);
     genes->addGenes("LayerCount", layerCount);
     auto inputCountG = std::make_shared<IntegerGene>(inputCount, inputCount);
     genes->addGenes("InputCount", inputCountG);
@@ -137,61 +194,14 @@ orientation(orientation) {
     genes->addGenes("Layers", layers);
 
     genes->generate();
-    genes->mutate(0);
-
-    MarkovNames nameGenerator(false);
-    std::vector<double> genome;
-    genes->writeNormal(genome);
-    name = nameGenerator.generate(genome);
-
 }
-
-Agent::Agent(const Agent &other) : WorldObject(other), orientation(other.orientation) {
-    loadResources();
-    generation = other.generation;
-    maxEnergy = other.maxEnergy;
-    energy = other.energy;
-
-    frameIndex = 0;
-    frame = sf::IntRect(0, 0, 32, 32);
-    sprite = sf::Sprite(walkingTexture, frame);
-    sprite.setOrigin(other.sprite.getOrigin());
-    setBounds(other.getBounds());
-
-    genes = std::dynamic_pointer_cast<MapGenes>(other.genes->clone());
-
-    MarkovNames nameGenerator(false);
-    std::vector<double> genome;
-    genes->writeNormal(genome);
-    name = nameGenerator.generate(genome);
-
-    receptors.resize(acuity);
-    std::fill(std::begin(receptors), std::end(receptors), 0.f);
-
-
-    // Vision variables,
-    visibility = other.visibility;
-    FOV = other.FOV;
-    visualReactivity = other.visualReactivity;
-
-    lineOfVision[0] = sf::Vertex(sf::Vector2f(0,0));
-    lineOfVision[1] = sf::Vertex(sf::Vector2f(0,0));
-    lineOfVision[0].color = sf::Color::Cyan;
-    lineOfVision[1].color = sf::Color::Cyan;
-
-    percept.resize(other.percept.size());
-    actions.resize(other.actions.size());
-
-    sf::Vertex orientationLine[2];
-}
-
 
 void Agent::update(float deltaTime) {
     WorldObject::update(deltaTime);
 
     // Apply actions
     const sf::Vector2f vel = getVelocity();
-    float velocityFactor = fminf(actions.at(0)*1000.f - sqrtf(vel.x*vel.x+vel.y*vel.y)*1.f, 1000.f);
+    float velocityFactor = fminf(actions.at(0)*maxSpeed - sqrtf(vel.x*vel.x+vel.y*vel.y)*1.f, maxSpeed);
     sf::Vector2f orientationVector = {
             cosf(orientation*PI/180.f),
             sinf(orientation*PI/180.f)
@@ -259,8 +269,8 @@ void Agent::draw(sf::RenderWindow *window, float deltaTime) {
     sprite.setPosition(getPosition());
     window->draw(sprite);
 
-    if (RenderSettings::showVision){
-        window->draw(lineOfVision, 2*receptors.size(), sf::Lines);
+    if (world->getConfig().render.showVision){
+        window->draw(&lineOfSight.front(), 2*receptors.size(), sf::Lines);
         window->draw(orientationLine, 2, sf::Lines);
     }
     WorldObject::draw(window, deltaTime);
@@ -271,7 +281,7 @@ void Agent::updatePercept(float deltaTime) {
 
     // Calculate perceptors
 
-    sf::Vector2f visionEnd = getPosition() + sf::Vector2f(visibility, 0);
+    sf::Vector2f visionEnd = getPosition() + sf::Vector2f(visibilityDistance, 0);
     sf::Vector2f dV = visionEnd - getPosition();
 
     for (size_t i = 0; i < receptors.size(); i++){
@@ -294,7 +304,7 @@ void Agent::updatePercept(float deltaTime) {
 
                 if (lineIntersectWithBox(getPosition(), getPosition()+lineEnd, a, b)){
                     sf::Vector2f dPos = n->getPosition() - getPosition();
-                    float change = deltaTime*visualReactivity*(1.f-(dPos.x*dPos.x+dPos.y*dPos.y)/(visibility*visibility));
+                    float change = deltaTime*visualReactivity*(1.f-(dPos.x*dPos.x+dPos.y*dPos.y)/(visibilityDistance*visibilityDistance));
                     receptors[i] = (1-deltaTime*change)*receptors[i] + change;
                 }
             }
@@ -304,16 +314,16 @@ void Agent::updatePercept(float deltaTime) {
         *perceptIterator = receptors[i];
         perceptIterator++;
 
-        if (RenderSettings::showVision) {
-            lineOfVision[i*2].position = getPosition();
-            lineOfVision[i*2+1].position = getPosition() + lineEnd;
-            lineOfVision[i*2].color = sf::Color(155*receptors[i]+100, 10, 10, 255);
-            lineOfVision[i*2+1].color = lineOfVision[i*2].color;
+        if (world->getConfig().render.showVision) {
+            lineOfSight[i*2].position = getPosition();
+            lineOfSight[i*2+1].position = getPosition() + lineEnd;
+            lineOfSight[i*2].color = sf::Color(155*receptors[i]+100, 10, 10, 255);
+            lineOfSight[i*2+1].color = lineOfSight[i*2].color;
         }
 
     }
 
-    if (RenderSettings::showVision){
+    if (world->getConfig().render.showVision){
         sf::Vector2f lineEnd = {
                 dV.x * cosf(orientation*PI/180.f) - dV.y * sinf(orientation*PI/180.f),
                 dV.x * sinf(orientation*PI/180.f) - dV.y * cosf(orientation*PI/180.f)
@@ -324,6 +334,9 @@ void Agent::updatePercept(float deltaTime) {
         orientationLine[0].color = sf::Color(100, 100, 200);
         orientationLine[1].color = orientationLine[0].color;
     }
+
+    *perceptIterator = energy / maxEnergy;
+    perceptIterator++;
 
     if (perceptIterator != percept.end()){
         throw std::runtime_error("All percept values not updated.\n");

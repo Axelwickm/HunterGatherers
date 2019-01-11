@@ -10,7 +10,7 @@
 
 class MarkovNames {
 public:
-    MarkovNames(bool random);
+    MarkovNames(const bool random, unsigned long seed);
 
     static void loadResources();
     std::string generate(const std::vector<double> genome);
@@ -21,7 +21,7 @@ private:
     static bool loaded;
     static nlohmann::json chain;
 
-    static std::mt19937 randomEngine;
+    std::mt19937 randomEngine;
 };
 
 

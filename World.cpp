@@ -9,25 +9,29 @@
 
 #include "PerlinNoise/PerlinNoise.hpp"
 
-std::mt19937 World::randomEngine = std::mt19937(GeneralSettings::seed++);
-
-World::World(sf::RenderWindow *window, OpenCL_Wrapper *openCL_wrapper, const WorldOptions &options) :
-window(window), dimensions(options.dimensions), openCL_wrapper(openCL_wrapper),
+World::World(Config &config, sf::RenderWindow *window, OpenCL_Wrapper *openCL_wrapper) :
+config(config), window(window), dimensions(config.world.dimensions), openCL_wrapper(openCL_wrapper),
 populator(this), quadtree(Quadtree<float>(sf::Vector2<float>(0, 0), dimensions)) {
-    quadtree.setLimit(options.quadtreeLimit);
-    populator.addEntries(options.populatorEntries);
-    generateTerrain(options);
+    randomEngine = std::mt19937(config.seed++);
+    quadtree.setLimit(config.world.quadtreeLimit);
+
+    std::vector<Populator::Entry> populatorEntries;
+    for (auto& e : config.world.populatorEntries){
+        populatorEntries.push_back(*((Populator::Entry*) &e)); // Please look away.
+    }
+    populator.addEntries(populatorEntries);
+    generateTerrain();
 
 }
 
-void World::generateTerrain(const WorldOptions &options) {
+void World::generateTerrain() {
     float f = 10;
     siv::PerlinNoise perlinNoise1;
     siv::PerlinNoise perlinNoise2;
-    perlinNoise1.reseed(GeneralSettings::seed++);
-    perlinNoise2.reseed(GeneralSettings::seed++);
+    perlinNoise1.reseed(config.seed++);
+    perlinNoise2.reseed(config.seed++);
     sf::Image background;
-    background.create(options.terrainSquare, options.terrainSquare, sf::Color::Black);
+    background.create(config.world.terrainSquare, config.world.terrainSquare, sf::Color::Black);
     for (unsigned x = 0; x < background.getSize().x; x++){
         for (unsigned y = 0; y < background.getSize().y; y++){
             double n1 = perlinNoise1.octaveNoise((float) x / (float) background.getSize().x * f, (float) y / (float) background.getSize().y * f, 20) + 1;
@@ -41,13 +45,14 @@ void World::generateTerrain(const WorldOptions &options) {
 
     terrainTexture.loadFromImage(background);
     terrain = sf::Sprite(terrainTexture);
-    terrain.setScale(dimensions.x / options.terrainSquare, dimensions.y / options.terrainSquare);
+    terrain.setScale(dimensions.x / config.world.terrainSquare, dimensions.y / config.world.terrainSquare);
 }
 
 void World::update(float deltaTime) {
     openCL_wrapper->clFinishAll(); // More optimized to have this here?
 
     populator.populate(deltaTime);
+
 
     // World updates
     for (auto &object : objects) {
@@ -71,8 +76,8 @@ void World::draw(float deltaTime) {
         object->draw(window, deltaTime);
     }
 
-    if (RenderSettings::showQuadtree){
-        quadtree.draw(window, RenderSettings::showQuadtreeEntities);
+    if (config.render.showQuadtree){
+        quadtree.draw(window, config.render.showQuadtreeEntities);
     }
 }
 
@@ -149,7 +154,7 @@ bool World::spawn(std::string type) {
     if (type == "Agent"){
         sf::Vector2<float> position(spawnX(randomEngine), spawnY(randomEngine));
         float orientation = std::uniform_real_distribution<float>(0, 360)(randomEngine);
-        auto agent = std::make_shared<Agent>(this, position, orientation);
+        auto agent = std::make_shared<Agent>(config.agents, this, position, orientation);
         agent->setVelocity(sf::Vector2f(0, 0));
         return addObject(agent);
     }
@@ -179,6 +184,10 @@ void World::reproduce(Agent &a) {
     addObject(agent);
     addObject(std::make_shared<Heart>(this, a.getPosition()));
     printf("Reproduced to gen %u : %s -> %s\n", agent->getGeneration(), a.getName().c_str(), agent->getName().c_str());
+}
+
+Config & World::getConfig() {
+    return config;
 }
 
 

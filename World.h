@@ -18,16 +18,9 @@
 #include "Populator.h"
 
 
-struct WorldOptions {
-    sf::Vector2f dimensions;
-    unsigned terrainSquare;
-    float quadtreeLimit;
-    std::vector<Populator::Entry> populatorEntries;
-};
-
 class World {
 public:
-    World(sf::RenderWindow *window, OpenCL_Wrapper *openCL_wrapper, const WorldOptions &options);
+    World(Config &config, sf::RenderWindow *window, OpenCL_Wrapper *openCL_wrapper);
 
     OpenCL_Wrapper *getOpenCL_wrapper() const;
 
@@ -41,12 +34,14 @@ public:
 
     void reproduce(Agent &a);
 
+    Config & getConfig();
 
     const sf::RenderWindow *getWindow() const;
     const sf::Vector2f &getDimensions() const;
     const Quadtree<float> &getQuadtree() const;
 
 private:
+    Config config;
     sf::RenderWindow *window;
     const sf::Vector2f dimensions;
     sf::Texture terrainTexture;
@@ -60,9 +55,9 @@ private:
 
     Quadtree<float> quadtree;
     OpenCL_Wrapper *openCL_wrapper;
-    static std::mt19937 randomEngine;
+    std::mt19937 randomEngine;
 
-    void generateTerrain(const WorldOptions &options);
+    void generateTerrain();
 };
 
 

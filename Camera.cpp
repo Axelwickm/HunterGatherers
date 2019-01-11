@@ -4,7 +4,7 @@
 
 #include "Camera.h"
 
-Camera::Camera(sf::RenderWindow *window, sf::Vector2f worldSize) {
+Camera::Camera(const Config &config, sf::RenderWindow *window, sf::Vector2f worldSize) : config(config) {
     this->window = window;
     this->view = window->getDefaultView();
     this->worldSize = worldSize;
@@ -24,7 +24,7 @@ void Camera::move(sf::Vector2f offset) {
 
 void Camera::zoomTo(float mouseWheelDelta,  sf::Vector2<int> mousePosition) {
     sf::Vector2f c1 = (sf::Vector2f) window->mapPixelToCoords(sf::Mouse::getPosition(*window));
-    view.zoom(1.f-mouseWheelDelta * Controls::scrollFactor);
+    view.zoom(1.f-mouseWheelDelta * config.controls.scrollFactor);
     view.setSize((float) fmin(view.getSize().x, worldSize.x), (float) fmin(view.getSize().y, worldSize.y));
     auto c2 = (sf::Vector2f) window->mapPixelToCoords(mousePosition, view);
     view.move(c1-c2);

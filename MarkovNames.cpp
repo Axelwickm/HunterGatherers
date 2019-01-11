@@ -11,7 +11,6 @@
 bool MarkovNames::loaded = false;
 nlohmann::json MarkovNames::chain;
 
-std::mt19937 MarkovNames::randomEngine = std::mt19937(GeneralSettings::seed++);
 
 void MarkovNames::loadResources() {
     if (!loaded){
@@ -25,7 +24,9 @@ void MarkovNames::loadResources() {
     }
 }
 
-MarkovNames::MarkovNames(const bool random) : random(random) {}
+MarkovNames::MarkovNames(const bool random, unsigned long seed) : random(random) {
+    randomEngine = std::mt19937(seed);
+}
 
 std::string MarkovNames::generate(const std::vector<double> genome) {
     loadResources();

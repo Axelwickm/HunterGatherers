@@ -7,10 +7,11 @@
 #include "MarkovNames.h"
 
 int main(int argc, char *argv[]) {
-    printf("Using seed: %lu\n", GeneralSettings::seed);
 
-    // Figure out which OpenCL accelerator device to use
+
+    // Process potential arguments config filename, and OpenCL device
     std::string deviceName;
+    std::string configFilename = "..\\Config.json";
 
     for (int i = 0; i < argc; i++){
         std::string s(argv[i]);
@@ -29,17 +30,21 @@ int main(int argc, char *argv[]) {
             i++;
         }
     }
+    Config config;
+    config.loadConfigFromFile(configFilename);
+    printf("Using seed: %lu\n", config.seed);
 
     MarkovNames::loadResources();
-    MarkovNames markovNames(true);
+    Gene::randomEngine = std::mt19937(config.seed++);
 
     // Create main objects
-    sf::RenderWindow window(sf::VideoMode(GeneralSettings::windowSize.x, GeneralSettings::windowSize.y),
+    sf::RenderWindow window(sf::VideoMode(config.render.windowSize.x, config.render.windowSize.y),
             "Hunter Gatherers");
     GUI gui(&window);
-    Camera camera(&window, sf::Vector2f(GeneralSettings::windowSize.x*10, GeneralSettings::windowSize.y*10));
+    Camera camera(config, &window,
+                  sf::Vector2f(config.render.windowSize.x * 10, config.render.windowSize.y * 10));
     OpenCL_Wrapper cl(deviceName);
-    World world(&window, &cl, GeneralSettings::options);
+    World world(config, &window, &cl);
 
     // Game loop variables
 
@@ -49,6 +54,8 @@ int main(int argc, char *argv[]) {
 
     bool dragging = false;
     sf::Vector2<int> mousePosition = sf::Mouse::getPosition();
+
+    const Controls& controls = config.controls;
 
     // Game loop
     while (window.isOpen()) {
@@ -61,29 +68,29 @@ int main(int argc, char *argv[]) {
             // A key was pressed
             if (event.type == sf::Event::KeyPressed){
                 sf::Keyboard::Key code = event.key.code;
-                if (code == Controls::pause){
+                if (code == controls.pause){
                     paused = !paused;
                 }
-                else if (code == Controls::close){
+                else if (code == controls.close){
                     window.close();
                 }
-                if (code == Controls::up){
-                    camera.move(sf::Vector2f(0, Controls::upAmount));
+                if (code == controls.up){
+                    camera.move(sf::Vector2f(0, controls.upAmount));
                 }
-                if (code == Controls::down){
-                    camera.move(sf::Vector2f(0, Controls::downAmount));
+                if (code == controls.down){
+                    camera.move(sf::Vector2f(0, controls.downAmount));
                 }
-                if (code == Controls::left){
-                    camera.move(sf::Vector2f(Controls::leftAmount, 0));
+                if (code == controls.left){
+                    camera.move(sf::Vector2f(controls.leftAmount, 0));
                 }
-                if (code == Controls::right){
-                    camera.move(sf::Vector2f(Controls::rightAmount, 0));
+                if (code == controls.right){
+                    camera.move(sf::Vector2f(controls.rightAmount, 0));
                 }
-                if (code == Controls::slowDown){
-                    timeFactor = fmaxf(Controls::timeFactorDelta, timeFactor-Controls::timeFactorDelta);
+                if (code == controls.slowDown){
+                    timeFactor = fmaxf(controls.timeFactorDelta, timeFactor - controls.timeFactorDelta);
                 }
-                else if (code == Controls::speedUp){
-                    timeFactor = fminf(Controls::timeFactorMax, timeFactor+Controls::timeFactorDelta);
+                else if (code == controls.speedUp){
+                    timeFactor = fminf(controls.timeFactorMax, timeFactor + controls.timeFactorDelta);
                 }
             }
 
@@ -159,7 +166,6 @@ int main(int argc, char *argv[]) {
         }
 
         // Rendering
-
         window.clear(sf::Color::Black);
         world.draw(paused ? 0 : dt.asSeconds()*timeFactor);
         gui.draw(paused ? 0 : dt.asSeconds()*timeFactor);

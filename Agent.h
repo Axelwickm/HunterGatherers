@@ -7,13 +7,14 @@
 
 #include "WorldObject.h"
 #include "Gene.h"
+#include "Config.h"
 
 #include <SFML/Graphics.hpp>
 #include <vector>
 
 class Agent : public WorldObject {
 public:
-    Agent(World *world, sf::Vector2f position, float orientation);
+    Agent(const AgentSettings &settings, World *world, sf::Vector2f position, float orientation);
 
     Agent(const Agent &other);
 
@@ -54,6 +55,7 @@ private:
     float orientation; // In degrees
     float maxEnergy;
     float energy; // Between 0 and maxEnergy
+    float maxSpeed;
 
      // Rendering
     sf::Sprite sprite;
@@ -69,16 +71,17 @@ private:
 
 
     // Vision variables,
-    float visibility;
+    unsigned receptorCount;
+    float visibilityDistance;
     float visualReactivity;
     float FOV;
-    const unsigned static acuity = 5;
-    sf::Vertex lineOfVision[acuity*2];
+    std::vector<sf::Vertex> lineOfSight;
     sf::Vertex orientationLine[2];
 
     static bool loaded;
     static sf::Texture walkingTexture;
 
+    void constructGenome(size_t inputCount, size_t outputCount);
 };
 
 

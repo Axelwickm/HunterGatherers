@@ -5,9 +5,9 @@
 #include <ctime>
 #include "World.h"
 
-std::mt19937 Populator::randomEngine = std::mt19937(GeneralSettings::seed++);
-
-Populator::Populator(World *world) : world(world) {}
+Populator::Populator(World *world) : world(world) {
+    randomEngine = std::mt19937(world->getConfig().seed++);
+}
 
 void Populator::populate(float deltaT) {
     for (auto &entry : frequencies) {

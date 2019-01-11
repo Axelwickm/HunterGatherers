@@ -6,40 +6,79 @@
 #define HUNTERGATHERERS_CONFIG_H
 
 #include <SFML/Graphics.hpp>
+#include "json/json.hpp"
 
-struct WorldOptions;
+struct WorldSettings {
+    struct PopulationEntry {
+        std::string type;
+        unsigned count;
+        unsigned targetCount;
+        float rate;
+    };
 
-namespace GeneralSettings {
-    extern long unsigned int seed;
-    extern sf::Vector2u windowSize;
-    extern WorldOptions options;
-}
-
-namespace RenderSettings {
-    extern bool showWorldObjectBounds;
-    extern bool showQuadtree;
-    extern bool showQuadtreeEntities;
-    extern bool showVision;
+    sf::Vector2f dimensions;
+    unsigned terrainSquare{};
+    float quadtreeLimit{};
+    std::vector<PopulationEntry> populatorEntries{};
 };
 
-namespace Controls {
-    extern sf::Keyboard::Key pause;
-    extern sf::Keyboard::Key close;
+struct AgentSettings {
+    float mass;
+    float friction;
+    float maxSpeed;
 
-    extern sf::Keyboard::Key up;
-    extern float upAmount;
-    extern sf::Keyboard::Key down;
-    extern float downAmount;
-    extern sf::Keyboard::Key left;
-    extern float leftAmount;
-    extern sf::Keyboard::Key right;
-    extern float rightAmount;
+    unsigned receptorCount;
+    float FOV;
+    float visibilityDistance;
+    float visualReactivity;
 
-    extern sf::Keyboard::Key slowDown;
-    extern sf::Keyboard::Key speedUp;
-    extern float timeFactorDelta;
-    extern float timeFactorMax;
-    extern float scrollFactor;
+    int layersMin, layersMax;
+    float biasMin, biasMax;
+    float weightMin, weightMax;
+    int perceptronPerLayerMin, perceptronPerLayerMax;
+};
+
+
+struct RenderSettings {
+    sf::Vector2u windowSize;
+    bool showWorldObjectBounds{};
+    bool showQuadtree{};
+    bool showQuadtreeEntities{};
+    bool showVision{};
+};
+
+struct Controls {
+    sf::Keyboard::Key pause;// = sf::Keyboard::Space;
+    sf::Keyboard::Key close;// = sf::Keyboard::Escape;
+
+    sf::Keyboard::Key up;// = sf::Keyboard::Up;
+    float upAmount;
+    sf::Keyboard::Key down;// = sf::Keyboard::Down;;
+    float downAmount;
+    sf::Keyboard::Key left;// = sf::Keyboard::Left;
+    float leftAmount;
+    sf::Keyboard::Key right;// = sf::Keyboard::Right;
+    float rightAmount;
+
+    sf::Keyboard::Key slowDown;// = sf::Keyboard::Comma;
+    sf::Keyboard::Key speedUp;// = sf::Keyboard::Period;
+    float timeFactorDelta;
+    float timeFactorMax;
+    float scrollFactor;
+};
+
+
+struct Config {
+    long unsigned int seed{};
+    WorldSettings world{};
+    AgentSettings agents{};
+    RenderSettings render;
+    Controls controls{};
+
+    void loadConfigFromFile(const std::string &filename);
+
+    sf::Keyboard::Key findKeyCode(std::string key);
+
 };
 
 

@@ -6,10 +6,9 @@
 #include "Gene.h"
 #include "Config.h"
 
+std::mt19937 Gene::randomEngine = std::mt19937(0); // Seed is set outside class
 
-std::mt19937 Gene::randomEngine = std::mt19937(GeneralSettings::seed++);
-
-Gene::Gene(const std::type_info &type) : type(type), state(UNEVALUATED), evaluationCount(0), mutationWeight(1) {}
+Gene::Gene(const std::type_info &type) : type(type), state(UNEVALUATED), evaluationCount(0), mutationWeight(1) {};
 
 void Gene::setOwner(Gene *owner) {
     Gene::owner = owner;

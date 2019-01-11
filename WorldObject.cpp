@@ -62,7 +62,7 @@ void WorldObject::applyForce(float deltaTime, const sf::Vector2f force) {
 }
 
 void WorldObject::draw(sf::RenderWindow *window, float deltaTime) {
-    if (RenderSettings::showWorldObjectBounds){
+    if (world->getConfig().render.showWorldObjectBounds){
         sf::VertexArray rect(sf::LineStrip, 5);
         sf::IntRect b = getBounds();
         rect[0].position = sf::Vector2f(getPosition() + sf::Vector2f(b.left, b.top));
