@@ -4,12 +4,18 @@
 
 #include <sstream>
 #include "GUI.h"
+#include "World.h"
 
-GUI::GUI(sf::RenderWindow *window) : window(window), view(window->getDefaultView()) {
+GUI::GUI(sf::RenderWindow *window, World* world) : window(window), view(window->getDefaultView()), world(world) {
     font.loadFromFile(R"(C:\Windows\Fonts\consola.ttf)");
     sf::Color gray(120, 120, 120);
 
-    // TODO: monitor size scaling
+    simulationInfo.main = sf::Text("FPS: ###\nTime factor: ##\nPopulation: ###\nAverage generation: ####\nHighest generation: ####\n", font);
+    simulationInfo.main.setCharacterSize(20);
+    simulationInfo.main.setStyle(sf::Text::Regular);
+    simulationInfo.main.setFillColor(gray);
+    simulationInfo.main.setPosition(10, window->getSize().y-simulationInfo.main.getLocalBounds().height-5);
+
     // Agent info
     agentInfo.agentIdentifier = sf::Text("", font);
     agentInfo.agentIdentifier.setCharacterSize(40);
@@ -44,9 +50,16 @@ GUI::GUI(sf::RenderWindow *window) : window(window), view(window->getDefaultView
 
 }
 
-void GUI::draw(float deltaTime) {
+void GUI::draw(float deltaTime, float timeFactor) {
     auto cameraView = window->getView();
     window->setView(view);
+
+    simulationInfo.main.setString("FPS: "+std::to_string(int(1.f/deltaTime))
+        +"\nTime factor: "+std::to_string(int(timeFactor))
+        +"\nPopulation: "+std::to_string(world->getAgents().size())
+        +"\nAverage generation: "+std::to_string(world->getStatistics().averageGeneration)
+        +"\nHighest generation: "+std::to_string(world->getStatistics().highestGeneration));
+    window->draw(simulationInfo.main);
 
     if (selectedAgent){
         window->draw(agentInfo.agentIdentifier);

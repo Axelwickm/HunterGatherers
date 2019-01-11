@@ -11,16 +11,21 @@
 
 class GUI {
 public:
-    explicit GUI(sf::RenderWindow *window);
-    void draw(float deltaTime);
+    explicit GUI(sf::RenderWindow *window, World* world);
+    void draw(float deltaTime, float timeFactor);
     void selectAgent(std::shared_ptr<Agent> agent);
 
     const std::shared_ptr<Agent> &getSelectedAgent() const;
 
 private:
     sf::RenderWindow *window;
+    const World* world;
     const sf::View &view;
     sf::Font font;
+
+    struct {
+        sf::Text main;
+    } simulationInfo;
 
     struct VectorRenderer {
         void draw(sf::RenderWindow *window, const std::vector<float> &vec);

@@ -47,12 +47,17 @@ void Config::loadConfigFromFile(const std::string &filename) {
     agents.mass = AS["mass"].get<float>();
     agents.friction = AS["friction"].get<float>();
     agents.maxSpeed = AS["maxSpeed"].get<float>();
+    agents.turnFactor = AS["turnFactor"].get<float>();
+
+    agents.energyLossRate = AS["energyLossRate"].get<float>();
+    agents.mushroomEnergy = AS["mushroomEnergy"].get<float>();
 
     agents.receptorCount = AS["receptorCount"].get<unsigned>();
     agents.FOV = AS["FOV"].get<float>();
     agents.visibilityDistance = AS["visibilityDistance"].get<float>();
     agents.visualReactivity = AS["visualReactivity"].get<float>();
 
+    agents.mutation = AS["mutation"].get<float>();
     agents.layersMin = AS["layerMin"].get<int>(); agents.layersMax = AS["layerMax"].get<int>();
     agents.biasMin = AS["biasMin"].get<float>(); agents.biasMax = AS["biasMax"].get<float>();
     agents.weightMin = AS["weightMin"].get<float>(); agents.weightMax = AS["weightMax"].get<float>();

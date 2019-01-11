@@ -40,11 +40,11 @@ int main(int argc, char *argv[]) {
     // Create main objects
     sf::RenderWindow window(sf::VideoMode(config.render.windowSize.x, config.render.windowSize.y),
             "Hunter Gatherers");
-    GUI gui(&window);
     Camera camera(config, &window,
                   sf::Vector2f(config.render.windowSize.x * 10, config.render.windowSize.y * 10));
     OpenCL_Wrapper cl(deviceName);
     World world(config, &window, &cl);
+    GUI gui(&window, &world);
 
     // Game loop variables
 
@@ -168,7 +168,7 @@ int main(int argc, char *argv[]) {
         // Rendering
         window.clear(sf::Color::Black);
         world.draw(paused ? 0 : dt.asSeconds()*timeFactor);
-        gui.draw(paused ? 0 : dt.asSeconds()*timeFactor);
+        gui.draw(paused ? 0 : dt.asSeconds() * timeFactor, timeFactor);
         window.display();
     }
 

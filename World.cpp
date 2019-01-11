@@ -21,7 +21,6 @@ populator(this), quadtree(Quadtree<float>(sf::Vector2<float>(0, 0), dimensions))
     }
     populator.addEntries(populatorEntries);
     generateTerrain();
-
 }
 
 void World::generateTerrain() {
@@ -67,6 +66,7 @@ void World::update(float deltaTime) {
         openCL_wrapper->think(agent, agent->getPercept());
     }
 
+
 }
 
 void World::draw(float deltaTime) {
@@ -95,6 +95,7 @@ bool World::addObject(std::shared_ptr<WorldObject> worldObject) {
     if (typeid(*worldObject.get()) == typeid(Agent)){
         agents.insert(std::dynamic_pointer_cast<Agent>(worldObject));
         openCL_wrapper->addAgent((Agent*) worldObject.get());
+        updateStatistics();
     }
 
     populator.changeCount(worldObject->type, 1);
@@ -128,6 +129,7 @@ void World::performDeletions() {
     }
 
     deletionList.clear();
+    updateStatistics();
 }
 
 const sf::RenderWindow *World::getWindow() const {
@@ -174,13 +176,12 @@ bool World::spawn(std::string type) {
 }
 
 void World::reproduce(Agent &a) {
-    auto agent = std::make_shared<Agent>(a);
+    auto agent = std::make_shared<Agent>(a, config.agents.mutation);
     agent->setGeneration(agent->getGeneration()+1);
     agent->setQuadtree(&quadtree, agent);
-    agent->getGenes()->mutate(0.1);
-    agent->setEnergy(a.getEnergy()/2);
+    agent->setEnergy(a.getEnergy()/2.f);
     agent->setOrientation(std::uniform_real_distribution<float>(0, 360)(randomEngine));
-    a.setEnergy(a.getEnergy()/2);
+    a.setEnergy(a.getEnergy()/2.f);
     addObject(agent);
     addObject(std::make_shared<Heart>(this, a.getPosition()));
     printf("Reproduced to gen %u : %s -> %s\n", agent->getGeneration(), a.getName().c_str(), agent->getName().c_str());
@@ -188,6 +189,31 @@ void World::reproduce(Agent &a) {
 
 Config & World::getConfig() {
     return config;
+}
+
+const std::set<std::shared_ptr<Agent>> &World::getAgents() const {
+    return agents;
+}
+
+const std::set<std::shared_ptr<WorldObject>> &World::getObjects() const {
+    return objects;
+}
+
+void World::updateStatistics() {
+    if (agents.empty()){
+        statistics.averageGeneration = 0;
+        statistics.highestGeneration = 0;
+    }
+    else {
+        auto acc = [&](float x, const std::shared_ptr<Agent>& b){return x + b->getGeneration();};
+        statistics.averageGeneration = accumulate(agents.begin(), agents.end(), 0.f, acc) / agents.size();
+        auto comp = [&](const std::shared_ptr<Agent>& a, const std::shared_ptr<Agent>& b){return a->getGeneration() < b->getGeneration();};
+        statistics.highestGeneration = (*std::max_element(agents.begin(), agents.end(), comp))->getGeneration();
+    }
+}
+
+const WorldStatistics & World::getStatistics() const {
+    return statistics;
 }
 
 

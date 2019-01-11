@@ -17,6 +17,10 @@
 #include "OpenCL_Wrapper.h"
 #include "Populator.h"
 
+struct WorldStatistics {
+    float averageGeneration = 0;
+    unsigned highestGeneration = 0;
+};
 
 class World {
 public:
@@ -36,9 +40,15 @@ public:
 
     Config & getConfig();
 
+    const std::set<std::shared_ptr<Agent>> &getAgents() const;
+    const std::set<std::shared_ptr<WorldObject>> &getObjects() const;
+
+    const WorldStatistics & getStatistics() const;
+
     const sf::RenderWindow *getWindow() const;
     const sf::Vector2f &getDimensions() const;
     const Quadtree<float> &getQuadtree() const;
+
 
 private:
     Config config;
@@ -52,12 +62,15 @@ private:
     Populator populator;
     std::set<std::shared_ptr<Agent>> agents;
     std::set<std::shared_ptr<WorldObject> > objects;
+    WorldStatistics statistics;
 
     Quadtree<float> quadtree;
     OpenCL_Wrapper *openCL_wrapper;
     std::mt19937 randomEngine;
 
     void generateTerrain();
+
+    void updateStatistics();
 };
 
 

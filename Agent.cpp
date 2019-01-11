@@ -32,8 +32,10 @@ Agent::Agent(const AgentSettings &settings, World *world, sf::Vector2f position,
     generation = 0;
     maxEnergy = 100;
     energy = maxEnergy;
+    energyLossRate = settings.energyLossRate;
     setMass(settings.mass);
     setFriction(settings.friction);
+    turnFactor = settings.turnFactor;
     maxSpeed = settings.maxSpeed;
 
     frameIndex = 0;
@@ -73,11 +75,14 @@ Agent::Agent(const AgentSettings &settings, World *world, sf::Vector2f position,
 
 }
 
-Agent::Agent(const Agent &other) : WorldObject(other), orientation(other.orientation) {
+Agent::Agent(const Agent &other, float mutation) : WorldObject(other), orientation(other.orientation) {
     loadResources();
     generation = other.generation;
     maxEnergy = other.maxEnergy;
     energy = other.energy;
+    energyLossRate = other.energyLossRate;
+    maxSpeed = other.maxSpeed;
+    turnFactor = other.turnFactor;
 
     frameIndex = 0;
     frame = sf::IntRect(0, 0, 32, 32);
@@ -85,12 +90,18 @@ Agent::Agent(const Agent &other) : WorldObject(other), orientation(other.orienta
     sprite.setOrigin(other.sprite.getOrigin());
     setBounds(other.getBounds());
 
+    percept.resize(other.percept.size());
+    actions.resize(other.actions.size());
     genes = std::dynamic_pointer_cast<MapGenes>(other.genes->clone());
+    genes->mutate(mutation);
 
     MarkovNames nameGenerator(false, world->getConfig().seed++);
     std::vector<double> genome;
+    std::vector<double> genome2;
     genes->writeNormal(genome);
     name = nameGenerator.generate(genome);
+    other.genes->writeNormal(genome2);
+    printf("%f - %f\n", std::accumulate(genome2.begin(), genome2.end(), 0.0), std::accumulate(genome.begin(), genome.end(), 0.0));
 
     // Vision variables
     receptorCount = other.receptorCount;
@@ -106,9 +117,6 @@ Agent::Agent(const Agent &other) : WorldObject(other), orientation(other.orienta
     lineOfSight[1] = sf::Vertex(sf::Vector2f(0,0));
     lineOfSight[0].color = sf::Color::Cyan;
     lineOfSight[1].color = sf::Color::Cyan;
-
-    percept.resize(other.percept.size());
-    actions.resize(other.actions.size());
 
     sf::Vertex orientationLine[2];
 }
@@ -207,7 +215,7 @@ void Agent::update(float deltaTime) {
 
     applyForce(deltaTime, orientationVector * actions.at(0) * maxSpeed);
 
-    float turn = ((float) actions.at(1) - actions.at(2))*40.0f;
+    float turn = ((float) actions.at(1) - actions.at(2))*turnFactor;
     orientation += turn*deltaTime;
 
     if (0.7 < actions.at(3) && 80 < energy){
@@ -236,7 +244,7 @@ void Agent::update(float deltaTime) {
                     }
                     else if (type == typeid(Mushroom)){
                         world->removeObject(object->getSharedPtr(), false);
-                        energy += 30;
+                        energy += world->getConfig().agents.mushroomEnergy;
                     }
                 }
             }
@@ -244,7 +252,7 @@ void Agent::update(float deltaTime) {
     }
 
     energy = fminf(energy, 100);
-    energy -= deltaTime*2.0f;
+    energy -= deltaTime*energyLossRate;
     if (energy <= 0){
         world->removeObject(getSharedPtr(), false);
     }

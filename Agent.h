@@ -16,7 +16,7 @@ class Agent : public WorldObject {
 public:
     Agent(const AgentSettings &settings, World *world, sf::Vector2f position, float orientation);
 
-    Agent(const Agent &other);
+    Agent(const Agent &other, float mutation);
 
     const std::string &getName() const;
 
@@ -55,7 +55,9 @@ private:
     float orientation; // In degrees
     float maxEnergy;
     float energy; // Between 0 and maxEnergy
+    float energyLossRate;
     float maxSpeed;
+    float turnFactor;
 
      // Rendering
     sf::Sprite sprite;

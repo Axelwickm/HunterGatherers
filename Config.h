@@ -26,12 +26,17 @@ struct AgentSettings {
     float mass;
     float friction;
     float maxSpeed;
+    float turnFactor;
+
+    float energyLossRate;
+    float mushroomEnergy;
 
     unsigned receptorCount;
     float FOV;
     float visibilityDistance;
     float visualReactivity;
 
+    float mutation;
     int layersMin, layersMax;
     float biasMin, biasMax;
     float weightMin, weightMax;
