@@ -18,6 +18,8 @@ public:
 
     Agent(const Agent &other, float mutation);
 
+    const sf::Color &getColor() const;
+
     const std::string &getName() const;
 
     static void loadResources();
@@ -64,6 +66,7 @@ private:
     sf::IntRect frame;
     unsigned frameIndex;
     float frameTimer;
+    sf::Color color;
 
     // AI
     std::shared_ptr<MapGenes> genes;

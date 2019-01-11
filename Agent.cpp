@@ -72,6 +72,8 @@ Agent::Agent(const AgentSettings &settings, World *world, sf::Vector2f position,
     std::vector<double> genome;
     genes->writeNormal(genome);
     name = nameGenerator.generate(genome);
+    color = colorFromGenome(genome);
+    sprite.setColor(color);
 
 }
 
@@ -102,6 +104,8 @@ Agent::Agent(const Agent &other, float mutation) : WorldObject(other), orientati
     name = nameGenerator.generate(genome);
     other.genes->writeNormal(genome2);
     printf("%f - %f\n", std::accumulate(genome2.begin(), genome2.end(), 0.0), std::accumulate(genome.begin(), genome.end(), 0.0));
+    color = colorFromGenome(genome);
+    sprite.setColor(color);
 
     // Vision variables
     receptorCount = other.receptorCount;
@@ -391,6 +395,10 @@ float Agent::getMaxEnergy() const {
 
 void Agent::setMaxEnergy(float maxEnergy) {
     Agent::maxEnergy = maxEnergy;
+}
+
+const sf::Color &Agent::getColor() const {
+    return color;
 }
 
 const std::string &Agent::getName() const {

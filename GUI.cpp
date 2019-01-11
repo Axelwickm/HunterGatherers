@@ -87,6 +87,7 @@ void GUI::selectAgent(std::shared_ptr<Agent> agent) {
 
         /*std::ostringstream address;
         address << (void const *) agent.get();*/
+        agentInfo.agentIdentifier.setFillColor(agent->getColor());
         agentInfo.agentIdentifier.setString(agent->getName());
     }
 }

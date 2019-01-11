@@ -62,4 +62,16 @@ inline bool lineIntersectWithBox(const sf::Vector2<T> &lineStart, const sf::Vect
 
 }
 
+inline sf::Color colorFromGenome(const std::vector<double>& genome){
+    std::vector<double> reducedGenome(3);
+    for (std::size_t i = 0; i < 3; i++){
+        reducedGenome.push_back(0);
+        for (std::size_t j = 0; j < 3; j++){
+            reducedGenome.at(i) += genome.at((3*i+j) % (genome.size()-1)) / 3;
+        }
+    }
+    return sf::Color(reducedGenome[0]*200+55, reducedGenome[1]*200+55, reducedGenome[2]*200+55);
+}
+
+
 #endif //FAMILYISEVERYTHING_UTILS_CPP
