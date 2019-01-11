@@ -39,7 +39,7 @@ public:
     template <class T>
     T *getOwner() const {
         if (owner->type != typeid(T)){
-            throw std::runtime_error("Requested owner gene of type "+std::string(owner->type.name())
+            throw std::runtime_error("Requested owner gene is type "+std::string(owner->type.name())
                   + ", not " + typeid(T).name() + ".");
         }
         return (T*) owner;
@@ -168,7 +168,7 @@ public:
         Gene *g = genes.at(name).get();
         const std::type_info &c = g->type;
         if (g->type != typeid(T)){
-            throw std::runtime_error("Requested gene "+name+" of type "+g->type.name()+", not "+ typeid(T).name()+".");
+            throw std::runtime_error("Requested gene in map "+name+" is type "+g->type.name()+", not "+ typeid(T).name()+".");
         }
         return (T*) g;
 

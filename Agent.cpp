@@ -103,7 +103,7 @@ Agent::Agent(const Agent &other, float mutation) : WorldObject(other), orientati
     genes->writeNormal(genome);
     name = nameGenerator.generate(genome);
     other.genes->writeNormal(genome2);
-    printf("%f - %f\n", std::accumulate(genome2.begin(), genome2.end(), 0.0), std::accumulate(genome.begin(), genome.end(), 0.0));
+    //printf("%f - %f\n", std::accumulate(genome2.begin(), genome2.end(), 0.0), std::accumulate(genome.begin(), genome.end(), 0.0));
     color = colorFromGenome(genome);
     sprite.setColor(color);
 

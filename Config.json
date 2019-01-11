@@ -37,7 +37,7 @@
     "visibilityDistance" : 200,
     "visualReactivity" : 3,
 
-    "mutation" : 0.0,
+    "mutation" : 0.05,
     "layerMin" : 3, "layerMax" : 5,
     "biasMin" : -1, "biasMax" : 1,
     "weightMin" : -1, "weightMax" : 1,

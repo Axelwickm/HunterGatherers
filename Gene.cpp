@@ -132,10 +132,13 @@ void IntegerGene::generate() {
 
 void IntegerGene::mutate(float factor) {
     setEvaluationCount(getEvaluationCount()+1);
-    // FIXME: this function is mathematically ugly
-    int range = ceil((maxVal-minVal)*factor*getMutationWeight());
-    std::uniform_int_distribution distribution(-range, range);
-    value = std::max(std::min(value + distribution(randomEngine), maxVal), minVal);
+    std::poisson_distribution distribution(factor);
+    int change = distribution(randomEngine);
+    if (std::uniform_int_distribution(0, 1)(randomEngine) == 0){
+        change = -change;
+    }
+
+    value = std::max(std::min(value + change, maxVal), minVal);
 }
 
 void IntegerGene::evaluate(float mutationFactor, unsigned version) {
@@ -265,8 +268,9 @@ ListGenes::ListGenes(std::shared_ptr<Gene> templateGene, std::string countGeneNa
 
 std::shared_ptr<Gene> ListGenes::clone() const {
     std::shared_ptr<ListGenes> copy = std::make_shared<ListGenes>(*this);
-    copy->genes = std::list<std::shared_ptr<Gene>>();
+    copy->templateGene->setOwner(copy.get());
 
+    copy->genes = std::list<std::shared_ptr<Gene>>();
     for (auto &gene : genes) {
         auto geneCopy = gene->clone();
         geneCopy->setOwner(copy.get());
@@ -298,6 +302,8 @@ void ListGenes::generate() {
 void ListGenes::mutate(float factor) {
     setEvaluationCount(getEvaluationCount()+1);
     updateCount();
+
+    unsigned delta = count - genes.size();
 
     if (count < genes.size()){
         auto original = genes;
