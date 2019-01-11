@@ -4,7 +4,7 @@
 
 #include "Camera.h"
 
-Camera::Camera(const Config &config, sf::RenderWindow *window, sf::Vector2f worldSize) : config(config) {
+Camera::Camera(Config &config, sf::RenderWindow *window, sf::Vector2f worldSize) : config(config) {
     this->window = window;
     this->view = window->getDefaultView();
     this->worldSize = worldSize;

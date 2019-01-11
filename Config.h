@@ -46,6 +46,8 @@ struct AgentSettings {
 
 struct RenderSettings {
     sf::Vector2u windowSize;
+
+    bool showDebug{};
     bool showWorldObjectBounds{};
     bool showQuadtree{};
     bool showQuadtreeEntities{};
@@ -53,20 +55,21 @@ struct RenderSettings {
 };
 
 struct Controls {
-    sf::Keyboard::Key pause;// = sf::Keyboard::Space;
-    sf::Keyboard::Key close;// = sf::Keyboard::Escape;
+    sf::Keyboard::Key pause;
+    sf::Keyboard::Key close;
+    sf::Keyboard::Key showDebug;
 
-    sf::Keyboard::Key up;// = sf::Keyboard::Up;
+    sf::Keyboard::Key up;
     float upAmount;
-    sf::Keyboard::Key down;// = sf::Keyboard::Down;;
+    sf::Keyboard::Key down;
     float downAmount;
-    sf::Keyboard::Key left;// = sf::Keyboard::Left;
+    sf::Keyboard::Key left;
     float leftAmount;
-    sf::Keyboard::Key right;// = sf::Keyboard::Right;
+    sf::Keyboard::Key right;
     float rightAmount;
 
-    sf::Keyboard::Key slowDown;// = sf::Keyboard::Comma;
-    sf::Keyboard::Key speedUp;// = sf::Keyboard::Period;
+    sf::Keyboard::Key slowDown;
+    sf::Keyboard::Key speedUp;
     float timeFactorDelta;
     float timeFactorMax;
     float scrollFactor;

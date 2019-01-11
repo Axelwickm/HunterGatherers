@@ -48,6 +48,7 @@
   "Controls" : {
     "pause" : "Space",
     "close" : "Escape",
+    "showDebug" : "D",
 
     "up" : "Up",
     "down" : "Down",
@@ -66,6 +67,8 @@
   "Rendering": {
     "windowWidth" : 1920,
     "windowHeight" : 1080,
+
+    "showDebug" : false,
     "showWorldObjectBounds" : false,
     "showQuadtree" :  false,
     "showQuadtreeEntities" : false,

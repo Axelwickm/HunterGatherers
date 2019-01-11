@@ -51,7 +51,7 @@ public:
 
 
 private:
-    Config config;
+    Config& config;
     sf::RenderWindow *window;
     const sf::Vector2f dimensions;
     sf::Texture terrainTexture;

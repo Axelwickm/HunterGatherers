@@ -67,6 +67,7 @@ void Config::loadConfigFromFile(const std::string &filename) {
     auto &C = json["Controls"];
     controls.pause = findKeyCode(C["pause"].get<std::string>());
     controls.close = findKeyCode(C["close"].get<std::string>());
+    controls.showDebug = findKeyCode(C["showDebug"].get<std::string>());
     controls.up = findKeyCode(C["up"].get<std::string>());
     controls.down = findKeyCode(C["down"].get<std::string>());
     controls.left = findKeyCode(C["left"].get<std::string>());
@@ -84,6 +85,7 @@ void Config::loadConfigFromFile(const std::string &filename) {
 
     auto &RS = json["Rendering"];
     render.showWorldObjectBounds = RS["showWorldObjectBounds"].get<bool>();
+    render.showDebug = RS["showDebug"].get<bool>();
     render.showQuadtree = RS["showQuadtree"].get<bool>();
     render.showQuadtreeEntities = RS["showQuadtreeEntities"].get<bool>();
     render.showVision = RS["showVision"].get<bool>();
@@ -97,6 +99,7 @@ sf::Keyboard::Key Config::findKeyCode(std::string key) {
     static const std::map<std::string, sf::Keyboard::Key> m { // TODO: add the rest
         {"Space", sf::Keyboard::Space},
         {"Escape", sf::Keyboard::Escape},
+        {"D", sf::Keyboard::D},
         {"Up", sf::Keyboard::Up},
         {"Down", sf::Keyboard::Down},
         {"Left", sf::Keyboard::Left},

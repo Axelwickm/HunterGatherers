@@ -44,7 +44,7 @@ int main(int argc, char *argv[]) {
                   sf::Vector2f(config.render.windowSize.x * 10, config.render.windowSize.y * 10));
     OpenCL_Wrapper cl(deviceName);
     World world(config, &window, &cl);
-    GUI gui(&window, &world);
+    GUI gui(config, &window, &world);
 
     // Game loop variables
 
@@ -73,6 +73,9 @@ int main(int argc, char *argv[]) {
                 }
                 else if (code == controls.close){
                     window.close();
+                }
+                else if (code == controls.showDebug){
+                    config.render.showDebug = !config.render.showDebug;
                 }
                 if (code == controls.up){
                     camera.move(sf::Vector2f(0, controls.upAmount));
@@ -118,7 +121,9 @@ int main(int argc, char *argv[]) {
                         }
                     }
                     if (!selected){
-                        gui.selectAgent(nullptr);
+                        if (!gui.click(mousePosition)){
+                            gui.selectAgent(nullptr);
+                        }
                     }
                 }
             }

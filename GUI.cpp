@@ -6,7 +6,8 @@
 #include "GUI.h"
 #include "World.h"
 
-GUI::GUI(sf::RenderWindow *window, World* world) : window(window), view(window->getDefaultView()), world(world) {
+GUI::GUI(Config &config, sf::RenderWindow *window, World *world)
+        : config(config), window(window), view(window->getDefaultView()), world(world) {
     font.loadFromFile(R"(C:\Windows\Fonts\consola.ttf)");
     sf::Color gray(120, 120, 120);
 
@@ -15,6 +16,28 @@ GUI::GUI(sf::RenderWindow *window, World* world) : window(window), view(window->
     simulationInfo.main.setStyle(sf::Text::Regular);
     simulationInfo.main.setFillColor(gray);
     simulationInfo.main.setPosition(10, window->getSize().y-simulationInfo.main.getLocalBounds().height-5);
+
+    std::vector<std::pair<std::string, bool*>> debugValues = {
+        {"showWorldObjectBounds", &config.render.showWorldObjectBounds},
+        {"showQuadtree", &config.render.showQuadtree},
+        {"showQuadtreeEntities", &config.render.showQuadtreeEntities},
+        {"showVision", &config.render.showVision},
+    };
+
+    for (std::size_t i = 0; i < debugValues.size(); i++){
+        simulationInfo.debug.push_back({
+            debugValues.at(i).second,
+            sf::Text(debugValues.at(i).first, font)
+        });
+        simulationInfo.debug.back().text.setCharacterSize(20);
+        simulationInfo.debug.back().text.setPosition(window->getSize().x-300, 10+i*25);
+        if (*debugValues.at(i).second){
+            simulationInfo.debug.back().text.setFillColor(sf::Color::White);
+        }
+        else {
+            simulationInfo.debug.back().text.setFillColor(sf::Color(120, 120, 120));
+        }
+    }
 
     // Agent info
     agentInfo.agentIdentifier = sf::Text("", font);
@@ -61,6 +84,12 @@ void GUI::draw(float deltaTime, float timeFactor) {
         +"\nHighest generation: "+std::to_string(world->getStatistics().highestGeneration));
     window->draw(simulationInfo.main);
 
+    if (config.render.showDebug){
+        for (auto& t : simulationInfo.debug){
+            window->draw(t.text);
+        }
+    }
+
     if (selectedAgent){
         window->draw(agentInfo.agentIdentifier);
 
@@ -96,6 +125,32 @@ const std::shared_ptr<Agent> &GUI::getSelectedAgent() const {
     return selectedAgent;
 }
 
+bool GUI::click(sf::Vector2i pos) {
+    if (config.render.showDebug){
+        for (auto& t : simulationInfo.debug){
+            if (pointInBox(sf::Vector2f(pos.x, pos.y), t.text.getGlobalBounds())){
+                t.click();
+                return true;
+            }
+        }
+    }
+    if (pointInBox(sf::Vector2f(pos.x, pos.y), simulationInfo.main.getGlobalBounds())){
+        printf("Click on info\n");
+    }
+
+    return false;
+}
+
+void GUI::Toggle::click() {
+    *value = !(*value);
+    if (*value){
+        text.setFillColor(sf::Color::White);
+    }
+    else {
+        text.setFillColor(sf::Color(120, 120, 120));
+    }
+}
+
 void GUI::VectorRenderer::draw(sf::RenderWindow *window, const std::vector<float> &vec) {
     if (vec.size() != rectangles.size()){
         rectangles.clear();
@@ -114,4 +169,3 @@ void GUI::VectorRenderer::draw(sf::RenderWindow *window, const std::vector<float
         window->draw(rectangles.at(i));
     }
 }
-
