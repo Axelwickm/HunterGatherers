@@ -200,14 +200,12 @@ void Agent::update(float deltaTime) {
     WorldObject::update(deltaTime);
 
     // Apply actions
-    const sf::Vector2f vel = getVelocity();
-    float velocityFactor = fminf(actions.at(0)*maxSpeed - sqrtf(vel.x*vel.x+vel.y*vel.y)*1.f, maxSpeed);
     sf::Vector2f orientationVector = {
             cosf(orientation*PI/180.f),
             sinf(orientation*PI/180.f)
     };
 
-    applyForce(deltaTime, orientationVector * velocityFactor);
+    applyForce(deltaTime, orientationVector * actions.at(0) * maxSpeed);
 
     float turn = ((float) actions.at(1) - actions.at(2))*40.0f;
     orientation += turn*deltaTime;

@@ -3,17 +3,17 @@
   "seed" : "TIME",
 
   "WorldSettings" : {
-    "worldWidth" : 2500, "worldHeight" :  2500,
+    "worldWidth" : 5500, "worldHeight" :  5500,
     "terrainSquare" : 40,
     "quadtreeLimit" : 30,
     "PopulatorEntries" : [
       {
         "type" : "Agent",
-        "targetCount" : 10,
+        "targetCount" : 500,
         "rate" : 5
       },{
         "type" : "Mushroom",
-        "targetCount" : 150,
+        "targetCount" : 400,
         "rate" : 20
       },{
         "type" : "BouncingBall",
@@ -26,7 +26,7 @@
   "AgentSettings" : {
     "mass": 1,
     "friction" : 0.01,
-    "maxSpeed" : 600,
+    "maxSpeed" : 500,
 
 
     "receptorCount" : 5,
@@ -54,7 +54,7 @@
     "speedUp" : "Period",
 
     "keyboardCameraMove" : 15,
-    "timeFactorDelta" : 0.1,
+    "timeFactorDelta" : 0.05,
     "timeFactorMax" :  20,
     "scrollFactor" :  0.05
   },
@@ -62,9 +62,9 @@
   "Rendering": {
     "windowWidth" : 1920,
     "windowHeight" : 1080,
-    "showWorldObjectBounds" : true,
+    "showWorldObjectBounds" : false,
     "showQuadtree" :  false,
     "showQuadtreeEntities" : false,
-    "showVision" : true
+    "showVision" : false
   }
 }
