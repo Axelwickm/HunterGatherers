@@ -40,6 +40,9 @@ int main(int argc, char *argv[]) {
     // Create main objects
     sf::RenderWindow window(sf::VideoMode(config.render.windowSize.x, config.render.windowSize.y),
             "Hunter Gatherers");
+    sf::Image icon;
+    icon.loadFromFile("../resources/icon.png");
+    window.setIcon(icon.getSize().x, icon.getSize().y, icon.getPixelsPtr());
     Camera camera(config, &window,
                   sf::Vector2f(config.render.windowSize.x * 10, config.render.windowSize.y * 10));
     OpenCL_Wrapper cl(deviceName);
