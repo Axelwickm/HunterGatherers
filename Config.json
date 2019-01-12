@@ -68,6 +68,8 @@
     "windowWidth" : 1920,
     "windowHeight" : 1080,
 
+    "showDistribution" : true,
+    "bins" : 20,
     "showDebug" : false,
     "showWorldObjectBounds" : false,
     "showQuadtree" :  false,

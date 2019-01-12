@@ -84,6 +84,8 @@ void Config::loadConfigFromFile(const std::string &filename) {
     controls.scrollFactor = C["scrollFactor"].get<float>();
 
     auto &RS = json["Rendering"];
+    render.showDistribution = RS["showDistribution"].get<bool>();
+    render.bins = RS["showDistribution"].get<unsigned>();
     render.showWorldObjectBounds = RS["showWorldObjectBounds"].get<bool>();
     render.showDebug = RS["showDebug"].get<bool>();
     render.showQuadtree = RS["showQuadtree"].get<bool>();

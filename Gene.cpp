@@ -303,7 +303,7 @@ void ListGenes::mutate(float factor) {
     setEvaluationCount(getEvaluationCount()+1);
     updateCount();
 
-    unsigned delta = count - genes.size();
+    std::size_t delta = count - genes.size();
 
     if (count < genes.size()){
         auto original = genes;
@@ -328,7 +328,7 @@ void ListGenes::mutate(float factor) {
                 i++;
                 itr = std::next(itr);
             }
-            genes.insert(itr, templateGene->clone());
+            (*genes.insert(itr, templateGene->clone()))->setOwner(this);
         }
     }
     int i = 0;

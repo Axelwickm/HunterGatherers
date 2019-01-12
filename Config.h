@@ -47,6 +47,8 @@ struct AgentSettings {
 struct RenderSettings {
     sf::Vector2u windowSize;
 
+    bool showDistribution{};
+    unsigned bins{};
     bool showDebug{};
     bool showWorldObjectBounds{};
     bool showQuadtree{};

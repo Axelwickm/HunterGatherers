@@ -26,7 +26,7 @@ GUI::GUI(Config &config, sf::RenderWindow *window, World *world)
 
 
     sf::Rect<int> distributionBounds(450, window->getSize().y-10, 400, 90);
-    simulationInfo.populationDistribution.resize(20);
+    simulationInfo.populationDistribution.resize(config.render.bins);
     int binWidth = distributionBounds.width / simulationInfo.populationDistribution.size();
     for (std::size_t i = 0; i < simulationInfo.populationDistribution.size(); i++){
         simulationInfo.populationDistribution.at(i).setFillColor(gray);
@@ -96,7 +96,7 @@ void GUI::draw(float deltaTime, float timeFactor) {
 
     unsigned deltaGeneration = world->getStatistics().highestGeneration - world->getStatistics().lowestGeneration;
     unsigned last =  world->getStatistics().lowestGeneration;
-    if (deltaGeneration != 0) {
+    if (deltaGeneration != 0 && config.render.showDistribution) {
         double delta = (double) (deltaGeneration + 1) / simulationInfo.populationDistribution.size();
         delta = fmax(delta, 1.0);
         for (unsigned i = 0; i < simulationInfo.populationDistribution.size(); i++) {
