@@ -3,8 +3,8 @@
   "seed" : "TIME",
 
   "WorldSettings" : {
-    "worldWidth" : 4500, "worldHeight" :  4000,
-    "terrainSquare" : 40,
+    "worldWidth" : 5000, "worldHeight" :  4000,
+    "terrainSquare" : 30,
     "quadtreeLimit" : 30,
     "PopulatorEntries" : [
       {
@@ -13,8 +13,8 @@
         "rate" : 5
       },{
         "type" : "Mushroom",
-        "targetCount" : 600,
-        "rate" : 5
+        "targetCount" : 1200,
+        "rate" : 4
       },{
         "type" : "BouncingBall",
         "targetCount" : 0,
@@ -27,7 +27,7 @@
     "mass": 1,
     "friction" : 0.01,
     "maxSpeed" : 500,
-    "turnFactor" : 60,
+    "turnFactor" : 100,
 
     "energyLossRate" : 2,
     "mushroomEnergy" : 50,

@@ -11,7 +11,7 @@ GUI::GUI(Config &config, sf::RenderWindow *window, World *world)
     font.loadFromFile(R"(C:\Windows\Fonts\consola.ttf)");
     sf::Color gray(120, 120, 120);
 
-    simulationInfo.main = sf::Text("FPS: ###\nTime factor: ##\nPopulation: ###\nAverage generation: ####\nHighest generation: ####\n", font);
+    simulationInfo.main = sf::Text("FPS: ###\nTime factor: ##\nPopulation: ###\nAverage generation: ####\n", font);
     simulationInfo.main.setCharacterSize(20);
     simulationInfo.main.setStyle(sf::Text::Regular);
     simulationInfo.main.setFillColor(gray);
@@ -23,6 +23,17 @@ GUI::GUI(Config &config, sf::RenderWindow *window, World *world)
         {"showQuadtreeEntities", &config.render.showQuadtreeEntities},
         {"showVision", &config.render.showVision},
     };
+
+
+    sf::Rect<int> distributionBounds(450, window->getSize().y-10, 400, 90);
+    simulationInfo.populationDistribution.resize(20);
+    int binWidth = distributionBounds.width / simulationInfo.populationDistribution.size();
+    for (std::size_t i = 0; i < simulationInfo.populationDistribution.size(); i++){
+        simulationInfo.populationDistribution.at(i).setFillColor(gray);
+        simulationInfo.populationDistribution.at(i).setPosition(distributionBounds.left + i*binWidth, distributionBounds.top);
+        simulationInfo.populationDistribution.at(i).setSize(sf::Vector2f(binWidth, distributionBounds.height));
+        simulationInfo.populationDistribution.at(i).setOrigin(simulationInfo.populationDistribution.at(i).getSize());
+    }
 
     for (std::size_t i = 0; i < debugValues.size(); i++){
         simulationInfo.debug.push_back({
@@ -79,10 +90,29 @@ void GUI::draw(float deltaTime, float timeFactor) {
 
     simulationInfo.main.setString("FPS: "+std::to_string(int(1.f/deltaTime))
         +"\nTime factor: "+std::to_string(int(timeFactor))
-        +"\nPopulation: "+std::to_string(world->getAgents().size())
-        +"\nAverage generation: "+std::to_string(world->getStatistics().averageGeneration)
-        +"\nHighest generation: "+std::to_string(world->getStatistics().highestGeneration));
+        +"\nPopulation: "+std::to_string(world->getStatistics().populationCount)
+        +"\nAverage generation: "+std::to_string(world->getStatistics().averageGeneration));
     window->draw(simulationInfo.main);
+
+    unsigned deltaGeneration = world->getStatistics().highestGeneration - world->getStatistics().lowestGeneration;
+    unsigned last =  world->getStatistics().lowestGeneration;
+    if (deltaGeneration != 0) {
+        double delta = (double) (deltaGeneration + 1) / simulationInfo.populationDistribution.size();
+        delta = fmax(delta, 1.0);
+        for (unsigned i = 0; i < simulationInfo.populationDistribution.size(); i++) {
+            unsigned upTo = floor(delta * (i + 1));
+            double val = 0;
+            if (world->getStatistics().populationDistribution.size() <= upTo){
+                break;
+            }
+            for (unsigned j = last; j < upTo; j++) {
+                val += world->getStatistics().populationDistribution.at(j) / (upTo - last);
+            }
+            last = upTo;
+            simulationInfo.populationDistribution.at(i).setScale(1, val/world->getStatistics().populationCount);
+            window->draw(simulationInfo.populationDistribution.at(i));
+        }
+    }
 
     if (config.render.showDebug){
         for (auto& t : simulationInfo.debug){

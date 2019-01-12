@@ -33,6 +33,7 @@ private:
 
     struct {
         sf::Text main;
+        std::vector<sf::RectangleShape> populationDistribution;
         std::vector<Toggle> debug;
     } simulationInfo;
 

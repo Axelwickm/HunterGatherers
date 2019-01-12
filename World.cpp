@@ -201,14 +201,35 @@ const std::set<std::shared_ptr<WorldObject>> &World::getObjects() const {
 
 void World::updateStatistics() {
     if (agents.empty()){
+        statistics.populationCount = 0;
         statistics.averageGeneration = 0;
+        statistics.lowestGeneration = 0;
         statistics.highestGeneration = 0;
+        statistics.populationDistribution.resize(0);
     }
     else {
-        auto acc = [&](float x, const std::shared_ptr<Agent>& b){return x + b->getGeneration();};
-        statistics.averageGeneration = accumulate(agents.begin(), agents.end(), 0.f, acc) / agents.size();
-        auto comp = [&](const std::shared_ptr<Agent>& a, const std::shared_ptr<Agent>& b){return a->getGeneration() < b->getGeneration();};
-        statistics.highestGeneration = (*std::max_element(agents.begin(), agents.end(), comp))->getGeneration();
+        statistics.populationCount = agents.size();
+        statistics.averageGeneration = 0;
+        statistics.lowestGeneration = std::numeric_limits<unsigned>::infinity();
+        statistics.highestGeneration = 0;
+        std::fill(statistics.populationDistribution.begin(), statistics.populationDistribution.end(), 0);
+
+        for (auto& agent : agents){
+            unsigned g = agent->getGeneration();
+            if (g >= statistics.populationDistribution.size()){
+                statistics.populationDistribution.resize(g+1, 0);
+            }
+            statistics.populationDistribution.at(g)++;
+            statistics.averageGeneration += g;
+            if (g < statistics.lowestGeneration){
+                statistics.lowestGeneration = g;
+            }
+            if (statistics.highestGeneration < g){
+                statistics.highestGeneration = g;
+            }
+        }
+
+        statistics.averageGeneration /= agents.size();
     }
 }
 
