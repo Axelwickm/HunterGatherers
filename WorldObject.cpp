@@ -48,6 +48,7 @@ void WorldObject::update(float deltaTime) {
 }
 
 void WorldObject::update(float deltaTime, sf::Vector2f oldPosition) {
+    age += deltaTime;
     velocity *= powf(friction, deltaTime);
     position += velocity * deltaTime;
     position = sf::Vector2f((float) fmin(position.x, world->getDimensions().x), (float) fmin(position.y, world->getDimensions().y));
@@ -143,10 +144,18 @@ void WorldObject::setFriction(float friction) {
 }
 
 
-const sf::Color &WorldObject::getColor() const {
-    return color;
+float WorldObject::getAge() const {
+    return age;
 }
 
 void WorldObject::setColor(const sf::Color &color) {
     WorldObject::color = color;
+}
+
+const sf::Color &WorldObject::getColor() const {
+    return color;
+}
+
+void WorldObject::setAge(float age) {
+    WorldObject::age = age;
 }

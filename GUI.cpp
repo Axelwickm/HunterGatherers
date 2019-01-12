@@ -81,6 +81,11 @@ GUI::GUI(Config &config, sf::RenderWindow *window, World *world)
     agentInfo.actionsText.setPosition(10, 185);
     agentInfo.actionVector.bounds = sf::Rect<float>(10, 215, 300, 25);
 
+    agentInfo.infoText = agentInfo.energyText;
+    agentInfo.infoText.setString("Age: ###\nGeneration: ###\nChildren: ###\n");
+    agentInfo.infoText.setPosition(10, 245);
+
+
 
 }
 
@@ -133,6 +138,12 @@ void GUI::draw(float deltaTime, float timeFactor) {
 
         window->draw(agentInfo.actionsText);
         agentInfo.actionVector.draw(window, selectedAgent->getActions());
+
+        agentInfo.infoText.setString(
+                "Age: " + std::to_string(selectedAgent->getAge())
+                + "\nGeneration: "+ std::to_string(selectedAgent->getGeneration())
+                +"\nChildren: "+std::to_string(selectedAgent->getChildCount())+"\n");
+        window->draw(agentInfo.infoText);
     }
     window->setView(cameraView);
 }
@@ -144,8 +155,6 @@ void GUI::selectAgent(std::shared_ptr<Agent> agent) {
     else {
         selectedAgent = agent;
 
-        /*std::ostringstream address;
-        address << (void const *) agent.get();*/
         agentInfo.agentIdentifier.setFillColor(agent->getColor());
         agentInfo.agentIdentifier.setString(agent->getName());
     }

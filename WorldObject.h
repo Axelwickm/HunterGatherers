@@ -52,14 +52,18 @@ public:
 
     const bool isCollider() const;
 
-    const sf::Color &getColor() const;
+    float getAge() const;
 
+    void setAge(float age);
+
+    const sf::Color &getColor() const;
     void setColor(const sf::Color &color);
 
 protected:
     World *world;
     std::weak_ptr<WorldObject> me;
     const bool collider;
+    float age;
     sf::Color color;
 
     Quadtree<float> *quadtree;

@@ -56,6 +56,8 @@ private:
         VectorRenderer perceptVector;
         sf::Text actionsText;
         VectorRenderer actionVector;
+
+        sf::Text infoText;
     } agentInfo;
 
 

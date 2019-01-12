@@ -27,6 +27,9 @@ public:
     unsigned int getGeneration() const;
     void setGeneration(unsigned int generation);
 
+    unsigned int getChildCount() const;
+    void setChildCount(unsigned int childCount);
+
     void update(float deltaTime) override;
     void draw(sf::RenderWindow *window, float deltaTime) override;
 
@@ -51,10 +54,13 @@ public:
 private:
     // General
     unsigned generation;
+    unsigned childCount;
     std::string name;
+
     float orientation; // In degrees
-    float maxEnergy;
     float energy; // Between 0 and maxEnergy
+
+    float maxEnergy;
     float energyLossRate;
     float movementEnergyLoss;
     float maxSpeed;

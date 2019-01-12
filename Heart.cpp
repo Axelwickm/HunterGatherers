@@ -25,8 +25,7 @@ Heart::Heart(World *world, const sf::Vector2f &position)
 
 void Heart::update(float deltaTime) {
     WorldObject::update(deltaTime);
-    age += deltaTime;
-    if (1 < age){
+    if (1 < getAge()){
         world->removeObject(getSharedPtr(), false);
     }
 }

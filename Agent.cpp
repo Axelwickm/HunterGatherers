@@ -30,6 +30,7 @@ Agent::Agent(const AgentSettings &settings, World *world, sf::Vector2f position,
     loadResources();
 
     generation = 0;
+    childCount = 0;
     maxEnergy = 100;
     energy = maxEnergy;
     energyLossRate = settings.energyLossRate;
@@ -84,6 +85,7 @@ Agent::Agent(const AgentSettings &settings, World *world, sf::Vector2f position,
 Agent::Agent(const Agent &other, float mutation) : WorldObject(other), orientation(other.orientation) {
     loadResources();
     generation = other.generation;
+    childCount = 0;
     maxEnergy = other.maxEnergy;
     energy = other.energy;
     energyLossRate = other.energyLossRate;
@@ -446,6 +448,14 @@ unsigned int Agent::getGeneration() const {
 
 void Agent::setGeneration(unsigned int generation) {
     Agent::generation = generation;
+}
+
+unsigned int Agent::getChildCount() const {
+    return childCount;
+}
+
+void Agent::setChildCount(unsigned int childCount) {
+    Agent::childCount = childCount;
 }
 
 

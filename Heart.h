@@ -13,11 +13,10 @@ public:
     Heart(World *world, const sf::Vector2f &position);
     static void loadResources();
 
-    void update(float deltaTime);
+    void update(float deltaTime) override;
     void draw(sf::RenderWindow *window, float deltaTime) override;
 
 private:
-    float age;
     sf::Sprite sprite;
 
     static bool loaded;

@@ -182,6 +182,7 @@ void World::reproduce(Agent &a) {
     agent->setEnergy(a.getEnergy()/2.f);
     agent->setOrientation(std::uniform_real_distribution<float>(0, 360)(randomEngine));
     a.setEnergy(a.getEnergy()/2.f);
+    a.setChildCount(a.getChildCount()+1);
     addObject(agent);
     addObject(std::make_shared<Heart>(this, a.getPosition()));
     printf("Reproduced to gen %u : %s -> %s\n", agent->getGeneration(), a.getName().c_str(), agent->getName().c_str());
