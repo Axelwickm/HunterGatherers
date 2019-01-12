@@ -2,6 +2,7 @@
 // Created by Axel on 2018-11-21.
 //
 
+#include "Agent.h"
 #include "WorldObject.h"
 #include "Quadtree.h"
 #include "World.h"
@@ -142,4 +143,10 @@ void WorldObject::setFriction(float friction) {
 }
 
 
+const sf::Color &WorldObject::getColor() const {
+    return color;
+}
 
+void WorldObject::setColor(const sf::Color &color) {
+    WorldObject::color = color;
+}

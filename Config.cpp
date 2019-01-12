@@ -50,9 +50,12 @@ void Config::loadConfigFromFile(const std::string &filename) {
     agents.turnFactor = AS["turnFactor"].get<float>();
 
     agents.energyLossRate = AS["energyLossRate"].get<float>();
+    agents.movementEnergyLoss = AS["movementEnergyLoss"].get<float>();
     agents.mushroomEnergy = AS["mushroomEnergy"].get<float>();
 
     agents.receptorCount = AS["receptorCount"].get<unsigned>();
+    agents.color = AS["color"].get<bool>();
+    agents.energyLevel = AS["energyLevel"].get<bool>();
     agents.FOV = AS["FOV"].get<float>();
     agents.visibilityDistance = AS["visibilityDistance"].get<float>();
     agents.visualReactivity = AS["visualReactivity"].get<float>();
@@ -85,7 +88,7 @@ void Config::loadConfigFromFile(const std::string &filename) {
 
     auto &RS = json["Rendering"];
     render.showDistribution = RS["showDistribution"].get<bool>();
-    render.bins = RS["showDistribution"].get<unsigned>();
+    render.bins = RS["bins"].get<unsigned>();
     render.showWorldObjectBounds = RS["showWorldObjectBounds"].get<bool>();
     render.showDebug = RS["showDebug"].get<bool>();
     render.showQuadtree = RS["showQuadtree"].get<bool>();

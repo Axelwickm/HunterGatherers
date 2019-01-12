@@ -52,10 +52,15 @@ public:
 
     const bool isCollider() const;
 
+    const sf::Color &getColor() const;
+
+    void setColor(const sf::Color &color);
+
 protected:
     World *world;
     std::weak_ptr<WorldObject> me;
     const bool collider;
+    sf::Color color;
 
     Quadtree<float> *quadtree;
     sf::Vector2f position;
@@ -65,8 +70,6 @@ protected:
     float mass;
     float friction;
 
-
-private:
 
 };
 

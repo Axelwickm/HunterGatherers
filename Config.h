@@ -29,9 +29,12 @@ struct AgentSettings {
     float turnFactor;
 
     float energyLossRate;
+    float movementEnergyLoss;
     float mushroomEnergy;
 
     unsigned receptorCount;
+    bool color;
+    bool energyLevel;
     float FOV;
     float visibilityDistance;
     float visualReactivity;

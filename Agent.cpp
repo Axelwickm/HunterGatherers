@@ -33,6 +33,7 @@ Agent::Agent(const AgentSettings &settings, World *world, sf::Vector2f position,
     maxEnergy = 100;
     energy = maxEnergy;
     energyLossRate = settings.energyLossRate;
+    movementEnergyLoss = settings.movementEnergyLoss;
     setMass(settings.mass);
     setFriction(settings.friction);
     turnFactor = settings.turnFactor;
@@ -45,6 +46,9 @@ Agent::Agent(const AgentSettings &settings, World *world, sf::Vector2f position,
     setBounds(sf::IntRect(-8, 10, 8, 27));
 
     receptorCount = settings.receptorCount;
+    perceiveColor = settings.color;
+    perceiveEnergyLevel = settings.energyLevel;
+
     FOV = settings.FOV;
     visibilityDistance = settings.visibilityDistance;
     visualReactivity = settings.visualReactivity;
@@ -59,7 +63,7 @@ Agent::Agent(const AgentSettings &settings, World *world, sf::Vector2f position,
     lineOfSight[1].color = sf::Color::Cyan;
 
     std::size_t outputCount = 4;
-    std::size_t inputCount = receptors.size() + 1;
+    std::size_t inputCount = receptors.size() + 3*perceiveColor + perceiveEnergyLevel ;
 
     percept = std::vector<float>(inputCount);
     std::fill(std::begin(percept), std::end(percept), 0.f);
@@ -72,7 +76,7 @@ Agent::Agent(const AgentSettings &settings, World *world, sf::Vector2f position,
     std::vector<double> genome;
     genes->writeNormal(genome);
     name = nameGenerator.generate(genome);
-    color = colorFromGenome(genome);
+    setColor(colorFromGenome(genome));
     sprite.setColor(color);
 
 }
@@ -83,6 +87,7 @@ Agent::Agent(const Agent &other, float mutation) : WorldObject(other), orientati
     maxEnergy = other.maxEnergy;
     energy = other.energy;
     energyLossRate = other.energyLossRate;
+    movementEnergyLoss = other.movementEnergyLoss;
     maxSpeed = other.maxSpeed;
     turnFactor = other.turnFactor;
 
@@ -104,11 +109,14 @@ Agent::Agent(const Agent &other, float mutation) : WorldObject(other), orientati
     name = nameGenerator.generate(genome);
     other.genes->writeNormal(genome2);
     //printf("%f - %f\n", std::accumulate(genome2.begin(), genome2.end(), 0.0), std::accumulate(genome.begin(), genome.end(), 0.0));
-    color = colorFromGenome(genome);
+    setColor(colorFromGenome(genome));
     sprite.setColor(color);
 
     // Vision variables
     receptorCount = other.receptorCount;
+    perceiveColor = other.perceiveColor;
+    perceiveEnergyLevel = other.perceiveEnergyLevel;
+
     visibilityDistance = other.visibilityDistance;
     FOV = other.FOV;
     visualReactivity = other.visualReactivity;
@@ -218,6 +226,7 @@ void Agent::update(float deltaTime) {
     };
 
     applyForce(deltaTime, orientationVector * actions.at(0) * maxSpeed);
+    energy -= actions.at(0) * movementEnergyLoss * deltaTime;
 
     float turn = ((float) actions.at(1) - actions.at(2))*turnFactor;
     orientation += turn*deltaTime;
@@ -293,6 +302,8 @@ void Agent::updatePercept(float deltaTime) {
 
     sf::Vector2f visionEnd = getPosition() + sf::Vector2f(visibilityDistance, 0);
     sf::Vector2f dV = visionEnd - getPosition();
+    unsigned averageColor[3] = {0, 0, 0};
+    unsigned objectsSeen = 0;
 
     for (size_t i = 0; i < receptors.size(); i++){
         float angle = (orientation - FOV/2.f + FOV*((float) i/(receptors.size()-1)))*PI/180.f;
@@ -305,7 +316,7 @@ void Agent::updatePercept(float deltaTime) {
         quadtree->searchNearLine(nl, getPosition(), getPosition()+lineEnd);
 
         for (auto &n : nl){
-            if (n.get() != this && typeid(*n.get()) == typeid(Mushroom)){
+            if (n.get() != this){
                 sf::Vector2f a = sf::Vector2f(n->getPosition().x + n->getBounds().left,
                                               n->getPosition().y + n->getBounds().top);
 
@@ -313,6 +324,9 @@ void Agent::updatePercept(float deltaTime) {
                                               n->getBounds().height - n->getBounds().top);
 
                 if (lineIntersectWithBox(getPosition(), getPosition()+lineEnd, a, b)){
+                    const auto col = n->getColor();
+                    objectsSeen++;
+                    averageColor[0] += col.r; averageColor[1] += col.b; averageColor[2] += col.g;
                     sf::Vector2f dPos = n->getPosition() - getPosition();
                     float change = deltaTime*visualReactivity*(1.f-(dPos.x*dPos.x+dPos.y*dPos.y)/(visibilityDistance*visibilityDistance));
                     receptors[i] = (1-deltaTime*change)*receptors[i] + change;
@@ -327,9 +341,31 @@ void Agent::updatePercept(float deltaTime) {
         if (world->getConfig().render.showVision) {
             lineOfSight[i*2].position = getPosition();
             lineOfSight[i*2+1].position = getPosition() + lineEnd;
-            lineOfSight[i*2].color = sf::Color(155*receptors[i]+100, 10, 10, 255);
+            lineOfSight[i*2].color = sf::Color(155*receptors[i]+100, 155*receptors[i]+100, 155*receptors[i]+100, 255);
             lineOfSight[i*2+1].color = lineOfSight[i*2].color;
         }
+
+    }
+
+    if (perceiveColor) {
+        sf::Color averageCol(125, 125, 125);
+        if (objectsSeen != (unsigned) 0){
+            averageCol = sf::Color(averageColor[0]/objectsSeen, averageColor[1]/objectsSeen, averageColor[2]/objectsSeen);
+        }
+        if (world->getConfig().render.showVision){
+            for (auto& los : lineOfSight){
+                los.color *= averageCol;
+            }
+        }
+
+        *perceptIterator = averageCol.r/255.f;
+        perceptIterator++;
+
+        *perceptIterator = averageCol.b/255.f;;
+        perceptIterator++;
+
+        *perceptIterator = averageCol.g/255.f;
+        perceptIterator++;
 
     }
 
@@ -341,12 +377,15 @@ void Agent::updatePercept(float deltaTime) {
 
         orientationLine[0].position = getPosition();
         orientationLine[1].position = getPosition() + lineEnd;
-        orientationLine[0].color = sf::Color(100, 100, 200);
+        orientationLine[0].color = sf::Color(100, 100, 200, 50);
         orientationLine[1].color = orientationLine[0].color;
     }
 
-    *perceptIterator = energy / maxEnergy;
-    perceptIterator++;
+
+    if (perceiveEnergyLevel){
+        *perceptIterator = energy / maxEnergy;
+        perceptIterator++;
+    }
 
     if (perceptIterator != percept.end()){
         throw std::runtime_error("All percept values not updated.\n");
@@ -395,10 +434,6 @@ float Agent::getMaxEnergy() const {
 
 void Agent::setMaxEnergy(float maxEnergy) {
     Agent::maxEnergy = maxEnergy;
-}
-
-const sf::Color &Agent::getColor() const {
-    return color;
 }
 
 const std::string &Agent::getName() const {

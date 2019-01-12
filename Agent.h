@@ -18,8 +18,6 @@ public:
 
     Agent(const Agent &other, float mutation);
 
-    const sf::Color &getColor() const;
-
     const std::string &getName() const;
 
     static void loadResources();
@@ -58,6 +56,7 @@ private:
     float maxEnergy;
     float energy; // Between 0 and maxEnergy
     float energyLossRate;
+    float movementEnergyLoss;
     float maxSpeed;
     float turnFactor;
 
@@ -66,7 +65,6 @@ private:
     sf::IntRect frame;
     unsigned frameIndex;
     float frameTimer;
-    sf::Color color;
 
     // AI
     std::shared_ptr<MapGenes> genes;
@@ -77,6 +75,9 @@ private:
 
     // Vision variables,
     unsigned receptorCount;
+    bool perceiveColor;
+    bool perceiveEnergyLevel;
+
     float visibilityDistance;
     float visualReactivity;
     float FOV;
