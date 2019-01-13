@@ -33,12 +33,12 @@
     "energyLossRate" : 1,
     "movementEnergyLoss" : 3,
     "mushroomEnergy" : 50,
+    "maxEnergy" : 100,
 
-    "_percption" : "What the agent can perceive about its surroundings",
-    "collision" : true,
+    "perceiveCollision" : true,
     "receptorCount" : 5,
-    "color" : true,
-    "energyLevel" : true,
+    "perceiveColor" : true,
+    "perceiveEnergyLevel" : true,
     "memory" : 2,
 
     "FOV" : 120,

@@ -16,6 +16,7 @@ void Config::loadConfigFromFile(const std::string &filename) {
     file >> json;
     file.close();
 
+    // Loading seed
 
     if (json["seed"].is_string()){
         if (json["seed"].get<std::string>() == "TIME"){
@@ -26,6 +27,7 @@ void Config::loadConfigFromFile(const std::string &filename) {
         Config::seed = json["seed"].get<unsigned>();
     }
 
+    // Loading World settings
     auto &WS = json["WorldSettings"];
     auto worldWidth = WS["worldWidth"].get<float>();
     auto worldHeight = WS["worldHeight"].get<float>();
@@ -44,6 +46,7 @@ void Config::loadConfigFromFile(const std::string &filename) {
         });
     }
 
+    // Loading agent settings
     auto &AS = json["AgentSettings"];
     agents.mass = AS["mass"].get<float>();
     agents.friction = AS["friction"].get<float>();
@@ -53,11 +56,12 @@ void Config::loadConfigFromFile(const std::string &filename) {
     agents.energyLossRate = AS["energyLossRate"].get<float>();
     agents.movementEnergyLoss = AS["movementEnergyLoss"].get<float>();
     agents.mushroomEnergy = AS["mushroomEnergy"].get<float>();
+    agents.maxEnergy = AS["maxEnergy"].get<float>();
 
-    agents.collision = AS["collision"].get<bool>();
+    agents.perceiveCollision = AS["perceiveCollision"].get<bool>();
     agents.receptorCount = AS["receptorCount"].get<unsigned>();
-    agents.color = AS["color"].get<bool>();
-    agents.energyLevel = AS["energyLevel"].get<bool>();
+    agents.perceiveColor = AS["perceiveColor"].get<bool>();
+    agents.perceiveEnergyLevel = AS["perceiveEnergyLevel"].get<bool>();
     agents.memory = AS["memory"].get<unsigned>();
 
     agents.FOV = AS["FOV"].get<float>();
@@ -71,6 +75,8 @@ void Config::loadConfigFromFile(const std::string &filename) {
     agents.perceptronPerLayerMin = AS["perceptronPerLayerMin"].get<int>();
     agents.perceptronPerLayerMax = AS["perceptronPerLayerMax"].get<int>();
 
+
+    // Loading controls
     auto &C = json["Controls"];
     controls.pause = findKeyCode(C["pause"].get<std::string>());
     controls.close = findKeyCode(C["close"].get<std::string>());

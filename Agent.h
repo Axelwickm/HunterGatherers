@@ -15,8 +15,9 @@
 class Agent : public WorldObject {
 public:
     Agent(const AgentSettings &settings, World *world, sf::Vector2f position, float orientation);
-
     Agent(const Agent &other, float mutation);
+
+    const AgentSettings &getSettings() const;
 
     const std::string &getName() const;
 
@@ -49,22 +50,16 @@ public:
     void setEnergy(float energy);
 
     float getMaxEnergy() const;
-    void setMaxEnergy(float maxEnergy);
 
 private:
     // General
+    const AgentSettings settings;
     unsigned generation;
     unsigned childCount;
     std::string name;
 
     float orientation; // In degrees
     float energy; // Between 0 and maxEnergy
-
-    float maxEnergy;
-    float energyLossRate;
-    float movementEnergyLoss;
-    float maxSpeed;
-    float turnFactor;
 
      // Rendering
     sf::Sprite sprite;
@@ -81,14 +76,6 @@ private:
 
 
     // Vision variables
-    bool perceiveCollision;
-    unsigned receptorCount;
-    bool perceiveColor;
-    bool perceiveEnergyLevel;
-
-    float visibilityDistance;
-    float visualReactivity;
-    float FOV;
     std::vector<sf::Vertex> lineOfSight;
     sf::Vertex orientationLine[2];
 

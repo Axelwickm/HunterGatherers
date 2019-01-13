@@ -25,11 +25,12 @@ struct AgentSettings {
     float energyLossRate;
     float movementEnergyLoss;
     float mushroomEnergy;
+    float maxEnergy;
 
-    bool collision;
+    bool perceiveCollision;
     unsigned receptorCount;
-    bool color;
-    bool energyLevel;
+    bool perceiveColor;
+    bool perceiveEnergyLevel;
     unsigned memory;
 
     float FOV;
