@@ -29,23 +29,31 @@
     "friction" : 0.01,
     "maxSpeed" : 500,
     "turnFactor" : 100,
+    "actionCooldown" : 1,
 
     "energyLossRate" : 1,
     "movementEnergyLoss" : 3,
     "mushroomEnergy" : 50,
     "maxEnergy" : 100,
 
+    "canReproduce" : true,
+    "canWalk" : true,
+    "canTurn" : true,
+    "canEat" : true,
+    "canPlace" : true,
+
+    "memory" : 2,
+
     "perceiveCollision" : true,
     "receptorCount" : 5,
     "perceiveColor" : true,
     "perceiveEnergyLevel" : true,
-    "memory" : 2,
 
     "FOV" : 120,
     "visibilityDistance" : 200,
     "visualReactivity" : 5,
 
-    "mutation" : 0.08,
+    "mutation" : 0.15,
     "layerMin" : 3, "layerMax" : 5,
     "biasMin" : -1, "biasMax" : 1,
     "weightMin" : -1, "weightMax" : 1,

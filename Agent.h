@@ -45,11 +45,15 @@ public:
     float getOrientation() const;
     void setOrientation(float orientation);
 
-
     float getEnergy() const;
     void setEnergy(float energy);
 
-    float getMaxEnergy() const;
+    struct Inventory {
+        unsigned mushrooms;
+    };
+
+    const Inventory &getInventory() const;
+    void setInventory(const Inventory &inventory);
 
 private:
     // General
@@ -60,6 +64,8 @@ private:
 
     float orientation; // In degrees
     float energy; // Between 0 and maxEnergy
+    float actionCooldown;
+    Inventory inventory;
 
      // Rendering
     sf::Sprite sprite;

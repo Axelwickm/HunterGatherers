@@ -34,6 +34,9 @@ Agent::Agent(const AgentSettings &settings, World *world, sf::Vector2f position,
     energy = settings.maxEnergy;
     setMass(settings.mass);
     setFriction(settings.friction);
+    actionCooldown = 0;
+
+    inventory.mushrooms = 0;
 
     frameIndex = 0;
     frame = sf::IntRect(0, 0, 32, 32);
@@ -50,7 +53,7 @@ Agent::Agent(const AgentSettings &settings, World *world, sf::Vector2f position,
     lineOfSight[0].color = sf::Color::Cyan;
     lineOfSight[1].color = sf::Color::Cyan;
 
-    std::size_t outputCount = 4 + settings.memory;
+    std::size_t outputCount = settings.canReproduce + settings.canWalk + 2*settings.canTurn + settings.canEat + settings.canPlace + settings.memory;
     std::size_t inputCount = settings.perceiveCollision + receptors.size()
             + 3*settings.perceiveColor + settings.perceiveEnergyLevel  + settings.memory;
 
@@ -78,6 +81,9 @@ Agent::Agent(const Agent &other, float mutation)
     generation = other.generation;
     childCount = 0;
     energy = other.energy;
+    actionCooldown = 0;
+
+    inventory.mushrooms = 0;
 
     frameIndex = 0;
     frame = sf::IntRect(0, 0, 32, 32);
@@ -196,21 +202,33 @@ void Agent::constructGenome(size_t inputCount, size_t outputCount) {
 
 void Agent::update(float deltaTime) {
     WorldObject::update(deltaTime);
+    actionCooldown = fmaxf(actionCooldown - deltaTime, 0.f);
 
     // Apply actions
+    auto actionIterator = actions.begin();
+
     sf::Vector2f orientationVector = {
             cosf(orientation*PI/180.f),
             sinf(orientation*PI/180.f)
     };
+    if (settings.canWalk){
+        applyForce(deltaTime, orientationVector * *actionIterator * settings.maxSpeed);
+        energy -= *(actionIterator++) * settings.movementEnergyLoss * deltaTime;
+    }
 
-    applyForce(deltaTime, orientationVector * actions.at(0) * settings.maxSpeed);
-    energy -= actions.at(0) * settings.movementEnergyLoss * deltaTime;
+    if (settings.canTurn){
+        const float turn1 = *(actionIterator++);
+        const float turn2 = *(actionIterator++);
+        float turn = (turn1 - turn2)*settings.turnFactor;
+        orientation += turn*deltaTime;
+    }
 
-    float turn = ((float) actions.at(1) - actions.at(2))*settings.turnFactor;
-    orientation += turn*deltaTime;
-
-    if (0.7 < actions.at(3) && 80 < energy){
-        world->reproduce(*this);
+    if (settings.canReproduce){
+        const float reproduceWilling = *(actionIterator++);
+        if (0.6 < reproduceWilling && 80 < energy && actionCooldown == 0){
+            actionCooldown = settings.actionCooldown;
+            world->reproduce(*this);
+        }
     }
 
     if (quadtree != nullptr){
@@ -229,16 +247,36 @@ void Agent::update(float deltaTime) {
                 if (boxesIntersect(a, b)){
                     auto &type = typeid(*object.get());
                     if (type == typeid(Agent)){
-                        if (0.5 < actions.at(3)){
+                        /*if (0.5 < actions.at(3)){
                             // TODO: Crossover reproduction.
-                        }
+                        }*/
                     }
                     else if (type == typeid(Mushroom)){
                         world->removeObject(object->getSharedPtr(), false);
-                        energy += world->getConfig().agents.mushroomEnergy;
+                        inventory.mushrooms++;
                     }
                 }
             }
+        }
+    }
+
+    if (settings.canEat){
+        const float eatWilling = *(actionIterator++);
+        if (0 < inventory.mushrooms && 0.7 < eatWilling && actionCooldown == 0){
+            actionCooldown = settings.actionCooldown;
+            inventory.mushrooms--;
+            energy += world->getConfig().agents.mushroomEnergy;
+        }
+    }
+
+    if (settings.canPlace){
+        const float placeWilling = *(actionIterator++);
+        if (0 < inventory.mushrooms && 0.7 < placeWilling && actionCooldown == 0) {
+            actionCooldown = settings.actionCooldown;
+            inventory.mushrooms--;
+            sf::Vector2<float> position(getPosition().x+50*orientationVector.x, getPosition().y+50*orientationVector.y);
+            std::shared_ptr<Mushroom> mushroom(new Mushroom(world, position));
+            world->addObject(mushroom);
         }
     }
 
@@ -247,43 +285,15 @@ void Agent::update(float deltaTime) {
     if (energy <= 0){
         world->removeObject(getSharedPtr(), false);
     }
-}
 
-void Agent::draw(sf::RenderWindow *window, float deltaTime) {
-    frameTimer += deltaTime;
-    if (actions.at(0)*100.f < frameTimer*1000.f){
-        frameIndex = frameIndex % 12 + 1; // Skip the first frame
-        frame.top = frameIndex * 32;
-        sprite.setTextureRect(frame);
-        int o = ((360 + (int) orientation%360 + 315))%360 / 90;
-        if (o == 1) o = 3; // To match the order in the image
-        else if (o == 3) o = 1;
-
-        frame.left = o*32;
-        frameTimer = 0;
+    for (float &mem : memory) {
+        mem = *(actionIterator++);
     }
 
-    sprite.setPosition(getPosition());
-    if (world->getConfig().render.renderGeneration){
-        unsigned deltaGeneration = world->getStatistics().highestGeneration - world->getStatistics().lowestGeneration;
-        if (deltaGeneration != 0){
-            sf::Color c = sprite.getColor();
-            c.a = 200 * (float) (generation - world->getStatistics().lowestGeneration) / (float) deltaGeneration + 55;
-            sprite.setColor(c);
-        }
+    if (actionIterator != actions.end()){
+        throw std::runtime_error("All actions values not accessed. At "
+                                 +std::to_string(actionIterator - actions.begin())+" of "+std::to_string(actions.size()));
     }
-    else {
-        sf::Color c = sprite.getColor();
-        c.a = 255;
-        sprite.setColor(c);
-    }
-    window->draw(sprite);
-
-    if (world->getConfig().render.showVision){
-        window->draw(&lineOfSight.front(), 2*receptors.size(), sf::Lines);
-        window->draw(orientationLine, 2, sf::Lines);
-    }
-    WorldObject::draw(window, deltaTime);
 }
 
 void Agent::updatePercept(float deltaTime) {
@@ -293,7 +303,6 @@ void Agent::updatePercept(float deltaTime) {
         *perceptIterator = isColliding();
         perceptIterator++;
     }
-    else printf("wrong\n"); // TODO: Remove
 
     // Calculate perceptors
 
@@ -398,6 +407,43 @@ void Agent::updatePercept(float deltaTime) {
     }
 }
 
+void Agent::draw(sf::RenderWindow *window, float deltaTime) {
+    frameTimer += deltaTime;
+    if (actions.at(0)*100.f < frameTimer*1000.f){
+        frameIndex = frameIndex % 12 + 1; // Skip the first frame
+        frame.top = frameIndex * 32;
+        sprite.setTextureRect(frame);
+        int o = ((360 + (int) orientation%360 + 315))%360 / 90;
+        if (o == 1) o = 3; // To match the order in the image
+        else if (o == 3) o = 1;
+
+        frame.left = o*32;
+        frameTimer = 0;
+    }
+
+    sprite.setPosition(getPosition());
+    if (world->getConfig().render.renderGeneration){
+        unsigned deltaGeneration = world->getStatistics().highestGeneration - world->getStatistics().lowestGeneration;
+        if (deltaGeneration != 0){
+            sf::Color c = sprite.getColor();
+            c.a = 200 * (float) (generation - world->getStatistics().lowestGeneration) / (float) deltaGeneration + 55;
+            sprite.setColor(c);
+        }
+    }
+    else {
+        sf::Color c = sprite.getColor();
+        c.a = 255;
+        sprite.setColor(c);
+    }
+    window->draw(sprite);
+
+    if (world->getConfig().render.showVision){
+        window->draw(&lineOfSight.front(), 2*receptors.size(), sf::Lines);
+        window->draw(orientationLine, 2, sf::Lines);
+    }
+    WorldObject::draw(window, deltaTime);
+}
+
 const AgentSettings &Agent::getSettings() const {
     return settings;
 }
@@ -428,9 +474,6 @@ const std::vector<float> &Agent::getActions() const {
 
 void Agent::setActions(const std::vector<float> &actions) {
     Agent::actions = actions;
-    for (std::size_t i = 0; i < memory.size(); i++){
-        memory.at(i) = actions.at(actions.size() - memory.size() + i);
-    }
 }
 
 float Agent::getEnergy() const {
@@ -439,10 +482,6 @@ float Agent::getEnergy() const {
 
 void Agent::setEnergy(float energy) {
     Agent::energy = energy;
-}
-
-float Agent::getMaxEnergy() const {
-    return settings.maxEnergy;
 }
 
 const std::string &Agent::getName() const {
@@ -463,6 +502,14 @@ unsigned int Agent::getChildCount() const {
 
 void Agent::setChildCount(unsigned int childCount) {
     Agent::childCount = childCount;
+}
+
+const Agent::Inventory &Agent::getInventory() const {
+    return inventory;
+}
+
+void Agent::setInventory(const Agent::Inventory &inventory) {
+    Agent::inventory = inventory;
 }
 
 

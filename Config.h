@@ -21,17 +21,25 @@ struct AgentSettings {
     float friction;
     float maxSpeed;
     float turnFactor;
+    float actionCooldown;
 
     float energyLossRate;
     float movementEnergyLoss;
     float mushroomEnergy;
     float maxEnergy;
 
+    bool canReproduce;
+    bool canWalk;
+    bool canTurn;
+    bool canEat;
+    bool canPlace;
+
+    unsigned memory;
+
     bool perceiveCollision;
     unsigned receptorCount;
     bool perceiveColor;
     bool perceiveEnergyLevel;
-    unsigned memory;
 
     float FOV;
     float visibilityDistance;

@@ -88,7 +88,7 @@ GUI::GUI(Config &config, sf::RenderWindow *window, World *world, Camera *camera)
     agentInfo.actionVector.bounds = sf::Rect<float>(10, 215, 300, 25);
 
     agentInfo.infoText = agentInfo.energyText;
-    agentInfo.infoText.setString("Age: ###\nGeneration: ###\nChildren: ###\n");
+    agentInfo.infoText.setString("Age: ###\nGeneration: ###\nChildren: ###\nMushrooms: ##\n");
     agentInfo.infoText.setPosition(10, 245);
 
 
@@ -137,7 +137,7 @@ void GUI::draw(float deltaTime, float timeFactor) {
         window->draw(agentInfo.agentIdentifier);
 
         window->draw(agentInfo.energyText);
-        agentInfo.energyBar.setScale(selectedAgent->getEnergy()/selectedAgent->getMaxEnergy(), 1);
+        agentInfo.energyBar.setScale(selectedAgent->getEnergy()/selectedAgent->getSettings().maxEnergy, 1);
         window->draw(agentInfo.energyBackground);
         window->draw(agentInfo.energyBar);
 
@@ -150,7 +150,8 @@ void GUI::draw(float deltaTime, float timeFactor) {
         agentInfo.infoText.setString(
                 "Age: " + std::to_string(selectedAgent->getAge())
                 + "\nGeneration: "+ std::to_string(selectedAgent->getGeneration())
-                +"\nChildren: "+std::to_string(selectedAgent->getChildCount())+"\n");
+                +"\nChildren: "+std::to_string(selectedAgent->getChildCount())+"\n"
+                +"\nMushrooms: "+std::to_string(selectedAgent->getInventory().mushrooms));
         window->draw(agentInfo.infoText);
     }
     window->setView(cameraView);
