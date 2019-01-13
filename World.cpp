@@ -210,7 +210,7 @@ void World::updateStatistics() {
     else {
         statistics.populationCount = agents.size();
         statistics.averageGeneration = 0;
-        statistics.lowestGeneration = std::numeric_limits<unsigned>::infinity();
+        statistics.lowestGeneration = std::numeric_limits<unsigned>::max();
         statistics.highestGeneration = 0;
         std::fill(statistics.populationDistribution.begin(), statistics.populationDistribution.end(), 0);
 
