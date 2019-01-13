@@ -53,8 +53,23 @@ void WorldObject::update(float deltaTime, sf::Vector2f oldPosition) {
     age += deltaTime;
     velocity *= powf(friction, deltaTime);
     position += velocity * deltaTime;
-    position = sf::Vector2f((float) fmin(position.x, world->getDimensions().x), (float) fmin(position.y, world->getDimensions().y));
-    position = sf::Vector2f((float) fmax(position.x, 1), (float) fmax(position.y, 1));
+    colliding = false;
+    if (world->getDimensions().x-1 <= position.x){
+        position.x = world->getDimensions().x-1;
+        colliding = true;
+    }
+    if (world->getDimensions().y-1 <= position.y){
+        position.y = world->getDimensions().y-1;
+        colliding = true;
+    }
+    if (position.x <= 1){
+        position.x = 1;
+        colliding = true;
+    }
+    if (position.y <= 1){
+        position.y = 1;
+        colliding = true;
+    }
     if (quadtree != nullptr) {
         quadtree->move(oldPosition, this);
     }
@@ -160,4 +175,12 @@ const sf::Color &WorldObject::getColor() const {
 
 void WorldObject::setAge(float age) {
     WorldObject::age = age;
+}
+
+bool WorldObject::isColliding() const {
+    return colliding;
+}
+
+void WorldObject::setColliding(bool colliding) {
+    WorldObject::colliding = colliding;
 }

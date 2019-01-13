@@ -54,6 +54,7 @@ void Config::loadConfigFromFile(const std::string &filename) {
     agents.movementEnergyLoss = AS["movementEnergyLoss"].get<float>();
     agents.mushroomEnergy = AS["mushroomEnergy"].get<float>();
 
+    agents.collision = AS["collision"].get<bool>();
     agents.receptorCount = AS["receptorCount"].get<unsigned>();
     agents.color = AS["color"].get<bool>();
     agents.energyLevel = AS["energyLevel"].get<bool>();

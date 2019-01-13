@@ -26,6 +26,7 @@ struct AgentSettings {
     float movementEnergyLoss;
     float mushroomEnergy;
 
+    bool collision;
     unsigned receptorCount;
     bool color;
     bool energyLevel;

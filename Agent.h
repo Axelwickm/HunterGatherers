@@ -80,7 +80,8 @@ private:
     std::vector<float> receptors;
 
 
-    // Vision variables,
+    // Vision variables
+    bool perceiveCollision;
     unsigned receptorCount;
     bool perceiveColor;
     bool perceiveEnergyLevel;

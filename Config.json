@@ -34,6 +34,8 @@
     "movementEnergyLoss" : 3,
     "mushroomEnergy" : 50,
 
+    "_percption" : "What the agent can perceive about its surroundings",
+    "collision" : true,
     "receptorCount" : 5,
     "color" : true,
     "energyLevel" : true,

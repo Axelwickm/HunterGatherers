@@ -46,6 +46,7 @@ Agent::Agent(const AgentSettings &settings, World *world, sf::Vector2f position,
     sprite.setOrigin(16, 5);
     setBounds(sf::IntRect(-8, 10, 8, 27));
 
+    perceiveCollision = settings.collision;
     receptorCount = settings.receptorCount;
     perceiveColor = settings.color;
     perceiveEnergyLevel = settings.energyLevel;
@@ -63,7 +64,7 @@ Agent::Agent(const AgentSettings &settings, World *world, sf::Vector2f position,
     lineOfSight[1].color = sf::Color::Cyan;
 
     std::size_t outputCount = 4 + settings.memory;
-    std::size_t inputCount = receptors.size() + 3*perceiveColor + perceiveEnergyLevel  + settings.memory;
+    std::size_t inputCount = perceiveCollision + receptors.size() + 3*perceiveColor + perceiveEnergyLevel  + settings.memory;
 
     percept = std::vector<float>(inputCount);
     std::fill(std::begin(percept), std::end(percept), 0.f);
@@ -116,7 +117,8 @@ Agent::Agent(const Agent &other, float mutation) : WorldObject(other), orientati
     setColor(colorFromGenome(genome));
     sprite.setColor(color);
 
-    // Vision variables
+    // AI
+    perceiveCollision = other.perceiveCollision;
     receptorCount = other.receptorCount;
     perceiveColor = other.perceiveColor;
     perceiveEnergyLevel = other.perceiveEnergyLevel;
@@ -314,6 +316,12 @@ void Agent::draw(sf::RenderWindow *window, float deltaTime) {
 
 void Agent::updatePercept(float deltaTime) {
     auto perceptIterator = percept.begin();
+
+    if (perceiveCollision){
+        *perceptIterator = isColliding();
+        perceptIterator++;
+    }
+    else printf("wrong");
 
     // Calculate perceptors
 

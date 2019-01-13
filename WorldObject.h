@@ -51,9 +51,10 @@ public:
     void setPosition(const sf::Vector2f &position);
 
     const bool isCollider() const;
+    bool isColliding() const;
+    void setColliding(bool colliding);
 
     float getAge() const;
-
     void setAge(float age);
 
     const sf::Color &getColor() const;
@@ -63,6 +64,7 @@ protected:
     World *world;
     std::weak_ptr<WorldObject> me;
     const bool collider;
+    bool colliding;
     float age;
     sf::Color color;
 
