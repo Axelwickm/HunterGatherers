@@ -131,8 +131,8 @@ OpenCL_Wrapper::OpenCL_Wrapper(std::string deviceToUse) {
 }
 
 OpenCL_Wrapper::~OpenCL_Wrapper() {
-    for (auto &agent : agentRegister) {
-        removeAgent(agent.first);
+    while (!agentRegister.empty()){
+        removeAgent(agentRegister.begin()->second.agent);
     }
 }
 
@@ -262,6 +262,8 @@ void OpenCL_Wrapper::removeAgent(Agent *agent) {
     err |= clReleaseMemObject(a.layerSizes);
     err |= clReleaseMemObject(a.layerBiases);
     err |= clReleaseMemObject(a.layerWeights);
+
+    agentRegister.erase(agent);
     if (err){
         throw std::runtime_error("Failed to release memory objects: "+std::to_string(err));
     }
