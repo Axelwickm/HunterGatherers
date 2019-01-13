@@ -57,6 +57,7 @@ struct RenderSettings {
     bool showQuadtree{};
     bool showQuadtreeEntities{};
     bool showVision{};
+    bool renderGeneration{};
 };
 
 struct Controls {

@@ -3,7 +3,7 @@
   "seed" : "TIME",
 
   "WorldSettings" : {
-    "worldWidth" : 3000, "worldHeight" :  3000,
+    "worldWidth" : 3000, "worldHeight" :  2500,
     "terrainSquare" : 30,
     "quadtreeLimit" : 30,
     "PopulatorEntries" : [
@@ -13,8 +13,8 @@
         "rate" : 5
       },{
         "type" : "Mushroom",
-        "targetCount" : 400,
-        "rate" : 4
+        "targetCount" : 800,
+        "rate" : 5
       },{
         "type" : "BouncingBall",
         "targetCount" : 0,
@@ -29,8 +29,8 @@
     "maxSpeed" : 500,
     "turnFactor" : 100,
 
-    "energyLossRate" : 2,
-    "movementEnergyLoss" : 6,
+    "energyLossRate" : 1,
+    "movementEnergyLoss" : 3,
     "mushroomEnergy" : 50,
 
     "receptorCount" : 5,
@@ -39,7 +39,7 @@
 
     "FOV" : 120,
     "visibilityDistance" : 200,
-    "visualReactivity" : 3,
+    "visualReactivity" : 5,
 
     "mutation" : 0.08,
     "layerMin" : 3, "layerMax" : 5,
@@ -78,6 +78,7 @@
     "showWorldObjectBounds" : false,
     "showQuadtree" :  false,
     "showQuadtreeEntities" : false,
-    "showVision" : false
+    "showVision" : false,
+    "renderGeneration" : false
   }
 }

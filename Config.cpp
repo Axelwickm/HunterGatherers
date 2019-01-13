@@ -94,6 +94,8 @@ void Config::loadConfigFromFile(const std::string &filename) {
     render.showQuadtree = RS["showQuadtree"].get<bool>();
     render.showQuadtreeEntities = RS["showQuadtreeEntities"].get<bool>();
     render.showVision = RS["showVision"].get<bool>();
+    render.renderGeneration = RS["renderGeneration"].get<bool>();
+
     auto windowWidth = RS["windowWidth"].get<unsigned>();
     auto windowHeight = RS["windowHeight"].get<unsigned>();
     render.windowSize = {windowWidth, windowHeight};

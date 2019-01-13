@@ -23,6 +23,7 @@ GUI::GUI(Config &config, sf::RenderWindow *window, World *world, Camera *camera)
         {"showQuadtree", &config.render.showQuadtree},
         {"showQuadtreeEntities", &config.render.showQuadtreeEntities},
         {"showVision", &config.render.showVision},
+        {"renderGeneration", &config.render.renderGeneration}
     };
 
 

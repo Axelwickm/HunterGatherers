@@ -288,6 +288,19 @@ void Agent::draw(sf::RenderWindow *window, float deltaTime) {
     }
 
     sprite.setPosition(getPosition());
+    if (world->getConfig().render.renderGeneration){
+        unsigned deltaGeneration = world->getStatistics().highestGeneration - world->getStatistics().lowestGeneration;
+        if (deltaGeneration != 0){
+            sf::Color c = sprite.getColor();
+            c.a = 200 * (float) (generation - world->getStatistics().lowestGeneration) / (float) deltaGeneration + 55;
+            sprite.setColor(c);
+        }
+    }
+    else {
+        sf::Color c = sprite.getColor();
+        c.a = 255;
+        sprite.setColor(c);
+    }
     window->draw(sprite);
 
     if (world->getConfig().render.showVision){
@@ -331,6 +344,9 @@ void Agent::updatePercept(float deltaTime) {
                     averageColor[0] += col.r; averageColor[1] += col.b; averageColor[2] += col.g;
                     sf::Vector2f dPos = n->getPosition() - getPosition();
                     float change = deltaTime*visualReactivity*(1.f-(dPos.x*dPos.x+dPos.y*dPos.y)/(visibilityDistance*visibilityDistance));
+                    if (typeid(*n) == typeid(Agent)){
+                        change /= 3.f;
+                    }
                     receptors[i] = (1-deltaTime*change)*receptors[i] + change;
                 }
             }
