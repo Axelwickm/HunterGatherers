@@ -14,13 +14,10 @@ config(config), window(window), dimensions(config.world.dimensions), openCL_wrap
 populator(this), quadtree(Quadtree<float>(sf::Vector2<float>(0, 0), dimensions)) {
     randomEngine = std::mt19937(config.seed++);
     quadtree.setLimit(config.world.quadtreeLimit);
-
-    std::vector<Populator::Entry> populatorEntries;
-    for (auto& e : config.world.populatorEntries){
-        populatorEntries.push_back(*((Populator::Entry*) &e)); // Please look away.
-    }
-    populator.addEntries(populatorEntries);
+    populator.addEntries(config.world.populatorEntries);
     generateTerrain();
+
+    agentSpawning = true;
 }
 
 void World::generateTerrain() {
@@ -49,6 +46,8 @@ void World::generateTerrain() {
 
 void World::update(float deltaTime) {
     openCL_wrapper->clFinishAll(); // More optimized to have this here?
+
+    populator.entryEnabled("Agent", agentSpawning);
 
     populator.populate(deltaTime);
 
@@ -237,5 +236,3 @@ void World::updateStatistics() {
 const WorldStatistics & World::getStatistics() const {
     return statistics;
 }
-
-

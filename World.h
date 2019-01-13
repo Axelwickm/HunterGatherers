@@ -38,6 +38,7 @@ public:
     bool removeObject(std::shared_ptr<WorldObject> worldObject, bool performImmediately = true);
     void performDeletions();
     bool spawn(std::string type);
+    bool agentSpawning;
 
     void reproduce(Agent &a);
 
@@ -49,6 +50,7 @@ public:
     const WorldStatistics & getStatistics() const;
 
     const sf::RenderWindow *getWindow() const;
+
     const sf::Vector2f &getDimensions() const;
     const Quadtree<float> &getQuadtree() const;
 

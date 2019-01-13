@@ -12,22 +12,26 @@ GUI::GUI(Config &config, sf::RenderWindow *window, World *world, Camera *camera)
     font.loadFromFile(R"(C:\Windows\Fonts\consola.ttf)");
     sf::Color gray(120, 120, 120);
 
-    simulationInfo.main = sf::Text("FPS: ###\nTime factor: ##\nPopulation: ###\nAverage generation: ####\n", font);
+    simulationInfo.main = sf::Text(std::string("FPS: ###\nTime factor: ##\nPopulation: ###\nAverage generation: ####")+
+            std::string("\nLowest generation: ###\nHighest generation: ###\n"), font);
     simulationInfo.main.setCharacterSize(20);
     simulationInfo.main.setStyle(sf::Text::Regular);
     simulationInfo.main.setFillColor(gray);
     simulationInfo.main.setPosition(10, window->getSize().y-simulationInfo.main.getLocalBounds().height-5);
 
+
     std::vector<std::pair<std::string, bool*>> debugValues = {
+        {"agentSpawning", &world->agentSpawning},
         {"showWorldObjectBounds", &config.render.showWorldObjectBounds},
         {"showQuadtree", &config.render.showQuadtree},
         {"showQuadtreeEntities", &config.render.showQuadtreeEntities},
         {"showVision", &config.render.showVision},
+        {"showDistribution", &config.render.showDistribution},
         {"renderGeneration", &config.render.renderGeneration}
     };
 
 
-    sf::Rect<int> distributionBounds(450, window->getSize().y-10, 400, 90);
+    sf::Rect<int> distributionBounds(450, window->getSize().y-10, 800, 90);
     simulationInfo.populationDistribution.resize(config.render.bins);
     int binWidth = distributionBounds.width / simulationInfo.populationDistribution.size();
     for (std::size_t i = 0; i < simulationInfo.populationDistribution.size(); i++){
@@ -98,7 +102,9 @@ void GUI::draw(float deltaTime, float timeFactor) {
     simulationInfo.main.setString("FPS: "+std::to_string(int(1.f/deltaTime))
         +"\nTime factor: "+std::to_string(int(timeFactor))
         +"\nPopulation: "+std::to_string(world->getStatistics().populationCount)
-        +"\nAverage generation: "+std::to_string(world->getStatistics().averageGeneration));
+        +"\nAverage generation: "+std::to_string(world->getStatistics().averageGeneration)
+        +"\nLowest generation: " + std::to_string(world->getStatistics().lowestGeneration)
+        +"\nHighest generation: " + std::to_string(world->getStatistics().highestGeneration));
     window->draw(simulationInfo.main);
 
     unsigned deltaGeneration = world->getStatistics().highestGeneration - world->getStatistics().lowestGeneration;
@@ -169,6 +175,8 @@ const std::shared_ptr<Agent> &GUI::getSelectedAgent() const {
 bool GUI::click(sf::Vector2i pos) {
     if (config.render.showDebug){
         for (auto& t : simulationInfo.debug){
+            auto c = view.getTransform().transformRect(t.text.getGlobalBounds());
+            printf("%f\n", c.left);
             if (pointInBox(sf::Vector2f(pos.x, pos.y), t.text.getGlobalBounds())){
                 t.click();
                 return true;

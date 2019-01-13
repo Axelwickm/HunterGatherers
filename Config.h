@@ -7,19 +7,13 @@
 
 #include <SFML/Graphics.hpp>
 #include "json/json.hpp"
+#include "Populator.h"
 
 struct WorldSettings {
-    struct PopulationEntry {
-        std::string type;
-        unsigned count;
-        unsigned targetCount;
-        float rate;
-    };
-
     sf::Vector2f dimensions;
     unsigned terrainSquare{};
     float quadtreeLimit{};
-    std::vector<PopulationEntry> populatorEntries{};
+    std::vector<Populator::Entry> populatorEntries{};
 };
 
 struct AgentSettings {

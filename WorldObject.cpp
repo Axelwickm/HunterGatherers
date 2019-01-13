@@ -12,6 +12,7 @@ WorldObject::WorldObject(std::string type, World *world, sf::Vector2f position, 
     this->position = position;
     this->quadtree = nullptr;
     this->world = world;
+    age = 0;
     velocity = sf::Vector2f(0, 0);
     mass = 1.f;
     friction = 0.f;
@@ -23,6 +24,7 @@ WorldObject::WorldObject(const WorldObject &other)
     this->position = other.position;
     this->quadtree = other.quadtree;
     this->world = other.world;
+    age = 0;
     velocity = other.velocity;
     mass = other.mass;
     friction = other.friction;

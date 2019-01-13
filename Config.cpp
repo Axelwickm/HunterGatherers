@@ -39,7 +39,8 @@ void Config::loadConfigFromFile(const std::string &filename) {
         .type = entry["type"].get<std::string>(),
         .count = 0,
         .targetCount = entry["targetCount"].get<unsigned>(),
-        .rate = entry["rate"].get<float>()
+        .rate = entry["rate"].get<float>(),
+        .enabled = true
         });
     }
 

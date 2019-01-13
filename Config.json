@@ -15,6 +15,7 @@
         "type" : "Mushroom",
         "targetCount" : 800,
         "rate" : 5
+
       },{
         "type" : "BouncingBall",
         "targetCount" : 0,
@@ -73,7 +74,7 @@
     "windowHeight" : 1080,
 
     "showDistribution" : true,
-    "bins" : 20,
+    "bins" : 50,
     "showDebug" : false,
     "showWorldObjectBounds" : false,
     "showQuadtree" :  false,

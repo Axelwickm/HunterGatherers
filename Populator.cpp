@@ -4,6 +4,8 @@
 
 #include <ctime>
 #include "World.h"
+#include "Populator.h"
+
 
 Populator::Populator(World *world) : world(world) {
     randomEngine = std::mt19937(world->getConfig().seed++);
@@ -11,7 +13,7 @@ Populator::Populator(World *world) : world(world) {
 
 void Populator::populate(float deltaT) {
     for (auto &entry : frequencies) {
-        if (entry.second.count < entry.second.targetCount){
+        if (entry.second.count < entry.second.targetCount && entry.second.enabled){
             auto d = std::poisson_distribution(entry.second.rate*deltaT);
             int newCount = d(randomEngine);
             for (unsigned i = 0; i < newCount; i++){
@@ -40,3 +42,11 @@ void Populator::changeCount(std::string type, int deltaCount) {
         frequencies.at(type).count += deltaCount;
     }
 }
+
+void Populator::entryEnabled(std::string type, bool enabled) {
+    auto itr = frequencies.find(type);
+    if (itr != frequencies.end()){
+        itr->second.enabled = enabled;
+    }
+}
+

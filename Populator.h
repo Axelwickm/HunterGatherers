@@ -20,10 +20,12 @@ public:
         unsigned count;
         unsigned targetCount;
         float rate;
+        bool enabled;
     };
 
     void populate(float deltaT);
     void changeCount(std::string type, int deltaCount);
+    void entryEnabled(std::string type, bool enabled);
     void addEntry(Entry entry);
     void addEntries(std::vector<Populator::Entry> entries);
 
