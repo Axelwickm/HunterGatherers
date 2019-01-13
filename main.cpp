@@ -47,7 +47,7 @@ int main(int argc, char *argv[]) {
                   sf::Vector2f(config.render.windowSize.x * 10, config.render.windowSize.y * 10));
     OpenCL_Wrapper cl(deviceName);
     World world(config, &window, &cl);
-    GUI gui(config, &window, &world);
+    GUI gui(config, &window, &world, &camera);
 
     // Game loop variables
 
@@ -167,6 +167,8 @@ int main(int argc, char *argv[]) {
                 window.close();
             }
         }
+
+        camera.update(dt.asSeconds());
 
         // Updating world
         if (!paused){

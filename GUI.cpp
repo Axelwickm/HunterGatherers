@@ -5,9 +5,10 @@
 #include <sstream>
 #include "GUI.h"
 #include "World.h"
+#include "Camera.h"
 
-GUI::GUI(Config &config, sf::RenderWindow *window, World *world)
-        : config(config), window(window), view(window->getDefaultView()), world(world) {
+GUI::GUI(Config &config, sf::RenderWindow *window, World *world, Camera *camera)
+        : config(config), window(window), view(window->getDefaultView()), world(world), camera(camera){
     font.loadFromFile(R"(C:\Windows\Fonts\consola.ttf)");
     sf::Color gray(120, 120, 120);
 
@@ -172,6 +173,10 @@ bool GUI::click(sf::Vector2i pos) {
                 return true;
             }
         }
+    }
+    if (pointInBox(sf::Vector2f(pos.x, pos.y), agentInfo.agentIdentifier.getGlobalBounds())){
+        camera->followAgent(selectedAgent.get());
+        return true;
     }
     if (pointInBox(sf::Vector2f(pos.x, pos.y), simulationInfo.main.getGlobalBounds())){
         printf("Click on info\n");

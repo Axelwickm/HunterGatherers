@@ -10,9 +10,11 @@ Camera::Camera(Config &config, sf::RenderWindow *window, sf::Vector2f worldSize)
     this->worldSize = worldSize;
     view.zoom(1.f);
     window->setView(view);
+    followingAgent = false;
 }
 
 void Camera::move(sf::Vector2f offset) {
+    followingAgent = false;
     offset *= view.getSize().x/window->getSize().x;
     view.move(offset.x, offset.y);
 
@@ -21,6 +23,19 @@ void Camera::move(sf::Vector2f offset) {
 
     window->setView(view);
 }
+
+void Camera::update(float deltaT) {
+    if (followingAgent){
+        if (agentFollow.expired()){
+            followingAgent = false;
+        }
+        else {
+            view.setCenter(agentFollow.lock()->getPosition());
+            window->setView(view);
+        }
+    }
+}
+
 
 void Camera::zoomTo(float mouseWheelDelta,  sf::Vector2<int> mousePosition) {
     sf::Vector2f c1 = (sf::Vector2f) window->mapPixelToCoords(sf::Mouse::getPosition(*window));
@@ -50,6 +65,12 @@ void Camera::setView(sf::View view) {
     this->view = view;
     window->setView(view);
 }
+
+void Camera::followAgent(Agent *agent) {
+    followingAgent = true;
+    agentFollow = std::dynamic_pointer_cast<Agent>(agent->getSharedPtr());
+}
+
 
 
 

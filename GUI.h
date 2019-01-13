@@ -8,10 +8,11 @@
 
 #include <SFML/Graphics/RenderWindow.hpp>
 #include "Agent.h"
+#include "Camera.h"
 
 class GUI {
 public:
-    explicit GUI(Config &config, sf::RenderWindow *window, World *world);
+    explicit GUI(Config &config, sf::RenderWindow *window, World *world, Camera *camera);
     void draw(float deltaTime, float timeFactor);
     void selectAgent(std::shared_ptr<Agent> agent);
     bool click(sf::Vector2i pos);
@@ -22,6 +23,7 @@ private:
     Config& config;
     sf::RenderWindow *window;
     const World* world;
+    Camera* camera;
     const sf::View &view;
     sf::Font font;
 
