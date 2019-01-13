@@ -29,6 +29,8 @@ struct AgentSettings {
     unsigned receptorCount;
     bool color;
     bool energyLevel;
+    unsigned memory;
+
     float FOV;
     float visibilityDistance;
     float visualReactivity;

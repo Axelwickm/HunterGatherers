@@ -37,6 +37,7 @@
     "receptorCount" : 5,
     "color" : true,
     "energyLevel" : true,
+    "memory" : 2,
 
     "FOV" : 120,
     "visibilityDistance" : 200,

@@ -39,7 +39,7 @@ public:
     void setPercept(const std::vector<float> &percept);
 
     const std::vector<float> &getActions() const;
-    void setActions(const std::vector<float> &action);
+    void setActions(const std::vector<float> &actions);
 
     float getOrientation() const;
     void setOrientation(float orientation);
@@ -75,6 +75,7 @@ private:
     // AI
     std::shared_ptr<MapGenes> genes;
     std::vector<float> percept;
+    std::vector<float> memory;
     std::vector<float> actions;
     std::vector<float> receptors;
 

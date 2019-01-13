@@ -57,6 +57,8 @@ void Config::loadConfigFromFile(const std::string &filename) {
     agents.receptorCount = AS["receptorCount"].get<unsigned>();
     agents.color = AS["color"].get<bool>();
     agents.energyLevel = AS["energyLevel"].get<bool>();
+    agents.memory = AS["memory"].get<unsigned>();
+
     agents.FOV = AS["FOV"].get<float>();
     agents.visibilityDistance = AS["visibilityDistance"].get<float>();
     agents.visualReactivity = AS["visualReactivity"].get<float>();

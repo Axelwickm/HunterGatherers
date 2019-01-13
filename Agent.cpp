@@ -49,7 +49,6 @@ Agent::Agent(const AgentSettings &settings, World *world, sf::Vector2f position,
     receptorCount = settings.receptorCount;
     perceiveColor = settings.color;
     perceiveEnergyLevel = settings.energyLevel;
-
     FOV = settings.FOV;
     visibilityDistance = settings.visibilityDistance;
     visualReactivity = settings.visualReactivity;
@@ -63,13 +62,15 @@ Agent::Agent(const AgentSettings &settings, World *world, sf::Vector2f position,
     lineOfSight[0].color = sf::Color::Cyan;
     lineOfSight[1].color = sf::Color::Cyan;
 
-    std::size_t outputCount = 4;
-    std::size_t inputCount = receptors.size() + 3*perceiveColor + perceiveEnergyLevel ;
+    std::size_t outputCount = 4 + settings.memory;
+    std::size_t inputCount = receptors.size() + 3*perceiveColor + perceiveEnergyLevel  + settings.memory;
 
     percept = std::vector<float>(inputCount);
     std::fill(std::begin(percept), std::end(percept), 0.f);
     actions = std::vector<float>(outputCount);
     std::fill(std::begin(actions), std::end(actions), 0.f);
+    memory = std::vector<float>(settings.memory);
+    std::fill(std::begin(memory), std::end(memory), 0.f);
 
     constructGenome(inputCount, outputCount);
 
@@ -99,8 +100,9 @@ Agent::Agent(const Agent &other, float mutation) : WorldObject(other), orientati
     sprite.setOrigin(other.sprite.getOrigin());
     setBounds(other.getBounds());
 
-    percept.resize(other.percept.size());
     actions.resize(other.actions.size());
+    percept.resize(other.percept.size());
+    memory.resize(other.memory.size());
     genes = std::dynamic_pointer_cast<MapGenes>(other.genes->clone());
     genes->mutate(mutation);
 
@@ -405,6 +407,11 @@ void Agent::updatePercept(float deltaTime) {
         perceptIterator++;
     }
 
+    for (auto& mem : memory){
+        *perceptIterator = mem;
+        perceptIterator++;
+    }
+
     if (perceptIterator != percept.end()){
         throw std::runtime_error("All percept values not updated.\n");
     }
@@ -434,8 +441,11 @@ const std::vector<float> &Agent::getActions() const {
     return actions;
 }
 
-void Agent::setActions(const std::vector<float> &action) {
-    Agent::actions = action;
+void Agent::setActions(const std::vector<float> &actions) {
+    Agent::actions = actions;
+    for (std::size_t i = 0; i < memory.size(); i++){
+        memory.at(i) = actions.at(actions.size() - memory.size() + i);
+    }
 }
 
 float Agent::getEnergy() const {
