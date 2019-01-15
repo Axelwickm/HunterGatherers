@@ -52,7 +52,7 @@ int main(int argc, char *argv[]) {
     // Game loop variables
 
     sf::Clock deltaClock;
-    float timeFactor = 1;
+    float timeFactor = config.controls.timeFactorInitial;
     bool paused = false;
 
     bool dragging = false;
@@ -178,7 +178,7 @@ int main(int argc, char *argv[]) {
         // Rendering
         window.clear(sf::Color::Black);
         world.draw(paused ? 0 : dt.asSeconds()*timeFactor);
-        gui.draw(paused ? 0 : dt.asSeconds() * timeFactor, timeFactor);
+        gui.draw(paused ? 0 : dt.asSeconds(), timeFactor);
         window.display();
     }
 

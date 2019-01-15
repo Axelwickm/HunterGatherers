@@ -88,6 +88,7 @@ struct Controls {
 
     sf::Keyboard::Key slowDown;
     sf::Keyboard::Key speedUp;
+    float timeFactorInitial;
     float timeFactorDelta;
     float timeFactorMax;
     float scrollFactor;

@@ -55,6 +55,15 @@ public:
     const Inventory &getInventory() const;
     void setInventory(const Inventory &inventory);
 
+    struct NetworkStatistics {
+        unsigned layers;
+        unsigned perceptronCount;
+    };
+
+    const NetworkStatistics &getNetworkStatistics() const;
+
+    void setNetworkStatistics(const NetworkStatistics &networkStatistics);
+
 private:
     // General
     const AgentSettings settings;
@@ -70,12 +79,14 @@ private:
 
      // Rendering
     sf::Sprite sprite;
+
     sf::IntRect frame;
     unsigned frameIndex;
     float frameTimer;
 
     // AI
     std::shared_ptr<MapGenes> genes;
+    NetworkStatistics networkStatistics;
     std::vector<float> percept;
     std::vector<float> memory;
     std::vector<float> actions;

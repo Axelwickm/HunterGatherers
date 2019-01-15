@@ -88,7 +88,7 @@ GUI::GUI(Config &config, sf::RenderWindow *window, World *world, Camera *camera)
     agentInfo.actionVector.bounds = sf::Rect<float>(10, 215, 300, 25);
 
     agentInfo.infoText = agentInfo.energyText;
-    agentInfo.infoText.setString("Age: ###\nGeneration: ###\nChildren: ###\nMushrooms: ##\n");
+    agentInfo.infoText.setString("Network layers ##\nPerceptron count: ##\nAge: ###\nGeneration: ###\nChildren: ###\nMushrooms: ##\n");
     agentInfo.infoText.setPosition(10, 245);
 
 
@@ -148,8 +148,10 @@ void GUI::draw(float deltaTime, float timeFactor) {
         agentInfo.actionVector.draw(window, selectedAgent->getActions());
 
         agentInfo.infoText.setString(
-                "Age: " + std::to_string(selectedAgent->getAge())
-                + "\nGeneration: "+ std::to_string(selectedAgent->getGeneration())
+                "Network layers: "+std::to_string(selectedAgent->getNetworkStatistics().layers)
+                +"\nPerceptron count: "+std::to_string(selectedAgent->getNetworkStatistics().perceptronCount)
+                +"\nAge: " + std::to_string(selectedAgent->getAge())
+                +"\nGeneration: "+ std::to_string(selectedAgent->getGeneration())
                 +"\nChildren: "+std::to_string(selectedAgent->getChildCount())+"\n"
                 +"\nMushrooms: "+std::to_string(selectedAgent->getInventory().mushrooms));
         window->draw(agentInfo.infoText);
@@ -176,8 +178,8 @@ const std::shared_ptr<Agent> &GUI::getSelectedAgent() const {
 bool GUI::click(sf::Vector2i pos) {
     if (config.render.showDebug){
         for (auto& t : simulationInfo.debug){
-            auto c = view.getTransform().transformRect(t.text.getGlobalBounds());
-            printf("%f\n", c.left);
+            //auto c = view.getTransform().transformRect(t.text.getGlobalBounds());
+            //printf("%f\n", c.left);
             if (pointInBox(sf::Vector2f(pos.x, pos.y), t.text.getGlobalBounds())){
                 t.click();
                 return true;

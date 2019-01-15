@@ -106,6 +106,7 @@ void Config::loadConfigFromFile(const std::string &filename) {
     controls.downAmount = C["keyboardCameraMove"].get<float>();
     controls.leftAmount = -C["keyboardCameraMove"].get<float>();
     controls.rightAmount = C["keyboardCameraMove"].get<float>();
+    controls.timeFactorInitial = C["timeFactorInitial"].get<float>();
     controls.timeFactorDelta = C["timeFactorDelta"].get<float>();
     controls.timeFactorMax = C["timeFactorMax"].get<float>();
     controls.scrollFactor = C["scrollFactor"].get<float>();

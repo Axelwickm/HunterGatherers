@@ -13,7 +13,7 @@
         "rate" : 5
       },{
         "type" : "Mushroom",
-        "targetCount" : 400,
+        "targetCount" : 550,
         "rate" : 2
 
       },{
@@ -60,11 +60,11 @@
     "visualReactivity" : 5,
 
     "mutation" : 0.15,
-    "layerMin" : 3, "layerMax" : 5,
+    "layerMin" : 3, "layerMax" : 7,
     "biasMin" : -1, "biasMax" : 1,
-    "weightMin" : -1, "weightMax" : 1,
-    "perceptronPerLayerMin": 4,
-    "perceptronPerLayerMax": 8
+    "weightMin" : -2, "weightMax" : 2,
+    "perceptronPerLayerMin": 6,
+    "perceptronPerLayerMax": 20
   },
 
   "Controls" : {
@@ -81,6 +81,7 @@
     "speedUp" : "Period",
 
     "keyboardCameraMove" : 15,
+    "timeFactorInitial" : 6,
     "timeFactorDelta" : 0.05,
     "timeFactorMax" :  20,
     "scrollFactor" :  0.05

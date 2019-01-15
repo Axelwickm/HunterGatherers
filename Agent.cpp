@@ -68,6 +68,11 @@ Agent::Agent(const AgentSettings &settings, World *world, sf::Vector2f position,
     std::fill(std::begin(memory), std::end(memory), 0.f);
 
     constructGenome(inputCount, outputCount);
+    networkStatistics.perceptronCount = 0;
+    for (auto &l : genes->getGene<ListGenes>("Layers")->getList()) {
+        networkStatistics.perceptronCount += ((MapGenes*) l.get())->getGene<LambdaGene<int>>("PerceptronCount")->getValue();
+    }
+    networkStatistics.layers = (unsigned) genes->getGene<IntegerGene>("LayerCount")->getValue();
 
     MarkovNames nameGenerator(false, world->getConfig().seed++);
     std::vector<double> genome;
@@ -100,6 +105,12 @@ Agent::Agent(const Agent &other, float mutation)
     memory.resize(other.memory.size());
     genes = std::dynamic_pointer_cast<MapGenes>(other.genes->clone());
     genes->mutate(mutation);
+
+    networkStatistics.perceptronCount = 0;
+    for (auto &l : genes->getGene<ListGenes>("Layers")->getList()) {
+        networkStatistics.perceptronCount += ((MapGenes*) l.get())->getGene<LambdaGene<int>>("PerceptronCount")->getValue();
+    }
+    networkStatistics.layers = (unsigned) genes->getGene<IntegerGene>("LayerCount")->getValue();
 
     MarkovNames nameGenerator(false, world->getConfig().seed++);
     std::vector<double> genome;
@@ -331,6 +342,7 @@ void Agent::update(float deltaTime) {
             cosf(orientation*PI/180.f),
             sinf(orientation*PI/180.f)
     };
+
     if (settings.canWalk){
         float walk = *(actionIterator++)-0.3f;
         if (punchTimer == 0){
@@ -346,8 +358,6 @@ void Agent::update(float deltaTime) {
         orientation += turn*deltaTime;
     }
 
-
-
     if (settings.canReproduce){
         const float reproduceWilling = *(actionIterator++);
         if (0.6 < reproduceWilling && 80 < energy && actionCooldown == 0){
@@ -356,12 +366,14 @@ void Agent::update(float deltaTime) {
         }
     }
 
-
     if (settings.canEat){
         const float eatWilling = *(actionIterator++) + 1;
-        if (0 < inventory.mushrooms && 0.7 < eatWilling && actionCooldown == 0){
+        if (0 < inventory.mushrooms && 0.9 < eatWilling && actionCooldown == 0){
             actionCooldown = settings.actionCooldown;
             inventory.mushrooms--;
+            if (inventory.mushrooms != 0){
+                printf("Mushrooms left %d\n", inventory.mushrooms);
+            }
             energy += world->getConfig().agents.mushroomEnergy;
         }
     }
@@ -379,7 +391,7 @@ void Agent::update(float deltaTime) {
 
     if (settings.canPunch){
         const float punchWilling = *(actionIterator++);
-        if (punchTimer == 0 && 0.7 < punchWilling){
+        if (punchTimer == 0 && 0.7 < punchWilling && actionCooldown == 0){
             punchTimer += deltaTime;
             sprite.setTexture(punchTexture);
             energy -= settings.punchEnergy;
@@ -390,12 +402,12 @@ void Agent::update(float deltaTime) {
             frameIndex = 0;
             frame = sf::IntRect(0, 0, 32, 32);
             sprite.setTexture(walkingTexture);
+            actionCooldown = settings.actionCooldown;
         }
         else if (punchTimer != 0) {
             punchTimer += deltaTime;
         }
     }
-
 
     auto near = quadtree->searchNear(getPosition(), 64);
     for (auto &object : near) {
@@ -416,7 +428,8 @@ void Agent::update(float deltaTime) {
                         auto enemy = (Agent*) object.get();
                         enemy->setEnergy(enemy->getEnergy() - settings.punchDamage);
                         if (enemy->getEnergy() < 0){
-                            printf("Agent %s murdered %s\n", name.c_str(), enemy->name.c_str());
+                            printf("Agent %s murdered %s stealing %u mushrooms \n", name.c_str(), enemy->name.c_str(),
+                                    enemy->inventory.mushrooms);
                             inventory.mushrooms += enemy->inventory.mushrooms;
                             enemy->inventory.mushrooms = 0;
                             world->addObject(std::make_shared<Skull>(world, enemy->getPosition()));
@@ -560,6 +573,14 @@ const Agent::Inventory &Agent::getInventory() const {
 
 void Agent::setInventory(const Agent::Inventory &inventory) {
     Agent::inventory = inventory;
+}
+
+const Agent::NetworkStatistics &Agent::getNetworkStatistics() const {
+    return networkStatistics;
+}
+
+void Agent::setNetworkStatistics(const Agent::NetworkStatistics &networkStatistics) {
+    Agent::networkStatistics = networkStatistics;
 }
 
 
