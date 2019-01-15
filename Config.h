@@ -40,6 +40,7 @@ struct AgentSettings {
     bool canPunch;
 
     unsigned memory;
+    float memoryReactivity;
 
     bool perceiveCollision;
     unsigned receptorCount;

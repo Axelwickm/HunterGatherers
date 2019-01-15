@@ -454,7 +454,7 @@ void Agent::update(float deltaTime) {
     }
 
     for (float &mem : memory) {
-        mem = *(actionIterator++);
+        mem = (mem*(1.f - settings.memoryReactivity*deltaTime)) + *(actionIterator++)*settings.memoryReactivity*deltaTime;
     }
 
     if (actionIterator != actions.end()){

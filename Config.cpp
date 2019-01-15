@@ -71,6 +71,7 @@ void Config::loadConfigFromFile(const std::string &filename) {
     agents.canPunch = AS["canPunch"].get<bool>();
 
     agents.memory = AS["memory"].get<unsigned>();
+    agents.memoryReactivity = AS["memoryReactivity"].get<float>();
 
     agents.perceiveCollision = AS["perceiveCollision"].get<bool>();
     agents.receptorCount = AS["receptorCount"].get<unsigned>();

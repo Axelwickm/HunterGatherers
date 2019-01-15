@@ -48,6 +48,7 @@
     "canPunch" : true,
 
     "memory" : 2,
+    "memoryReactivity" : 0.1,
 
     "perceiveCollision" : true,
     "receptorCount" : 5,
