@@ -394,6 +394,8 @@ void Agent::update(float deltaTime) {
         if (punchTimer == 0 && 0.7 < punchWilling && actionCooldown == 0){
             punchTimer += deltaTime;
             sprite.setTexture(punchTexture);
+            frameIndex = 0;
+            sprite.setTextureRect(frame);
             energy -= settings.punchEnergy;
 
         }
