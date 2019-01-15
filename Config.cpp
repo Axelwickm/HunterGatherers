@@ -52,18 +52,23 @@ void Config::loadConfigFromFile(const std::string &filename) {
     agents.friction = AS["friction"].get<float>();
     agents.maxSpeed = AS["maxSpeed"].get<float>();
     agents.turnFactor = AS["turnFactor"].get<float>();
+    agents.punchTime = AS["punchTime"].get<float>();
     agents.actionCooldown = AS["actionCooldown"].get<float>();
 
     agents.energyLossRate = AS["energyLossRate"].get<float>();
     agents.movementEnergyLoss = AS["movementEnergyLoss"].get<float>();
+    agents.punchEnergy = AS["punchEnergy"].get<float>();
+    agents.punchDamage = AS["punchDamage"].get<float>();
     agents.mushroomEnergy = AS["mushroomEnergy"].get<float>();
     agents.maxEnergy = AS["maxEnergy"].get<float>();
+    agents.maxMushroomCount = AS["maxMushroomCount"].get<unsigned>();
 
     agents.canReproduce = AS["canReproduce"].get<bool>();
     agents.canWalk = AS["canWalk"].get<bool>();
     agents.canTurn = AS["canTurn"].get<bool>();
     agents.canEat = AS["canEat"].get<bool>();
     agents.canPlace = AS["canPlace"].get<bool>();
+    agents.canPunch = AS["canPunch"].get<bool>();
 
     agents.memory = AS["memory"].get<unsigned>();
 
@@ -71,6 +76,7 @@ void Config::loadConfigFromFile(const std::string &filename) {
     agents.receptorCount = AS["receptorCount"].get<unsigned>();
     agents.perceiveColor = AS["perceiveColor"].get<bool>();
     agents.perceiveEnergyLevel = AS["perceiveEnergyLevel"].get<bool>();
+    agents.perceiveMushroomCount = AS["perceiveMushroomCount"].get<bool>();
 
     agents.FOV = AS["FOV"].get<float>();
     agents.visibilityDistance = AS["visibilityDistance"].get<float>();

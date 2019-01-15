@@ -1,36 +1,36 @@
 //
-// Created by axelw on 2019-01-05.
+// Created by Axel on 2019-01-15.
 //
 
-#include "Heart.h"
+#include "Skull.h"
 #include "World.h"
 
-bool Heart::loaded = false;
-sf::Texture Heart::texture;
+bool Skull::loaded = false;
+sf::Texture Skull::texture;
 
-void Heart::loadResources() {
+void Skull::loadResources() {
     if (!loaded){
         loaded = true;
-        texture.loadFromFile("resources/Heart.png");
+        texture.loadFromFile("resources/Skull.png");
     }
 }
 
-Heart::Heart(World *world, const sf::Vector2f &position)
-: WorldObject("Heart", world, position, false) {
+Skull::Skull(World *world, const sf::Vector2f &position)
+        : WorldObject("Skull", world, position, false) {
     loadResources();
     sprite = sf::Sprite(texture);
     setMass(0.5);
     setVelocity(sf::Vector2f(0, -40));
 }
 
-void Heart::update(float deltaTime) {
+void Skull::update(float deltaTime) {
     WorldObject::update(deltaTime);
     if (2 < getAge()){
         world->removeObject(getSharedPtr(), false);
     }
 }
 
-void Heart::draw(sf::RenderWindow *window, float deltaTime) {
+void Skull::draw(sf::RenderWindow *window, float deltaTime) {
     sprite.setPosition(getPosition());
     window->draw(sprite);
     WorldObject::draw(window, deltaTime);

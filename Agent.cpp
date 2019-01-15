@@ -11,22 +11,24 @@
 #include "World.h"
 #include "Mushroom.h"
 #include "MarkovNames.h"
+#include "Skull.h"
 
 #define PI 3.14159265f
 
 bool Agent::loaded = false;
 sf::Texture Agent::walkingTexture;
+sf::Texture Agent::punchTexture;
 
 void Agent::loadResources() {
     if (!loaded){
         Agent::walkingTexture.loadFromFile("resources/WalkCycle.png");
+        Agent::punchTexture.loadFromFile("resources/Punch.png");
         loaded = true;
     }
 }
 
 Agent::Agent(const AgentSettings &settings, World *world, sf::Vector2f position, float orientation)
-        : settings(settings), WorldObject("Agent", world, position, true),
-          orientation(orientation) {
+: settings(settings), WorldObject("Agent", world, position, true), orientation(orientation) {
     loadResources();
 
     generation = 0;
@@ -35,6 +37,7 @@ Agent::Agent(const AgentSettings &settings, World *world, sf::Vector2f position,
     setMass(settings.mass);
     setFriction(settings.friction);
     actionCooldown = 0;
+    punchTimer = 0;
 
     inventory.mushrooms = 0;
 
@@ -53,9 +56,9 @@ Agent::Agent(const AgentSettings &settings, World *world, sf::Vector2f position,
     lineOfSight[0].color = sf::Color::Cyan;
     lineOfSight[1].color = sf::Color::Cyan;
 
-    std::size_t outputCount = settings.canReproduce + settings.canWalk + 2*settings.canTurn + settings.canEat + settings.canPlace + settings.memory;
-    std::size_t inputCount = settings.perceiveCollision + receptors.size()
-            + 3*settings.perceiveColor + settings.perceiveEnergyLevel  + settings.memory;
+    std::size_t inputCount = settings.perceiveCollision + receptors.size() + 3*settings.perceiveColor
+            + settings.perceiveEnergyLevel  + settings.memory + settings.perceiveMushroomCount;
+    std::size_t outputCount = settings.canReproduce + settings.canWalk + 2*settings.canTurn + settings.canEat + settings.canPlace + settings.canPunch + settings.memory;
 
     percept = std::vector<float>(inputCount);
     std::fill(std::begin(percept), std::end(percept), 0.f);
@@ -82,6 +85,7 @@ Agent::Agent(const Agent &other, float mutation)
     childCount = 0;
     energy = other.energy;
     actionCooldown = 0;
+    punchTimer = 0;
 
     inventory.mushrooms = 0;
 
@@ -200,102 +204,6 @@ void Agent::constructGenome(size_t inputCount, size_t outputCount) {
     genes->generate();
 }
 
-void Agent::update(float deltaTime) {
-    WorldObject::update(deltaTime);
-    actionCooldown = fmaxf(actionCooldown - deltaTime, 0.f);
-
-    // Apply actions
-    auto actionIterator = actions.begin();
-
-    sf::Vector2f orientationVector = {
-            cosf(orientation*PI/180.f),
-            sinf(orientation*PI/180.f)
-    };
-    if (settings.canWalk){
-        applyForce(deltaTime, orientationVector * *actionIterator * settings.maxSpeed);
-        energy -= *(actionIterator++) * settings.movementEnergyLoss * deltaTime;
-    }
-
-    if (settings.canTurn){
-        const float turn1 = *(actionIterator++);
-        const float turn2 = *(actionIterator++);
-        float turn = (turn1 - turn2)*settings.turnFactor;
-        orientation += turn*deltaTime;
-    }
-
-    if (settings.canReproduce){
-        const float reproduceWilling = *(actionIterator++);
-        if (0.6 < reproduceWilling && 80 < energy && actionCooldown == 0){
-            actionCooldown = settings.actionCooldown;
-            world->reproduce(*this);
-        }
-    }
-
-    if (quadtree != nullptr){
-        auto near = quadtree->searchNear(getPosition(), 64);
-        for (auto &object : near) {
-            if (object.get() != this ){
-                sf::FloatRect a(getPosition().x + getBounds().left,
-                                getPosition().y + getBounds().top,
-                                getBounds().width - getBounds().left,
-                                getBounds().height - getBounds().top);
-
-                sf::FloatRect b(object->getPosition().x + object->getBounds().left,
-                                object->getPosition().y + object->getBounds().top,
-                                object->getBounds().width - object->getBounds().left,
-                                object->getBounds().height - object->getBounds().top);
-                if (boxesIntersect(a, b)){
-                    auto &type = typeid(*object.get());
-                    if (type == typeid(Agent)){
-                        /*if (0.5 < actions.at(3)){
-                            // TODO: Crossover reproduction.
-                        }*/
-                    }
-                    else if (type == typeid(Mushroom)){
-                        world->removeObject(object->getSharedPtr(), false);
-                        inventory.mushrooms++;
-                    }
-                }
-            }
-        }
-    }
-
-    if (settings.canEat){
-        const float eatWilling = *(actionIterator++);
-        if (0 < inventory.mushrooms && 0.7 < eatWilling && actionCooldown == 0){
-            actionCooldown = settings.actionCooldown;
-            inventory.mushrooms--;
-            energy += world->getConfig().agents.mushroomEnergy;
-        }
-    }
-
-    if (settings.canPlace){
-        const float placeWilling = *(actionIterator++);
-        if (0 < inventory.mushrooms && 0.7 < placeWilling && actionCooldown == 0) {
-            actionCooldown = settings.actionCooldown;
-            inventory.mushrooms--;
-            sf::Vector2<float> position(getPosition().x+50*orientationVector.x, getPosition().y+50*orientationVector.y);
-            std::shared_ptr<Mushroom> mushroom(new Mushroom(world, position));
-            world->addObject(mushroom);
-        }
-    }
-
-    energy = fminf(energy, 100);
-    energy -= deltaTime*settings.energyLossRate;
-    if (energy <= 0){
-        world->removeObject(getSharedPtr(), false);
-    }
-
-    for (float &mem : memory) {
-        mem = *(actionIterator++);
-    }
-
-    if (actionIterator != actions.end()){
-        throw std::runtime_error("All actions values not accessed. At "
-                                 +std::to_string(actionIterator - actions.begin())+" of "+std::to_string(actions.size()));
-    }
-}
-
 void Agent::updatePercept(float deltaTime) {
     auto perceptIterator = percept.begin();
 
@@ -396,6 +304,11 @@ void Agent::updatePercept(float deltaTime) {
         perceptIterator++;
     }
 
+    if (settings.perceiveMushroomCount){
+        *perceptIterator = inventory.mushrooms / settings.maxMushroomCount;
+        perceptIterator++;
+    }
+
     for (auto& mem : memory){
         *perceptIterator = mem;
         perceptIterator++;
@@ -403,13 +316,140 @@ void Agent::updatePercept(float deltaTime) {
 
     if (perceptIterator != percept.end()){
         throw std::runtime_error("All percept values not updated. At "
-        +std::to_string(perceptIterator - percept.begin())+" of "+std::to_string(percept.size()));
+                                 +std::to_string(perceptIterator - percept.begin())+" of "+std::to_string(percept.size()));
+    }
+}
+
+void Agent::update(float deltaTime) {
+    WorldObject::update(deltaTime);
+    actionCooldown = fmaxf(actionCooldown - deltaTime, 0.f);
+
+    // Apply actions
+    auto actionIterator = actions.begin();
+
+    sf::Vector2f orientationVector = {
+            cosf(orientation*PI/180.f),
+            sinf(orientation*PI/180.f)
+    };
+    if (settings.canWalk){
+        float walk = *(actionIterator++)-0.3f;
+        if (punchTimer == 0){
+            applyForce(deltaTime, orientationVector * walk * settings.maxSpeed);
+            energy -= fabsf(walk) * settings.movementEnergyLoss * deltaTime;
+        }
+    }
+
+    if (settings.canTurn){
+        const float turn1 = *(actionIterator++);
+        const float turn2 = *(actionIterator++);
+        float turn = (turn1 - turn2)*settings.turnFactor;
+        orientation += turn*deltaTime;
+    }
+
+
+
+    if (settings.canReproduce){
+        const float reproduceWilling = *(actionIterator++);
+        if (0.6 < reproduceWilling && 80 < energy && actionCooldown == 0){
+            actionCooldown = settings.actionCooldown;
+            world->reproduce(*this);
+        }
+    }
+
+
+    if (settings.canEat){
+        const float eatWilling = *(actionIterator++) + 1;
+        if (0 < inventory.mushrooms && 0.7 < eatWilling && actionCooldown == 0){
+            actionCooldown = settings.actionCooldown;
+            inventory.mushrooms--;
+            energy += world->getConfig().agents.mushroomEnergy;
+        }
+    }
+
+    if (settings.canPlace){
+        const float placeWilling = *(actionIterator++);
+        if (0 < inventory.mushrooms && 0.7 < placeWilling && actionCooldown == 0) {
+            actionCooldown = settings.actionCooldown;
+            inventory.mushrooms--;
+            sf::Vector2<float> position(getPosition().x+50*orientationVector.x, getPosition().y+50*orientationVector.y);
+            std::shared_ptr<Mushroom> mushroom(new Mushroom(world, position));
+            world->addObject(mushroom);
+        }
+    }
+
+    if (settings.canPunch){
+        const float punchWilling = *(actionIterator++);
+        if (punchTimer == 0 && 0.7 < punchWilling){
+            punchTimer += deltaTime;
+            sprite.setTexture(punchTexture);
+            energy -= settings.punchEnergy;
+
+        }
+        else if (settings.punchTime < punchTimer){
+            punchTimer = 0;
+            frameIndex = 0;
+            frame = sf::IntRect(0, 0, 32, 32);
+            sprite.setTexture(walkingTexture);
+        }
+        else if (punchTimer != 0) {
+            punchTimer += deltaTime;
+        }
+    }
+
+
+    auto near = quadtree->searchNear(getPosition(), 64);
+    for (auto &object : near) {
+        if (object.get() != this ){
+            sf::FloatRect a(getPosition().x + getBounds().left,
+                            getPosition().y + getBounds().top,
+                            getBounds().width - getBounds().left,
+                            getBounds().height - getBounds().top);
+
+            sf::FloatRect b(object->getPosition().x + object->getBounds().left,
+                            object->getPosition().y + object->getBounds().top,
+                            object->getBounds().width - object->getBounds().left,
+                            object->getBounds().height - object->getBounds().top);
+            if (boxesIntersect(a, b)){
+                auto &type = typeid(*object.get());
+                if (type == typeid(Agent)){
+                    if (punchTimer == deltaTime){
+                        auto enemy = (Agent*) object.get();
+                        enemy->setEnergy(enemy->getEnergy() - settings.punchDamage);
+                        if (enemy->getEnergy() < 0){
+                            printf("Agent %s murdered %s\n", name.c_str(), enemy->name.c_str());
+                            inventory.mushrooms += enemy->inventory.mushrooms;
+                            enemy->inventory.mushrooms = 0;
+                            world->addObject(std::make_shared<Skull>(world, enemy->getPosition()));
+                        }
+                    }
+                }
+                else if (type == typeid(Mushroom) && inventory.mushrooms < settings.maxMushroomCount){
+                    world->removeObject(object->getSharedPtr(), false);
+                    inventory.mushrooms++;
+                }
+            }
+        }
+    }
+
+    energy = fminf(energy, 100);
+    energy -= deltaTime*settings.energyLossRate;
+    if (energy <= 0){
+        world->removeObject(getSharedPtr(), false);
+    }
+
+    for (float &mem : memory) {
+        mem = *(actionIterator++);
+    }
+
+    if (actionIterator != actions.end()){
+        throw std::runtime_error("All actions values not accessed. At "
+                                 +std::to_string(actionIterator - actions.begin())+" of "+std::to_string(actions.size()));
     }
 }
 
 void Agent::draw(sf::RenderWindow *window, float deltaTime) {
     frameTimer += deltaTime;
-    if (actions.at(0)*100.f < frameTimer*1000.f){
+    if (actions.at(0)*100.f < frameTimer*1000.f && punchTimer == 0){
         frameIndex = frameIndex % 12 + 1; // Skip the first frame
         frame.top = frameIndex * 32;
         sprite.setTextureRect(frame);
@@ -418,6 +458,16 @@ void Agent::draw(sf::RenderWindow *window, float deltaTime) {
         else if (o == 3) o = 1;
 
         frame.left = o*32;
+        frameTimer = 0;
+    }
+    else if (settings.punchTime / 5.f < frameTimer){
+        frameIndex = (frameIndex + 1) % 5;
+        frame.top = frameIndex*32;
+        int o = ((360 + (int) orientation%360 + 315))%360 / 90;
+        if (o == 1) o = 3; // To match the order in the image
+        else if (o == 3) o = 1;
+        frame.left = o*32;
+        sprite.setTextureRect(frame);
         frameTimer = 0;
     }
 

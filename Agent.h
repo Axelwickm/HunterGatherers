@@ -65,6 +65,7 @@ private:
     float orientation; // In degrees
     float energy; // Between 0 and maxEnergy
     float actionCooldown;
+    float punchTimer;
     Inventory inventory;
 
      // Rendering
@@ -87,6 +88,7 @@ private:
 
     static bool loaded;
     static sf::Texture walkingTexture;
+    static sf::Texture punchTexture;
 
     void constructGenome(size_t inputCount, size_t outputCount);
 };
