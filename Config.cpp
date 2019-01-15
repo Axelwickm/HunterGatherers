@@ -119,7 +119,12 @@ void Config::loadConfigFromFile(const std::string &filename) {
     render.showQuadtree = RS["showQuadtree"].get<bool>();
     render.showQuadtreeEntities = RS["showQuadtreeEntities"].get<bool>();
     render.showVision = RS["showVision"].get<bool>();
-    render.renderGeneration = RS["renderGeneration"].get<bool>();
+    render.renderOnlyAgents = false;
+    render.visualizeGeneration = false;
+    render.visualizeAge = false;
+    render.visualizeMushrooms = false;
+    render.visualizeChildren = false;
+    render.visualizeMurders = false;
 
     auto windowWidth = RS["windowWidth"].get<unsigned>();
     auto windowHeight = RS["windowHeight"].get<unsigned>();

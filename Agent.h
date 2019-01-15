@@ -31,6 +31,10 @@ public:
     unsigned int getChildCount() const;
     void setChildCount(unsigned int childCount);
 
+    unsigned int getMurderCount() const;
+
+    void setMurderCount(unsigned int murderCount);
+
     void update(float deltaTime) override;
     void draw(sf::RenderWindow *window, float deltaTime) override;
 
@@ -61,7 +65,6 @@ public:
     };
 
     const NetworkStatistics &getNetworkStatistics() const;
-
     void setNetworkStatistics(const NetworkStatistics &networkStatistics);
 
 private:
@@ -69,6 +72,7 @@ private:
     const AgentSettings settings;
     unsigned generation;
     unsigned childCount;
+    unsigned murderCount;
     std::string name;
 
     float orientation; // In degrees

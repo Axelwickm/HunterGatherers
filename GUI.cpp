@@ -20,16 +20,22 @@ GUI::GUI(Config &config, sf::RenderWindow *window, World *world, Camera *camera)
     simulationInfo.main.setPosition(10, window->getSize().y-simulationInfo.main.getLocalBounds().height-5);
 
 
-    std::vector<std::pair<std::string, bool*>> debugValues = {
-        {"agentSpawning", &world->agentSpawning},
-        {"showWorldObjectBounds", &config.render.showWorldObjectBounds},
-        {"showQuadtree", &config.render.showQuadtree},
-        {"showQuadtreeEntities", &config.render.showQuadtreeEntities},
-        {"showVision", &config.render.showVision},
-        {"showDistribution", &config.render.showDistribution},
-        {"renderGeneration", &config.render.renderGeneration}
-    };
 
+    std::vector<std::pair<std::string, bool*>> debugValues = {
+            {"agentSpawning", &world->agentSpawning},
+            {"showWorldObjectBounds", &config.render.showWorldObjectBounds},
+            {"showQuadtree", &config.render.showQuadtree},
+            {"showQuadtreeEntities", &config.render.showQuadtreeEntities},
+            {"showVision", &config.render.showVision},
+            {"showDistribution", &config.render.showDistribution},
+            {"renderOnlyAgents", &config.render.renderOnlyAgents},
+            {"visualizeGeneration", &config.render.visualizeGeneration},
+            {"visualizeAge", &config.render.visualizeAge},
+            {"visualizeChildren", &config.render.visualizeChildren},
+            {"visualizeMurders", &config.render.visualizeMurders},
+            {"visualizeMushrooms", &config.render.visualizeMushrooms}
+
+    };
 
     sf::Rect<int> distributionBounds(450, window->getSize().y-10, 800, 90);
     simulationInfo.populationDistribution.resize(config.render.bins);
@@ -88,7 +94,7 @@ GUI::GUI(Config &config, sf::RenderWindow *window, World *world, Camera *camera)
     agentInfo.actionVector.bounds = sf::Rect<float>(10, 215, 300, 25);
 
     agentInfo.infoText = agentInfo.energyText;
-    agentInfo.infoText.setString("Network layers ##\nPerceptron count: ##\nAge: ###\nGeneration: ###\nChildren: ###\nMushrooms: ##\n");
+    agentInfo.infoText.setString("Network layers ##\nPerceptron count: ##\nAge: ###\nGeneration: ###\nChildren: ###\nMurders: ##\nMushrooms: ##\n");
     agentInfo.infoText.setPosition(10, 245);
 
 
@@ -152,7 +158,8 @@ void GUI::draw(float deltaTime, float timeFactor) {
                 +"\nPerceptron count: "+std::to_string(selectedAgent->getNetworkStatistics().perceptronCount)
                 +"\nAge: " + std::to_string(selectedAgent->getAge())
                 +"\nGeneration: "+ std::to_string(selectedAgent->getGeneration())
-                +"\nChildren: "+std::to_string(selectedAgent->getChildCount())+"\n"
+                +"\nChildren: "+std::to_string(selectedAgent->getChildCount())
+                +"\nMurders: "+std::to_string(selectedAgent->getMurderCount())
                 +"\nMushrooms: "+std::to_string(selectedAgent->getInventory().mushrooms));
         window->draw(agentInfo.infoText);
     }
@@ -178,10 +185,15 @@ const std::shared_ptr<Agent> &GUI::getSelectedAgent() const {
 bool GUI::click(sf::Vector2i pos) {
     if (config.render.showDebug){
         for (auto& t : simulationInfo.debug){
-            //auto c = view.getTransform().transformRect(t.text.getGlobalBounds());
-            //printf("%f\n", c.left);
             if (pointInBox(sf::Vector2f(pos.x, pos.y), t.text.getGlobalBounds())){
                 t.click();
+                if (t.text.getString().substring(0, 9) == "visualize") {
+                    for (auto& c : simulationInfo.debug){
+                        if (c.text.getString() != t.text.getString() && c.text.getString().substring(0, 9) == "visualize"){
+                            c.set(false);
+                        }
+                    }
+                }
                 return true;
             }
         }
@@ -199,6 +211,16 @@ bool GUI::click(sf::Vector2i pos) {
 
 void GUI::Toggle::click() {
     *value = !(*value);
+    if (*value){
+        text.setFillColor(sf::Color::White);
+    }
+    else {
+        text.setFillColor(sf::Color(120, 120, 120));
+    }
+}
+
+void GUI::Toggle::set(bool v) {
+    *value = v;
     if (*value){
         text.setFillColor(sf::Color::White);
     }

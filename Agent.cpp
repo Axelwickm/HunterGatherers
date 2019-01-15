@@ -33,10 +33,11 @@ Agent::Agent(const AgentSettings &settings, World *world, sf::Vector2f position,
 
     generation = 0;
     childCount = 0;
+    murderCount = 0;
     energy = settings.maxEnergy;
     setMass(settings.mass);
     setFriction(settings.friction);
-    actionCooldown = 0;
+    actionCooldown = settings.actionCooldown;
     punchTimer = 0;
 
     inventory.mushrooms = 0;
@@ -88,8 +89,9 @@ Agent::Agent(const Agent &other, float mutation)
     loadResources();
     generation = other.generation;
     childCount = 0;
+    murderCount = 0;
     energy = other.energy;
-    actionCooldown = 0;
+    actionCooldown = settings.actionCooldown;
     punchTimer = 0;
 
     inventory.mushrooms = 0;
@@ -356,11 +358,12 @@ void Agent::update(float deltaTime) {
         const float turn2 = *(actionIterator++);
         float turn = (turn1 - turn2)*settings.turnFactor;
         orientation += turn*deltaTime;
+        energy -= fabsf(turn1 - turn2) * 0.4f * settings.movementEnergyLoss * deltaTime;
     }
 
     if (settings.canReproduce){
         const float reproduceWilling = *(actionIterator++);
-        if (0.6 < reproduceWilling && 80 < energy && actionCooldown == 0){
+        if (0.6 < reproduceWilling && 60 < energy && actionCooldown == 0){
             actionCooldown = settings.actionCooldown;
             world->reproduce(*this);
         }
@@ -371,9 +374,6 @@ void Agent::update(float deltaTime) {
         if (0 < inventory.mushrooms && 0.9 < eatWilling && actionCooldown == 0){
             actionCooldown = settings.actionCooldown;
             inventory.mushrooms--;
-            if (inventory.mushrooms != 0){
-                printf("Mushrooms left %d\n", inventory.mushrooms);
-            }
             energy += world->getConfig().agents.mushroomEnergy;
         }
     }
@@ -426,6 +426,7 @@ void Agent::update(float deltaTime) {
                 if (type == typeid(Agent)){
                     if (punchTimer == deltaTime){
                         auto enemy = (Agent*) object.get();
+                        float initialEnergy = enemy->getEnergy();
                         enemy->setEnergy(enemy->getEnergy() - settings.punchDamage);
                         if (enemy->getEnergy() < 0){
                             printf("Agent %s murdered %s stealing %u mushrooms \n", name.c_str(), enemy->name.c_str(),
@@ -433,6 +434,8 @@ void Agent::update(float deltaTime) {
                             inventory.mushrooms += enemy->inventory.mushrooms;
                             enemy->inventory.mushrooms = 0;
                             world->addObject(std::make_shared<Skull>(world, enemy->getPosition()));
+                            energy += initialEnergy;
+                            murderCount++;
                         }
                     }
                 }
@@ -485,13 +488,33 @@ void Agent::draw(sf::RenderWindow *window, float deltaTime) {
     }
 
     sprite.setPosition(getPosition());
-    if (world->getConfig().render.renderGeneration){
+    if (world->getConfig().render.visualizeGeneration){
         unsigned deltaGeneration = world->getStatistics().highestGeneration - world->getStatistics().lowestGeneration;
         if (deltaGeneration != 0){
             sf::Color c = sprite.getColor();
-            c.a = 200 * (float) (generation - world->getStatistics().lowestGeneration) / (float) deltaGeneration + 55;
+            c.a = 250 * (float) (generation - world->getStatistics().lowestGeneration) / (float) deltaGeneration + 5;
             sprite.setColor(c);
         }
+    }
+    else if (world->getConfig().render.visualizeAge){
+        sf::Color c = sprite.getColor();
+        c.a = 250.f / (1.f + expf(-(getAge()-200.f)/200.f)) + 5.f;
+        sprite.setColor(c);
+    }
+    else if (world->getConfig().render.visualizeMushrooms){
+        sf::Color c = sprite.getColor();
+        c.a = 250.f* (float) inventory.mushrooms/(float) world->getConfig().agents.maxMushroomCount + 5.f;
+        sprite.setColor(c);
+    }
+    else if (world->getConfig().render.visualizeChildren){
+        sf::Color c = sprite.getColor();
+        c.a = 250.f / (1.f + expf(-(childCount-10)/3.f)) + 5.f;
+        sprite.setColor(c);
+    }
+    else if (world->getConfig().render.visualizeMurders){
+        sf::Color c = sprite.getColor();
+        c.a = 250.f / (1.f + expf(-(murderCount-4)/1.f)) + 5.f;
+        sprite.setColor(c);
     }
     else {
         sf::Color c = sprite.getColor();
@@ -567,6 +590,14 @@ void Agent::setChildCount(unsigned int childCount) {
     Agent::childCount = childCount;
 }
 
+unsigned int Agent::getMurderCount() const {
+    return murderCount;
+}
+
+void Agent::setMurderCount(unsigned int murderCount) {
+    Agent::murderCount = murderCount;
+}
+
 const Agent::Inventory &Agent::getInventory() const {
     return inventory;
 }
@@ -582,5 +613,6 @@ const Agent::NetworkStatistics &Agent::getNetworkStatistics() const {
 void Agent::setNetworkStatistics(const Agent::NetworkStatistics &networkStatistics) {
     Agent::networkStatistics = networkStatistics;
 }
+
 
 

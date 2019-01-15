@@ -69,10 +69,19 @@ void World::update(float deltaTime) {
 }
 
 void World::draw(float deltaTime) {
-    window->draw(terrain);
+    if (!config.render.renderOnlyAgents){
+        window->draw(terrain);
+    }
 
-    for (auto &object : objects) {
-        object->draw(window, deltaTime);
+    if (!config.render.renderOnlyAgents){
+        for (auto &object : objects) {
+            object->draw(window, deltaTime);
+        }
+    }
+    else {
+        for (auto &agent : agents){
+            agent->draw(window, deltaTime);
+        }
     }
 
     if (config.render.showQuadtree){

@@ -108,13 +108,13 @@ OpenCL_Wrapper::OpenCL_Wrapper(std::string deviceToUse) {
     // Create OpenCL context
     context = clCreateContext( nullptr, 1, &device_id, nullptr, nullptr, &err);
     if (!context){
-        throw std::runtime_error("Failed to create OpenCL context.");
+        throw std::runtime_error("Failed to create OpenCL context: "+std::to_string(err));
     }
 
     // Create OpenCL command queue
     command_queue = clCreateCommandQueue(context, device_id, CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE, &err);
     if (!command_queue){
-        throw std::runtime_error("Failed to create OpenCL command queue.");
+        throw std::runtime_error("Failed to create OpenCL command queue: "+std::to_string(err));
     }
 
 

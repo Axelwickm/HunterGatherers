@@ -19,6 +19,7 @@ Skull::Skull(World *world, const sf::Vector2f &position)
         : WorldObject("Skull", world, position, false) {
     loadResources();
     sprite = sf::Sprite(texture);
+    sprite.setOrigin(25, 47);
     setMass(0.5);
     setVelocity(sf::Vector2f(0, -40));
 }

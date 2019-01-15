@@ -19,6 +19,7 @@ Heart::Heart(World *world, const sf::Vector2f &position)
 : WorldObject("Heart", world, position, false) {
     loadResources();
     sprite = sf::Sprite(texture);
+    sprite.setOrigin(19, 36);
     setMass(0.5);
     setVelocity(sf::Vector2f(0, -40));
 }
