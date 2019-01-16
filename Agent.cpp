@@ -256,9 +256,6 @@ void Agent::updatePercept(float deltaTime) {
                     averageColor[0] += col.r; averageColor[1] += col.b; averageColor[2] += col.g;
                     sf::Vector2f dPos = n->getPosition() - getPosition();
                     float change = deltaTime*settings.visualReactivity*(1.f-(dPos.x*dPos.x+dPos.y*dPos.y)/(settings.visibilityDistance*settings.visibilityDistance));
-                    if (typeid(*n) == typeid(Agent)){
-                        change /= 3.f;
-                    }
                     receptors[i] = (1-deltaTime*change)*receptors[i] + change;
                 }
             }
@@ -431,8 +428,8 @@ void Agent::update(float deltaTime) {
                         float initialEnergy = enemy->getEnergy();
                         enemy->setEnergy(enemy->getEnergy() - settings.punchDamage);
                         if (enemy->getEnergy() < 0){
-                            printf("Agent %s murdered %s stealing %u mushrooms \n", name.c_str(), enemy->name.c_str(),
-                                    enemy->inventory.mushrooms);
+                            printf("Agent %s murdered %s stealing %u mushrooms and %f energy.\n", name.c_str(), enemy->name.c_str(),
+                                    enemy->inventory.mushrooms, initialEnergy);
                             inventory.mushrooms += enemy->inventory.mushrooms;
                             enemy->inventory.mushrooms = 0;
                             world->addObject(std::make_shared<Skull>(world, enemy->getPosition()));
@@ -467,7 +464,7 @@ void Agent::update(float deltaTime) {
 
 void Agent::draw(sf::RenderWindow *window, float deltaTime) {
     frameTimer += deltaTime;
-    if (actions.at(0)*100.f < frameTimer*1000.f && punchTimer == 0){
+    if (actions.at(0)*10.f < frameTimer && punchTimer == 0){
         frameIndex = frameIndex % 12 + 1; // Skip the first frame
         frame.top = frameIndex * 32;
         sprite.setTextureRect(frame);

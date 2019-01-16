@@ -32,11 +32,12 @@ public:
     const sf::Vector2f &getVelocity() const;
     void setVelocity(const sf::Vector2f &velocity);
 
+    float getSpeed() const;
+
     float getMass() const;
     void setMass(float accelerationFactor);
 
     float getFriction() const;
-
     void setFriction(float friction);
 
     void applyForce(float deltaTime, sf::Vector2f force);

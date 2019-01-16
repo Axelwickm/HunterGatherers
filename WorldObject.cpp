@@ -116,6 +116,10 @@ void WorldObject::setVelocity(const sf::Vector2f &velocity) {
     WorldObject::velocity = velocity;
 }
 
+float WorldObject::getSpeed() const {
+    return sqrtf(velocity.x*velocity.x + velocity.y+velocity.y);
+}
+
 float WorldObject::getMass() const {
     return mass;
 }
@@ -135,14 +139,14 @@ const sf::IntRect WorldObject::getWorldBounds() const {
                        getBounds().height - getBounds().top);
 }
 
+
+
 const sf::FloatRect WorldObject::getWorldBoundsf() const {
     return sf::FloatRect(getPosition().x + getBounds().left,
                        getPosition().y + getBounds().top,
                        getBounds().width - getBounds().left,
                        getBounds().height - getBounds().top);
 }
-
-
 
 void WorldObject::setBounds(const sf::IntRect &bounds) {
     WorldObject::bounds = bounds;
@@ -156,10 +160,10 @@ float WorldObject::getFriction() const {
     return friction;
 }
 
+
 void WorldObject::setFriction(float friction) {
     WorldObject::friction = friction;
 }
-
 
 float WorldObject::getAge() const {
     return age;

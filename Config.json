@@ -13,8 +13,8 @@
         "rate" : 5
       },{
         "type" : "Mushroom",
-        "targetCount" : 550,
-        "rate" : 3
+        "targetCount" : 300,
+        "rate" : 1
 
       },{
         "type" : "BouncingBall",
@@ -33,10 +33,10 @@
     "actionCooldown" : 2,
 
     "energyLossRate" : 0.5,
-    "movementEnergyLoss" : 3,
+    "movementEnergyLoss" : 1,
     "punchEnergy": 10,
-    "punchDamage" : 50,
-    "mushroomEnergy" : 35,
+    "punchDamage" : 60,
+    "mushroomEnergy" : 100,
     "maxEnergy" : 100,
     "maxMushroomCount": 10,
 
@@ -60,7 +60,7 @@
     "visibilityDistance" : 200,
     "visualReactivity" : 5,
 
-    "mutation" : 0.15,
+    "mutation" : 0.03,
     "layerMin" : 4, "layerMax" : 7,
     "biasMin" : -1, "biasMax" : 1,
     "weightMin" : -2, "weightMax" : 2,
