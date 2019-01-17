@@ -33,7 +33,8 @@ GUI::GUI(Config &config, sf::RenderWindow *window, World *world, Camera *camera)
             {"visualizeAge", &config.render.visualizeAge},
             {"visualizeChildren", &config.render.visualizeChildren},
             {"visualizeMurders", &config.render.visualizeMurders},
-            {"visualizeMushrooms", &config.render.visualizeMushrooms}
+            {"visualizeMushrooms", &config.render.visualizeMushrooms},
+            {"visualizeColor", &config.render.visualizeColor}
 
     };
 

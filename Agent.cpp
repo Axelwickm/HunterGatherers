@@ -515,12 +515,23 @@ void Agent::draw(sf::RenderWindow *window, float deltaTime) {
         c.a = 250.f / (1.f + expf(-(murderCount-4)/1.f)) + 5.f;
         sprite.setColor(c);
     }
-    else {
+    else if (world->getConfig().render.visualizeColor){
+        sf::RectangleShape c;
+        c.setSize(sf::Vector2f(sprite.getLocalBounds().width, sprite.getLocalBounds().height));
+        c.setOrigin(sprite.getOrigin());
+        c.setPosition(sprite.getPosition());
+        c.setFillColor(getColor());
+        c.setScale(3, 3);
+        window->draw(c);
+    }
+
+    window->draw(sprite);
+
+    if (sprite.getColor().a != 255){
         sf::Color c = sprite.getColor();
         c.a = 255;
         sprite.setColor(c);
     }
-    window->draw(sprite);
 
     if (world->getConfig().render.showVision){
         window->draw(&lineOfSight.front(), 2*receptors.size(), sf::Lines);

@@ -76,6 +76,7 @@ struct RenderSettings {
     bool visualizeMushrooms{};
     bool visualizeChildren{};
     bool visualizeMurders{};
+    bool visualizeColor{};
 };
 
 struct Controls {

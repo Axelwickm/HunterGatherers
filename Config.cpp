@@ -126,6 +126,7 @@ void Config::loadConfigFromFile(const std::string &filename) {
     render.visualizeMushrooms = false;
     render.visualizeChildren = false;
     render.visualizeMurders = false;
+    render.visualizeColor = false;
 
     auto windowWidth = RS["windowWidth"].get<unsigned>();
     auto windowHeight = RS["windowHeight"].get<unsigned>();
