@@ -367,8 +367,8 @@ void Agent::update(float deltaTime) {
     }
 
     if (settings.canEat){
-        const float eatWilling = *(actionIterator++) + 1;
-        if (0 < inventory.mushrooms && 0.9 < eatWilling && actionCooldown == 0){
+        const float eatWilling = *(actionIterator++);
+        if (0 < inventory.mushrooms && 0.6 < eatWilling && actionCooldown == 0){
             actionCooldown = settings.actionCooldown;
             inventory.mushrooms--;
             energy += world->getConfig().agents.mushroomEnergy;
