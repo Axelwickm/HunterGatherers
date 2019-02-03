@@ -109,6 +109,8 @@ struct Config {
     RenderSettings render;
     Controls controls{};
 
+    bool shouldReload;
+
     void loadConfigFromFile(const std::string &filename);
 
     sf::Keyboard::Key findKeyCode(std::string key);

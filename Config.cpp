@@ -16,6 +16,8 @@ void Config::loadConfigFromFile(const std::string &filename) {
     file >> json;
     file.close();
 
+    shouldReload = false;
+
     // Loading seed
 
     if (json["seed"].is_string()){

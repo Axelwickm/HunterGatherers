@@ -168,6 +168,11 @@ int main(int argc, char *argv[]) {
             }
         }
 
+        if (config.shouldReload){
+            printf("Reloading config\n");
+            config.loadConfigFromFile(configFilename);
+        }
+
         camera.update(dt.asSeconds());
 
         // Updating world

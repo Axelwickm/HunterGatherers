@@ -9,6 +9,7 @@
 
 GUI::GUI(Config &config, sf::RenderWindow *window, World *world, Camera *camera)
         : config(config), window(window), view(window->getDefaultView()), world(world), camera(camera){
+
     font.loadFromFile(R"(C:\Windows\Fonts\consola.ttf)");
     sf::Color gray(120, 120, 120);
 
@@ -19,10 +20,9 @@ GUI::GUI(Config &config, sf::RenderWindow *window, World *world, Camera *camera)
     simulationInfo.main.setFillColor(gray);
     simulationInfo.main.setPosition(10, window->getSize().y-simulationInfo.main.getLocalBounds().height-5);
 
-
-
     std::vector<std::pair<std::string, bool*>> debugValues = {
             {"agentSpawning", &world->agentSpawning},
+            {"reloadConfig", &config.shouldReload},
             {"showWorldObjectBounds", &config.render.showWorldObjectBounds},
             {"showQuadtree", &config.render.showQuadtree},
             {"showQuadtreeEntities", &config.render.showQuadtreeEntities},
@@ -136,6 +136,7 @@ void GUI::draw(float deltaTime, float timeFactor) {
 
     if (config.render.showDebug){
         for (auto& t : simulationInfo.debug){
+            t.update();
             window->draw(t.text);
         }
     }
@@ -212,16 +213,15 @@ bool GUI::click(sf::Vector2i pos) {
 
 void GUI::Toggle::click() {
     *value = !(*value);
-    if (*value){
-        text.setFillColor(sf::Color::White);
-    }
-    else {
-        text.setFillColor(sf::Color(120, 120, 120));
-    }
+    update();
 }
 
 void GUI::Toggle::set(bool v) {
     *value = v;
+    update();
+}
+
+void GUI::Toggle::update() {
     if (*value){
         text.setFillColor(sf::Color::White);
     }

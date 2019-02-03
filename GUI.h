@@ -30,6 +30,7 @@ private:
     struct Toggle {
         void click();
         void set(bool v);
+        void update();
         bool* value;
         sf::Text text;
     };
