@@ -7,17 +7,19 @@
 #include "Populator.h"
 
 
-Populator::Populator(World *world) : world(world) {
+Populator::Populator(World *world) : world(world), entries(world->getConfig().world.populatorEntries) {
     randomEngine = std::mt19937(world->getConfig().seed++);
 }
 
 void Populator::populate(float deltaT) {
-    for (auto &entry : frequencies) {
+    for (auto &entry : entries) {
         if (entry.second.count < entry.second.targetCount && entry.second.enabled){
             auto d = std::poisson_distribution(entry.second.rate*deltaT);
             int newCount = d(randomEngine);
             for (unsigned i = 0; i < newCount; i++){
-                world->spawn(entry.first);
+                if (!world->spawn(entry.first)){
+                    fprintf(stderr, "Could not spawn: \"%s\"\n", entry.first.c_str());
+                }
                 if (entry.second.targetCount <= entry.second.count ){
                     break;
                 }
@@ -26,26 +28,16 @@ void Populator::populate(float deltaT) {
     }
 }
 
-void Populator::addEntry(Entry entry) {
-    frequencies.insert(std::make_pair(entry.type, entry));
-}
-
-void Populator::addEntries(std::vector<Populator::Entry> entries) {
-    for (auto&e : entries){
-        addEntry(e);
-    }
-}
-
 void Populator::changeCount(std::string type, int deltaCount) {
-    auto itr = frequencies.find(type);
-    if (itr != frequencies.end()){
-        frequencies.at(type).count += deltaCount;
+    auto itr = entries.find(type);
+    if (itr != entries.end()){
+        entries.at(type).count += deltaCount;
     }
 }
 
 void Populator::entryEnabled(std::string type, bool enabled) {
-    auto itr = frequencies.find(type);
-    if (itr != frequencies.end()){
+    auto itr = entries.find(type);
+    if (itr != entries.end()){
         itr->second.enabled = enabled;
     }
 }

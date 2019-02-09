@@ -39,14 +39,35 @@ void Config::loadConfigFromFile(const std::string &filename) {
 
     auto &populatorEntries = WS["PopulatorEntries"];
     for (auto &entry : populatorEntries){
-        world.populatorEntries.push_back({
-        .type = entry["type"].get<std::string>(),
-        .count = 0,
-        .targetCount = entry["targetCount"].get<unsigned>(),
-        .rate = entry["rate"].get<float>(),
-        .enabled = true
-        });
+        auto type = entry["type"].get<std::string>();
+        if (world.populatorEntries.find(type) == world.populatorEntries.end()){
+            Populator::Entry e = {
+                .type = type,
+                .count = 0,
+                .enabled = true
+            };
+            world.populatorEntries.insert(std::make_pair(type, e));
+        }
+
+        auto existingEntry = world.populatorEntries.find(type);
+        existingEntry->second.targetCount = entry["targetCount"].get<unsigned>();
+        existingEntry->second.rate = entry["rate"].get<float>();
     }
+
+    for (auto &entry : world.populatorEntries){
+        bool found = false;
+        for (auto &configEntry : populatorEntries){
+            if (entry.first == configEntry["type"].get<std::string>()){
+                found = true;
+                break;
+            }
+        }
+
+        if (!found){
+            world.populatorEntries.erase(entry.first);
+        }
+    }
+
 
     // Loading agent settings
     auto &AS = json["AgentSettings"];

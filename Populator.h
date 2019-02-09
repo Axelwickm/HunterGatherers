@@ -8,6 +8,7 @@
 #include <string>
 #include <map>
 #include <random>
+#include "Config.h"
 
 class World;
 
@@ -26,16 +27,12 @@ public:
     void populate(float deltaT);
     void changeCount(std::string type, int deltaCount);
     void entryEnabled(std::string type, bool enabled);
-    void addEntry(Entry entry);
-    void addEntries(std::vector<Populator::Entry> entries);
 
 private:
-
-
-    std::map<std::string, Entry> frequencies;
-
-    World *world;
     std::mt19937 randomEngine;
+
+    std::map<std::string, Entry>& entries;
+    World *world;
 };
 
 

@@ -13,7 +13,7 @@ struct WorldSettings {
     sf::Vector2f dimensions;
     unsigned terrainSquare{};
     float quadtreeLimit{};
-    std::vector<Populator::Entry> populatorEntries{};
+    std::map<std::string, Populator::Entry> populatorEntries{};
 };
 
 struct AgentSettings {

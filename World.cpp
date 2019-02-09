@@ -14,7 +14,6 @@ config(config), window(window), dimensions(config.world.dimensions), openCL_wrap
 populator(this), quadtree(Quadtree<float>(sf::Vector2<float>(0, 0), dimensions)) {
     randomEngine = std::mt19937(config.seed++);
     quadtree.setLimit(config.world.quadtreeLimit);
-    populator.addEntries(config.world.populatorEntries);
     generateTerrain();
 
     agentSpawning = true;
@@ -187,9 +186,9 @@ void World::reproduce(Agent &a) {
     auto agent = std::make_shared<Agent>(a, config.agents.mutation);
     agent->setGeneration(agent->getGeneration()+1);
     agent->setQuadtree(&quadtree, agent);
-    agent->setEnergy(a.getEnergy()/2.f);
+    agent->setEnergy(a.getEnergy()*0.15f);
     agent->setOrientation(std::uniform_real_distribution<float>(0, 360)(randomEngine));
-    a.setEnergy(a.getEnergy()/2.f);
+    a.setEnergy(a.getEnergy()*0.5f);
     a.setChildCount(a.getChildCount()+1);
     addObject(agent);
     addObject(std::make_shared<Heart>(this, a.getPosition()));
