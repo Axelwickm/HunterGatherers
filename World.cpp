@@ -213,21 +213,20 @@ void World::updateStatistics() {
         statistics.averageGeneration = 0;
         statistics.lowestGeneration = 0;
         statistics.highestGeneration = 0;
-        statistics.populationDistribution.resize(0);
+        statistics.populationDistribution.clear();
     }
     else {
         statistics.populationCount = agents.size();
         statistics.averageGeneration = 0;
         statistics.lowestGeneration = std::numeric_limits<unsigned>::max();
         statistics.highestGeneration = 0;
-        std::fill(statistics.populationDistribution.begin(), statistics.populationDistribution.end(), 0);
+        statistics.populationDistribution.clear();
 
         for (auto& agent : agents){
             unsigned g = agent->getGeneration();
-            if (g >= statistics.populationDistribution.size()){
-                statistics.populationDistribution.resize(g+1, 0);
-            }
-            statistics.populationDistribution.at(g)++;
+            statistics.populationDistribution.try_emplace(g, 0);
+            statistics.populationDistribution[g]++;
+
             statistics.averageGeneration += g;
             if (g < statistics.lowestGeneration){
                 statistics.lowestGeneration = g;

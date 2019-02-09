@@ -18,11 +18,11 @@
 #include "Populator.h"
 
 struct WorldStatistics {
-    unsigned populationCount = 0;
+    std::size_t populationCount = 0;
     float averageGeneration = 0;
     unsigned lowestGeneration = 0;
     unsigned highestGeneration = 0;
-    std::vector<unsigned> populationDistribution;
+    std::map<std::size_t, unsigned> populationDistribution;
 };
 
 class World {

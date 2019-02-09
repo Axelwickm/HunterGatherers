@@ -9,8 +9,8 @@
     "PopulatorEntries" : [
       {
         "type" : "Agent",
-        "targetCount" : 80,
-        "rate" : 2
+        "targetCount" : 40,
+        "rate" : 3
       },{
         "type" : "Mushroom",
         "targetCount" : 300,
