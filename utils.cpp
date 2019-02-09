@@ -70,7 +70,7 @@ inline sf::Color colorFromGenome(const std::vector<double>& genome){
             reducedGenome.at(i) += genome.at((3*i+j) % (genome.size()-1)) / 3;
         }
     }
-    return sf::Color(reducedGenome[0]*205+50, reducedGenome[1]*205+50, reducedGenome[2]*205+50);
+    return sf::Color(reducedGenome[0]*250+5, reducedGenome[1]*250+5, reducedGenome[2]*250+5);
 }
 
 
