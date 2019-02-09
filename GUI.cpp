@@ -8,8 +8,8 @@
 #include "Camera.h"
 
 GUI::GUI(Config &config, sf::RenderWindow *window, World *world, Camera *camera)
-        : config(config), window(window), view(window->getDefaultView()), world(world), camera(camera){
-
+        : config(config), window(window), originalWindowSize(window->getSize()), view(window->getDefaultView()),
+        world(world), camera(camera){
     font.loadFromFile(R"(C:\Windows\Fonts\consola.ttf)");
     sf::Color gray(120, 120, 120);
 
@@ -185,6 +185,9 @@ const std::shared_ptr<Agent> &GUI::getSelectedAgent() const {
 }
 
 bool GUI::click(sf::Vector2i pos) {
+    pos = sf::Vector2i(((float) pos.x / window->getSize().x) * originalWindowSize.x,
+                       ((float) pos.y / window->getSize().y) * originalWindowSize.y);
+
     if (config.render.showDebug){
         for (auto& t : simulationInfo.debug){
             if (pointInBox(sf::Vector2f(pos.x, pos.y), t.text.getGlobalBounds())){

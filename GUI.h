@@ -22,6 +22,7 @@ public:
 private:
     Config& config;
     sf::RenderWindow *window;
+    const sf::Vector2i originalWindowSize;
     const World* world;
     Camera* camera;
     const sf::View &view;
