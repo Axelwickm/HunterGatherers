@@ -138,10 +138,13 @@ Agent::Agent(const Agent &other, float mutation)
 
 
 void Agent::constructGenome(size_t inputCount, size_t outputCount) {
+
+    // Function for finding out how many weights every peceptron should have
     auto previousLayerPerceptronCountLambda = [](LambdaGene<int> &l, float mutationFactor) {
         auto layers = l.getOwner<MapGenes>()->getOwner<ListGenes>()->getOwner<MapGenes>()->getOwner<ListGenes>();
         auto thisLayer = l.getOwner<MapGenes>()->getOwner<ListGenes>()->getOwner<MapGenes>();
 
+        // Find which layer is calling this function
         auto itr = layers->getList().begin();
         for (auto &_ : layers->getList()) {
             if (itr->get() == thisLayer){
@@ -150,12 +153,14 @@ void Agent::constructGenome(size_t inputCount, size_t outputCount) {
             itr++;
         }
 
+        // If this is the first layer, then the count depends on how many inputs the network has
         if (itr == layers->getList().begin()){
             auto count = layers->getOwner<MapGenes>()->getGene<IntegerGene>("InputCount");
             count->evaluate(mutationFactor, l.getEvaluationCount());
             return count->getValue();
         }
 
+        // Else, the count depends on the perceptron count in the previous layer
         itr--;
         auto lastLayer = ((MapGenes*) itr->get());
         auto count = lastLayer->getGene<LambdaGene<int> >("PerceptronCount");
@@ -164,10 +169,12 @@ void Agent::constructGenome(size_t inputCount, size_t outputCount) {
 
     };
 
+    // Function for finding how many perceptrons this layer should be
     auto perceptronCountLambda = [](LambdaGene<int> &l, float mutationFactor) {
         auto layers = l.getOwner<MapGenes>()->getOwner<ListGenes>();
         auto thisLayer = l.getOwner<MapGenes>();
 
+        // Find which layer is calling this function
         auto itr = layers->getList().begin();
         for (auto &_ : layers->getList()) {
             if (itr->get() == thisLayer){
@@ -176,17 +183,20 @@ void Agent::constructGenome(size_t inputCount, size_t outputCount) {
             itr++;
         }
 
+        // If this is the last layer, then the count depends on how many outputs the networks has
         if (++itr == layers->getList().end()){
             auto count = layers->getOwner<MapGenes>()->getGene<IntegerGene>("OutputCount");
             count->evaluate(mutationFactor, l.getEvaluationCount());
             return count->getValue();
         }
 
+        // Else, the count depends on the MutatingPerceptronCount gene, and is therefore random
         auto count = l.getOwner<MapGenes>()->getGene<IntegerGene>("MutatingPerceptronCount");
         count->evaluate(mutationFactor, l.getEvaluationCount());
         return count->getValue();
     };
 
+    // Create a perceptron map which has a weight count, and a list of the weights.
     auto perceptron = std::make_shared<MapGenes>();
     auto weightCount = std::make_shared<LambdaGene<int> >(previousLayerPerceptronCountLambda);
     perceptron->addGenes("WeightCount", weightCount);
@@ -194,16 +204,23 @@ void Agent::constructGenome(size_t inputCount, size_t outputCount) {
     auto weights = std::make_shared<ListGenes>(weight, "WeightCount");
     perceptron->addGenes("Weights", weights);
 
+    // Create a layer map which has:
     auto layer = std::make_shared<MapGenes>();
+    // a random mutating integer gene which might be used to define count of perceptrons,
     auto mutatingPerceptronCount = std::make_shared<IntegerGene>(settings.perceptronPerLayerMin, settings.perceptronPerLayerMax);
     layer->addGenes("MutatingPerceptronCount", mutatingPerceptronCount);
+    // a lambda gene which decides if the mutatingPerceptronCount should be used,
     auto perceptronCount = std::make_shared<LambdaGene<int> >(perceptronCountLambda);
     layer->addGenes("PerceptronCount", perceptronCount);
+    // the bias for this layer,
     auto bias = std::make_shared<FloatGene>(settings.biasMin, settings.biasMax);
     layer->addGenes("Bias", bias);
+    // a list of perceptron maps
     auto perceptrons = std::make_shared<ListGenes>(perceptron, "PerceptronCount");
     layer->addGenes("Perceptrons", perceptrons);
 
+    // The top gene is a map gene containing a layer count, predefined input and output counts,
+    // and a list of layer maps
     genes = std::make_shared<MapGenes>();
     auto layerCount = std::make_shared<IntegerGene>(settings.layersMin, settings.layersMax);
     genes->addGenes("LayerCount", layerCount);
@@ -214,6 +231,7 @@ void Agent::constructGenome(size_t inputCount, size_t outputCount) {
     auto layers = std::make_shared<ListGenes>(layer, "LayerCount");
     genes->addGenes("Layers", layers);
 
+    // The genome is then generated according to this structure
     genes->generate();
 }
 
