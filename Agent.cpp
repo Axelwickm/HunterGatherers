@@ -58,7 +58,7 @@ Agent::Agent(const AgentSettings &settings, World *world, sf::Vector2f position,
     lineOfSight[1].color = sf::Color::Cyan;
 
     std::size_t inputCount = settings.perceiveCollision + receptors.size() + 3*settings.perceiveColor
-            + settings.perceiveEnergyLevel  + settings.memory + settings.perceiveMushroomCount;
+            + settings.perceiveEnergyLevel + settings.perceiveMushroomCount + settings.memory;
     std::size_t outputCount = settings.canReproduce + settings.canWalk + 2*settings.canTurn + settings.canEat + settings.canPlace + settings.canPunch + settings.memory;
 
     percept = std::vector<float>(inputCount);
@@ -393,7 +393,7 @@ void Agent::update(float deltaTime) {
         const float turn2 = *(actionIterator++);
         float turn = (turn1 - turn2)*settings.turnFactor;
         orientation += turn*deltaTime;
-        energy -= fabsf(turn1 - turn2) * 0.4f * settings.movementEnergyLoss * deltaTime;
+        energy -= fabsf(turn1 - turn2) * 0.2f * settings.movementEnergyLoss * deltaTime;
     }
 
     if (settings.canReproduce){
@@ -466,8 +466,8 @@ void Agent::update(float deltaTime) {
                         float initialEnergy = enemy->getEnergy();
                         enemy->setEnergy(enemy->getEnergy() - settings.punchDamage);
                         if (enemy->getEnergy() < 0){
-                            printf("Agent %s murdered %s stealing %u mushrooms and %f energy.\n", name.c_str(), enemy->name.c_str(),
-                                    enemy->inventory.mushrooms, initialEnergy);
+                            printf("Agent %s murdered %s stealing %u mushrooms and %f energy.\n", name.c_str(),
+                                    enemy->name.c_str(), enemy->inventory.mushrooms, initialEnergy);
                             inventory.mushrooms += enemy->inventory.mushrooms;
                             enemy->inventory.mushrooms = 0;
                             world->addObject(std::make_shared<Skull>(world, enemy->getPosition()));
@@ -712,5 +712,13 @@ const Agent::NetworkStatistics &Agent::getNetworkStatistics() const {
 
 void Agent::setNetworkStatistics(const Agent::NetworkStatistics &networkStatistics) {
     Agent::networkStatistics = networkStatistics;
+}
+
+const std::vector<float> &Agent::getReceptors() const {
+    return receptors;
+}
+
+const std::vector<float> &Agent::getMemory() const {
+    return memory;
 }
 

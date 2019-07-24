@@ -173,8 +173,6 @@ void GUI::draw(float deltaTime, float timeFactor) {
             }
 
             // http://ci.columbia.edu/ci/premba_test/c0331/s7/s7_5.html
-
-
         }
         else {
             window->draw(agentInfo.perceptText);
@@ -196,6 +194,12 @@ void GUI::draw(float deltaTime, float timeFactor) {
         window->draw(agentInfo.infoText);
     }
 
+    if (tooltip.active){
+        sf::Text text(tooltip.text, font, 10);
+        text.setPosition((sf::Vector2f) tooltip.pos + sf::Vector2f(0, 20));
+        window->draw(text);
+    }
+
     window->setView(cameraView);
 }
 
@@ -207,6 +211,36 @@ void GUI::selectAgent(std::shared_ptr<Agent> agent) {
         selectedAgent = agent;
         agentInfo.agentIdentifier.setFillColor(agent->getColor());
         agentInfo.agentIdentifier.setString(agent->getName());
+
+        auto settings = agent->getSettings();
+
+        // Apply percept labels
+        agentInfo.perceptLabels = std::vector<std::string>();
+        if (settings.perceiveCollision) agentInfo.perceptLabels.emplace_back("colliding");
+        for (std::size_t i = 0; i < agent->getReceptors().size(); i++)
+            agentInfo.perceptLabels.emplace_back("receptor " + std::to_string(i));
+        if (settings.perceiveColor){
+            agentInfo.perceptLabels.emplace_back("receptors red");
+            agentInfo.perceptLabels.emplace_back("receptors green");
+            agentInfo.perceptLabels.emplace_back("receptors blue");
+        }
+        if (settings.perceiveEnergyLevel) agentInfo.perceptLabels.emplace_back("energy");
+        if (settings.perceiveMushroomCount) agentInfo.perceptLabels.emplace_back("mushrooms");
+        for (std::size_t i = 0; i < agent->getMemory().size(); i++)
+            agentInfo.perceptLabels.emplace_back("memory "+std::to_string(i));
+
+        // Apply action labels
+        agentInfo.actionLabels = std::vector<std::string>();
+        if (settings.canWalk) agentInfo.actionLabels.emplace_back("walk");
+        if (settings.canTurn) agentInfo.actionLabels.emplace_back("turn right");
+        if (settings.canTurn) agentInfo.actionLabels.emplace_back("turn left");
+        if (settings.canReproduce) agentInfo.actionLabels.emplace_back("reproduce");
+        if (settings.canEat) agentInfo.actionLabels.emplace_back("eat");
+        if (settings.canPlace) agentInfo.actionLabels.emplace_back("place mushroom");
+        if (settings.canPunch) agentInfo.actionLabels.emplace_back("punch");
+        for (std::size_t i = 0; i < agent->getMemory().size(); i++)
+            agentInfo.actionLabels.emplace_back("memory "+std::to_string(i));
+
     }
 
     selectedInput = {VECTOR_NONE, 0};
@@ -245,17 +279,42 @@ bool GUI::click(sf::Vector2i pos) {
             printf("Click on info\n");
         }
 
-        if (agentInfo.perceptVector.click(pos) != std::numeric_limits<std::size_t>::max()){
-            selectedInput = {VECTOR_PERCEPT, agentInfo.perceptVector.click(pos)};
+        std::size_t perceptVectorPos = agentInfo.perceptVector.hover(pos);
+        if (perceptVectorPos != std::numeric_limits<std::size_t>::max()){
+            selectedInput = {VECTOR_PERCEPT, perceptVectorPos};
             return true;
         }
 
-        if (agentInfo.actionVector.click(pos) != std::numeric_limits<std::size_t>::max()){
-            selectedInput = {VECTOR_ACTIONS, agentInfo.actionVector.click(pos)};
+        std::size_t actionVectorPos = agentInfo.actionVector.hover(pos);
+        if (actionVectorPos != std::numeric_limits<std::size_t>::max()){
+            selectedInput = {VECTOR_ACTIONS, actionVectorPos};
             return true;
         }
     }
 
+    return false;
+}
+
+bool GUI::hover(sf::Vector2i pos) {
+    if (selectedAgent){
+        std::size_t perceptVectorPos = agentInfo.perceptVector.hover(pos);
+        if (perceptVectorPos != std::numeric_limits<std::size_t>::max()){
+            tooltip.active = true;
+            tooltip.pos = pos;
+            tooltip.text = agentInfo.perceptLabels.at(perceptVectorPos);
+            return true;
+        }
+
+        std::size_t actionVectorPos = agentInfo.actionVector.hover(pos);
+        if (actionVectorPos!= std::numeric_limits<std::size_t>::max()){
+            tooltip.active = true;
+            tooltip.pos = pos;
+            tooltip.text = agentInfo.actionLabels.at(actionVectorPos);
+            return true;
+        }
+    }
+
+    tooltip.active = false;
     return false;
 }
 
@@ -278,7 +337,7 @@ void GUI::Toggle::update() {
     }
 }
 
-std::size_t GUI::VectorRenderer::click(sf::Vector2i pos) {
+std::size_t GUI::VectorRenderer::hover(sf::Vector2i pos) {
     for (std::size_t i = 0; i < rectangles.size(); i++){
         if (pointInBox(sf::Vector2f(pos.x, pos.y), rectangles.at(i).getGlobalBounds())){
             return i;

@@ -32,7 +32,6 @@ public:
     void setChildCount(unsigned int childCount);
 
     unsigned int getMurderCount() const;
-
     void setMurderCount(unsigned int murderCount);
 
     void update(float deltaTime) override;
@@ -51,6 +50,9 @@ public:
 
     float getEnergy() const;
     void setEnergy(float energy);
+
+    const std::vector<float> &getReceptors() const;
+    const std::vector<float> &getMemory() const;
 
     std::vector<float> getRegressionPercept(unsigned id) const;
     std::vector<float> getRegressionActions(unsigned id) const;

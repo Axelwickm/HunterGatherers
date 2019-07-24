@@ -139,10 +139,15 @@ int main(int argc, char *argv[]) {
                     mousePosition = sf::Touch::getPosition(0);
                 }*/
                 //std::cout<<sf::Touch::isDown(1)<<std::endl;
-                if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left)){
-                    camera.move((sf::Vector2f) (mousePosition - sf::Vector2<int>(event.mouseMove.x, event.mouseMove.y)));
-                }
+                auto oldMousePos = mousePosition;
                 mousePosition = sf::Vector2<int>(event.mouseMove.x, event.mouseMove.y);
+                if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left)){
+                    camera.move((sf::Vector2f) (oldMousePos - mousePosition));
+                }
+                else {
+                    gui.hover(mousePosition);
+                }
+
 
             }
 

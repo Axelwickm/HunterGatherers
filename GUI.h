@@ -16,6 +16,7 @@ public:
     void draw(float deltaTime, float timeFactor);
     void selectAgent(std::shared_ptr<Agent> agent);
     bool click(sf::Vector2i pos);
+    bool hover(sf::Vector2i pos);
 
     const std::shared_ptr<Agent> &getSelectedAgent() const;
 
@@ -43,7 +44,7 @@ private:
     } simulationInfo;
 
     struct VectorRenderer {
-        std::size_t click(sf::Vector2i pos);
+        std::size_t hover(sf::Vector2i pos);
         void draw(sf::RenderWindow *window, const std::vector<float> &vec, std::size_t selectedIndex = std::numeric_limits<std::size_t>::max());
         void drawCorr(sf::RenderWindow *window, const std::vector<float> &vec, std::size_t selectedIndex = std::numeric_limits<std::size_t>::max());
 
@@ -65,6 +66,9 @@ private:
         VectorRenderer actionVector;
 
         sf::Text infoText;
+
+        std::vector<std::string> perceptLabels;
+        std::vector<std::string> actionLabels;
     } agentInfo;
 
     enum AgentVectors {
@@ -74,6 +78,12 @@ private:
     };
 
     std::pair<AgentVectors, std::size_t> selectedInput;
+
+    struct {
+        bool active = false;
+        sf::Vector2i pos;
+        std::string text;
+    } tooltip;
 
 };
 
