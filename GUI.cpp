@@ -9,7 +9,7 @@
 
 GUI::GUI(Config &config, sf::RenderWindow *window, World *world, Camera *camera)
         : config(config), window(window), originalWindowSize(window->getSize()), view(window->getDefaultView()),
-        world(world), camera(camera){
+        world(world), camera(camera) {
     font.loadFromFile(R"(C:\Windows\Fonts\consola.ttf)");
     sf::Color gray(120, 120, 120);
 
@@ -98,7 +98,8 @@ GUI::GUI(Config &config, sf::RenderWindow *window, World *world, Camera *camera)
     agentInfo.infoText.setString("Network layers ##\nPerceptron count: ##\nAge: ###\nGeneration: ###\nChildren: ###\nMurders: ##\nMushrooms: ##\n");
     agentInfo.infoText.setPosition(10, 245);
 
-
+    // Correlation stuff
+    selectedInput = {VECTOR_NONE, 0};
 
 }
 
@@ -149,11 +150,39 @@ void GUI::draw(float deltaTime, float timeFactor) {
         window->draw(agentInfo.energyBackground);
         window->draw(agentInfo.energyBar);
 
-        window->draw(agentInfo.perceptText);
-        agentInfo.perceptVector.draw(window, selectedAgent->getPercept());
+        if (selectedInput.first != VECTOR_NONE){
 
-        window->draw(agentInfo.actionsText);
-        agentInfo.actionVector.draw(window, selectedAgent->getActions());
+            if (selectedInput.first == VECTOR_PERCEPT){
+                auto correlation = selectedAgent->getRegressionActions(selectedInput.second);
+
+                window->draw(agentInfo.perceptText);
+                agentInfo.perceptVector.draw(window, selectedAgent->getPercept(), selectedInput.second);
+
+                window->draw(agentInfo.actionsText);
+                agentInfo.actionVector.drawCorr(window, correlation);
+            }
+            else {
+                auto correlation = selectedAgent->getRegressionPercept(selectedInput.second);
+
+                window->draw(agentInfo.perceptText);
+                agentInfo.perceptVector.drawCorr(window, correlation);
+
+                window->draw(agentInfo.actionsText);
+                agentInfo.actionVector.draw(window, selectedAgent->getActions(), selectedInput.second);
+
+            }
+
+            // http://ci.columbia.edu/ci/premba_test/c0331/s7/s7_5.html
+
+
+        }
+        else {
+            window->draw(agentInfo.perceptText);
+            agentInfo.perceptVector.draw(window, selectedAgent->getPercept());
+
+            window->draw(agentInfo.actionsText);
+            agentInfo.actionVector.draw(window, selectedAgent->getActions());
+        }
 
         agentInfo.infoText.setString(
                 "Network layers: "+std::to_string(selectedAgent->getNetworkStatistics().layers)
@@ -163,8 +192,10 @@ void GUI::draw(float deltaTime, float timeFactor) {
                 +"\nChildren: "+std::to_string(selectedAgent->getChildCount())
                 +"\nMurders: "+std::to_string(selectedAgent->getMurderCount())
                 +"\nMushrooms: "+std::to_string(selectedAgent->getInventory().mushrooms));
+
         window->draw(agentInfo.infoText);
     }
+
     window->setView(cameraView);
 }
 
@@ -174,10 +205,11 @@ void GUI::selectAgent(std::shared_ptr<Agent> agent) {
     }
     else {
         selectedAgent = agent;
-
         agentInfo.agentIdentifier.setFillColor(agent->getColor());
         agentInfo.agentIdentifier.setString(agent->getName());
     }
+
+    selectedInput = {VECTOR_NONE, 0};
 }
 
 const std::shared_ptr<Agent> &GUI::getSelectedAgent() const {
@@ -203,12 +235,25 @@ bool GUI::click(sf::Vector2i pos) {
             }
         }
     }
-    if (pointInBox(sf::Vector2f(pos.x, pos.y), agentInfo.agentIdentifier.getGlobalBounds())){
-        camera->followAgent(selectedAgent.get());
-        return true;
-    }
-    if (pointInBox(sf::Vector2f(pos.x, pos.y), simulationInfo.main.getGlobalBounds())){
-        printf("Click on info\n");
+    if (selectedAgent){
+        if (pointInBox(sf::Vector2f(pos.x, pos.y), agentInfo.agentIdentifier.getGlobalBounds())){
+            camera->followAgent(selectedAgent.get());
+            return true;
+        }
+
+        if (pointInBox(sf::Vector2f(pos.x, pos.y), simulationInfo.main.getGlobalBounds())){
+            printf("Click on info\n");
+        }
+
+        if (agentInfo.perceptVector.click(pos) != std::numeric_limits<std::size_t>::max()){
+            selectedInput = {VECTOR_PERCEPT, agentInfo.perceptVector.click(pos)};
+            return true;
+        }
+
+        if (agentInfo.actionVector.click(pos) != std::numeric_limits<std::size_t>::max()){
+            selectedInput = {VECTOR_ACTIONS, agentInfo.actionVector.click(pos)};
+            return true;
+        }
     }
 
     return false;
@@ -233,21 +278,64 @@ void GUI::Toggle::update() {
     }
 }
 
-void GUI::VectorRenderer::draw(sf::RenderWindow *window, const std::vector<float> &vec) {
+std::size_t GUI::VectorRenderer::click(sf::Vector2i pos) {
+    for (std::size_t i = 0; i < rectangles.size(); i++){
+        if (pointInBox(sf::Vector2f(pos.x, pos.y), rectangles.at(i).getGlobalBounds())){
+            return i;
+        }
+    }
+    return std::numeric_limits<std::size_t>::max();
+}
+
+void GUI::VectorRenderer::draw(sf::RenderWindow *window, const std::vector<float> &vec, std::size_t selectedIndex) {
     if (vec.size() != rectangles.size()){
         rectangles.clear();
         const auto c = vec.size();
         rectangles.reserve(c);
         for (std::size_t i = 0; i < c; i++){
             rectangles.emplace_back(sf::Vector2f(bounds.width/c, bounds.height));
-            rectangles.back().setPosition(bounds.left + i*bounds.width/c, bounds.top);
+            rectangles.back().setPosition(bounds.left + i*(bounds.width/c+2.f), bounds.top);
             rectangles.back().setOutlineThickness(1);
             rectangles.back().setOutlineColor(sf::Color(50, 50, 50));
         }
     }
-    for (std::size_t i = 0; i < vec.size(); i++ ){
+
+    for (std::size_t i = 0; i < vec.size(); i++ ) {
         const float a = vec.at(i);
-        rectangles.at(i).setFillColor(sf::Color(a*200, a*200, a*200));
+        rectangles.at(i).setFillColor(sf::Color(a * 200, a * 200, a * 200));
+        if (i == selectedIndex){
+            rectangles.at(i).setOutlineColor(sf::Color::Red);
+        }
         window->draw(rectangles.at(i));
+        if (i == selectedIndex){
+            rectangles.at(i).setOutlineColor(sf::Color(50, 50, 50));
+        }
+    }
+}
+
+void GUI::VectorRenderer::drawCorr(sf::RenderWindow *window, const std::vector<float> &vec, size_t selectedIndex) {
+    if (vec.size() != rectangles.size()){
+        rectangles.clear();
+        const auto c = vec.size();
+        rectangles.reserve(c);
+        for (std::size_t i = 0; i < c; i++){
+            rectangles.emplace_back(sf::Vector2f(bounds.width/c, bounds.height));
+            rectangles.back().setPosition(bounds.left + i*(bounds.width/c+2.f), bounds.top);
+            rectangles.back().setOutlineThickness(1);
+            rectangles.back().setOutlineColor(sf::Color(50, 50, 50));
+        }
+    }
+
+    for (std::size_t i = 0; i < vec.size(); i++ ){
+        const float val = (vec.at(i) + 1.f)/2.f;
+        const float o = std::fabs(vec.at(i));
+        rectangles.at(i).setFillColor(sf::Color(val*200, val*200, val*200, o*255));
+        if (i == selectedIndex){
+            rectangles.at(i).setOutlineColor(sf::Color::Red);
+        }
+        window->draw(rectangles.at(i));
+        if (i == selectedIndex){
+            rectangles.at(i).setOutlineColor(sf::Color(50, 50, 50));
+        }
     }
 }

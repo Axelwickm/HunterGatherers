@@ -43,7 +43,9 @@ private:
     } simulationInfo;
 
     struct VectorRenderer {
-        void draw(sf::RenderWindow *window, const std::vector<float> &vec);
+        std::size_t click(sf::Vector2i pos);
+        void draw(sf::RenderWindow *window, const std::vector<float> &vec, std::size_t selectedIndex = std::numeric_limits<std::size_t>::max());
+        void drawCorr(sf::RenderWindow *window, const std::vector<float> &vec, std::size_t selectedIndex = std::numeric_limits<std::size_t>::max());
 
         sf::Rect<float> bounds;
         std::vector<sf::RectangleShape> rectangles;
@@ -65,8 +67,13 @@ private:
         sf::Text infoText;
     } agentInfo;
 
+    enum AgentVectors {
+        VECTOR_NONE,
+        VECTOR_PERCEPT,
+        VECTOR_ACTIONS
+    };
 
-
+    std::pair<AgentVectors, std::size_t> selectedInput;
 
 };
 

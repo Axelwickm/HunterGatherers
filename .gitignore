@@ -1,3 +1,5 @@
 cmake-build-debug/
 .idea/workspace.xml
 resources/surnames.txt
+CMakeFiles/
+.idea/

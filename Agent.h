@@ -52,6 +52,9 @@ public:
     float getEnergy() const;
     void setEnergy(float energy);
 
+    std::vector<float> getRegressionPercept(unsigned id) const;
+    std::vector<float> getRegressionActions(unsigned id) const;
+
     struct Inventory {
         unsigned mushrooms;
     };
@@ -74,6 +77,15 @@ private:
     unsigned childCount;
     unsigned murderCount;
     std::string name;
+
+    // Input linear regression
+    unsigned actionUpdates;
+    std::vector<float> perceptMean;
+    std::vector<float> actionsMean;
+    std::vector<std::vector<float>> varX;
+    std::vector<std::vector<float>> covXY;
+    void networkRegression();
+
 
     float orientation; // In degrees
     float energy; // Between 0 and maxEnergy
@@ -106,6 +118,7 @@ private:
     static sf::Texture punchTexture;
 
     void constructGenome(size_t inputCount, size_t outputCount);
+
 };
 
 

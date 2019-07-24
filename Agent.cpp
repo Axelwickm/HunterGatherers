@@ -82,6 +82,14 @@ Agent::Agent(const AgentSettings &settings, World *world, sf::Vector2f position,
     setColor(colorFromGenome(genome));
     sprite.setColor(color);
 
+    actionUpdates = 0;
+    perceptMean = std::vector<float>(inputCount);
+    std::fill(std::begin(perceptMean), std::end(perceptMean), 0.f);
+    actionsMean = std::vector<float>(outputCount);
+    std::fill(std::begin(actionsMean), std::end(actionsMean), 0.f);
+    varX = std::vector<std::vector<float>>(inputCount, std::vector<float>(outputCount, 0.f));
+    covXY = std::vector<std::vector<float>>(inputCount, std::vector<float>(outputCount, 0.f));
+
 }
 
 Agent::Agent(const Agent &other, float mutation)
@@ -93,6 +101,8 @@ Agent::Agent(const Agent &other, float mutation)
     energy = other.energy;
     actionCooldown = settings.actionCooldown;
     punchTimer = 0;
+
+    actionUpdates = 0;
 
     inventory.mushrooms = 0;
 
@@ -134,6 +144,16 @@ Agent::Agent(const Agent &other, float mutation)
     lineOfSight[1].color = sf::Color::Cyan;
 
     sf::Vertex orientationLine[2];
+
+    unsigned inputCount = genes->getGene<IntegerGene>("InputCount")->getValue();
+    unsigned outputCount = genes->getGene<IntegerGene>("OutputCount")->getValue();
+    actionUpdates = 0;
+    perceptMean = std::vector<float>(inputCount);
+    std::fill(std::begin(perceptMean), std::end(perceptMean), 0.f);
+    actionsMean = std::vector<float>(outputCount);
+    std::fill(std::begin(actionsMean), std::end(actionsMean), 0.f);
+    varX = std::vector<std::vector<float>>(inputCount, std::vector<float>(outputCount, 0.f));
+    covXY = std::vector<std::vector<float>>(inputCount, std::vector<float>(outputCount, 0.f));
 }
 
 
@@ -588,7 +608,59 @@ const std::vector<float> &Agent::getActions() const {
 
 void Agent::setActions(const std::vector<float> &actions) {
     Agent::actions = actions;
+    actionUpdates++;
+
+    networkRegression();
 }
+
+void Agent::networkRegression() {
+
+    // Means
+    auto perceptDelta = std::vector<float>(percept.size());
+    for (unsigned i = 0; i < percept.size(); i++) {
+        perceptDelta[i] = percept[i] - perceptMean[i];
+        perceptMean[i] += perceptDelta[i] / actionUpdates;
+    }
+
+    auto actionsDelta = std::vector<float>(actions.size());
+    for (unsigned i = 0; i < actions.size(); i++) {
+        actionsDelta[i] = actions[i] - actionsMean[i];
+        actionsMean[i] += actionsDelta[i] / actionUpdates;
+    }
+
+    for (unsigned i = 0; i < percept.size(); i++){
+        float dx = perceptDelta[i];
+        for (unsigned j = 0; j < actions.size(); j++){
+            float dy = actionsDelta[j];
+            varX[i][j] += (float(float(actionUpdates-1.f)/ (float) actionUpdates)*dx*dx - varX[i][j])/(float) actionUpdates;
+            covXY[i][j] += (float(float(actionUpdates-1.f)/ (float) actionUpdates)*dx*dy - covXY[i][j])/(float) actionUpdates;
+        }
+    }
+}
+
+std::vector<float> Agent::getRegressionActions(unsigned id) const {
+    auto p = std::vector<float>(covXY[id].size(), 0);
+    for (unsigned i = 0; i < actions.size(); i++){
+        p[i] = covXY[id][i] / varX[id][i];
+        if (p[i] != p[i]){ // Nan-check
+            p[i] = 0.f;
+        }
+    }
+    return p;
+}
+
+std::vector<float> Agent::getRegressionPercept(unsigned id) const {
+    auto p = std::vector<float>(covXY.size(), 0);
+    for (unsigned i = 0; i < percept.size(); i++){
+        p[i] = covXY[i][id] / varX[i][id];
+        if (p[i] != p[i]){ // Nan-check
+            p[i] = 0.f;
+        }
+    }
+    return p;
+}
+
+
 
 float Agent::getEnergy() const {
     return energy;
@@ -641,6 +713,4 @@ const Agent::NetworkStatistics &Agent::getNetworkStatistics() const {
 void Agent::setNetworkStatistics(const Agent::NetworkStatistics &networkStatistics) {
     Agent::networkStatistics = networkStatistics;
 }
-
-
 
