@@ -63,6 +63,10 @@ struct AgentSettings {
 struct RenderSettings {
     sf::Vector2u windowSize;
 
+    bool showLineGraph{};
+        bool graphPopulation{};
+        bool graphAverageGeneration{};
+
     bool showDistribution{};
     unsigned bins{};
     bool showDebug{};
@@ -83,6 +87,7 @@ struct Controls {
     sf::Keyboard::Key pause;
     sf::Keyboard::Key close;
     sf::Keyboard::Key showDebug;
+    sf::Keyboard::Key clearStats;
 
     sf::Keyboard::Key up;
     float upAmount;

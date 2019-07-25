@@ -10,8 +10,9 @@
 #include "PerlinNoise/PerlinNoise.hpp"
 
 World::World(Config &config, sf::RenderWindow *window, OpenCL_Wrapper *openCL_wrapper) :
-config(config), window(window), dimensions(config.world.dimensions), openCL_wrapper(openCL_wrapper),
-populator(this), quadtree(Quadtree<float>(sf::Vector2<float>(0, 0), dimensions)) {
+worldTime(0), config(config), window(window), dimensions(config.world.dimensions), openCL_wrapper(openCL_wrapper),
+populator(this), quadtree(Quadtree<float>(sf::Vector2<float>(0, 0), dimensions)),
+historyFrequency(1), maxHistory(50000){
     randomEngine = std::mt19937(config.seed++);
     quadtree.setLimit(config.world.quadtreeLimit);
     generateTerrain();
@@ -44,6 +45,7 @@ void World::generateTerrain() {
 }
 
 void World::update(float deltaTime) {
+    worldTime += deltaTime;
     openCL_wrapper->clFinishAll(); // More optimized to have this here?
 
     populator.entryEnabled("Agent", agentSpawning);
@@ -208,6 +210,10 @@ const std::set<std::shared_ptr<WorldObject>> &World::getObjects() const {
 }
 
 void World::updateStatistics() {
+    if (worldTime == statistics.timestamp) return; // Time is paused
+    if (worldTime - statistics.timestamp < historyFrequency) return; // Not time yet
+
+    statistics.timestamp = worldTime;
     if (agents.empty()){
         statistics.populationCount = 0;
         statistics.averageGeneration = 0;
@@ -238,8 +244,21 @@ void World::updateStatistics() {
 
         statistics.averageGeneration /= agents.size();
     }
+
+    if (maxHistory <= historicalStatistics.size())
+        historicalStatistics.pop_front();
+
+    historicalStatistics.push_back(statistics);
 }
 
-const WorldStatistics & World::getStatistics() const {
+const WorldStatistics &World::getStatistics() const {
     return statistics;
+}
+
+const std::deque<WorldStatistics> &World::getHistoricalStatistics() const {
+    return historicalStatistics;
+}
+
+void World::clearStatistics() {
+    historicalStatistics.clear();
 }

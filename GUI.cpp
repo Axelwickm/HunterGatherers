@@ -2,7 +2,9 @@
 // Created by axelw on 2019-01-06.
 //
 
+
 #include <sstream>
+
 #include "GUI.h"
 #include "World.h"
 #include "Camera.h"
@@ -20,23 +22,38 @@ GUI::GUI(Config &config, sf::RenderWindow *window, World *world, Camera *camera)
     simulationInfo.main.setFillColor(gray);
     simulationInfo.main.setPosition(10, window->getSize().y-simulationInfo.main.getLocalBounds().height-5);
 
-    std::vector<std::pair<std::string, bool*>> debugValues = {
-            {"agentSpawning", &world->agentSpawning},
-            {"reloadConfig", &config.shouldReload},
-            {"showWorldObjectBounds", &config.render.showWorldObjectBounds},
-            {"showQuadtree", &config.render.showQuadtree},
-            {"showQuadtreeEntities", &config.render.showQuadtreeEntities},
-            {"showVision", &config.render.showVision},
-            {"showDistribution", &config.render.showDistribution},
-            {"renderOnlyAgents", &config.render.renderOnlyAgents},
-            {"visualizeGeneration", &config.render.visualizeGeneration},
-            {"visualizeAge", &config.render.visualizeAge},
-            {"visualizeChildren", &config.render.visualizeChildren},
-            {"visualizeMurders", &config.render.visualizeMurders},
-            {"visualizeMushrooms", &config.render.visualizeMushrooms},
-            {"visualizeColor", &config.render.visualizeColor}
 
+    simulationInfo.debug = {
+    /* 0 */ Toggle("agentSpawning", &world->agentSpawning),
+    /* 1 */ Toggle("reloadConfig", &config.shouldReload),
+    /* 2 */ Toggle("showWorldObjectBounds", &config.render.showWorldObjectBounds),
+    /* 3 */ Toggle("showQuadtree", &config.render.showQuadtree),
+    /* 4 */ Toggle("showQuadtreeEntities", &config.render.showQuadtreeEntities),
+    /* 5 */ Toggle("showVision", &config.render.showVision),
+    /* 6 */ Toggle("showLineGraph", &config.render.showLineGraph),
+    /* 7 */ Toggle("showDistribution", &config.render.showDistribution),
+    /* 8 */ Toggle("renderOnlyAgents", &config.render.renderOnlyAgents),
+    /* 9 */ Toggle("visualizeGeneration", &config.render.visualizeGeneration),
+    /* 10*/ Toggle("visualizeAge", &config.render.visualizeAge),
+    /* 11*/ Toggle("visualizeChildren", &config.render.visualizeChildren),
+    /* 12*/ Toggle("visualizeMurders", &config.render.visualizeMurders),
+    /* 13*/ Toggle("visualizeMushrooms", &config.render.visualizeMushrooms),
+    /* 14*/ Toggle("visualizeColor", &config.render.visualizeColor)
     };
+
+
+    //{"population", &config.render.graphPopulation},
+    //{"average gen.", &config.render.graphAverageGeneration}
+
+    for (unsigned  i = 0; i < simulationInfo.debug.size(); i++){
+        auto &toggle = simulationInfo.debug.at(i);
+        toggle.text.setFont(font);
+        toggle.text.setPosition(window->getSize().x-300, 10+i*25);
+
+        if (toggle.text.getString().toAnsiString() == "showLineGraph"){
+            toggle.subToggles.push_back(Toggle("population", &config.render.graphPopulation, &toggle, sf::Color(133, 92, 117)))
+        }
+    }
 
     sf::Rect<int> distributionBounds(450, window->getSize().y-10, 800, 90);
     simulationInfo.populationDistribution.resize(config.render.bins);
@@ -46,21 +63,6 @@ GUI::GUI(Config &config, sf::RenderWindow *window, World *world, Camera *camera)
         simulationInfo.populationDistribution.at(i).setPosition(distributionBounds.left + i*binWidth, distributionBounds.top);
         simulationInfo.populationDistribution.at(i).setSize(sf::Vector2f(binWidth, distributionBounds.height));
         simulationInfo.populationDistribution.at(i).setOrigin(simulationInfo.populationDistribution.at(i).getSize());
-    }
-
-    for (std::size_t i = 0; i < debugValues.size(); i++){
-        simulationInfo.debug.push_back({
-            debugValues.at(i).second,
-            sf::Text(debugValues.at(i).first, font)
-        });
-        simulationInfo.debug.back().text.setCharacterSize(20);
-        simulationInfo.debug.back().text.setPosition(window->getSize().x-300, 10+i*25);
-        if (*debugValues.at(i).second){
-            simulationInfo.debug.back().text.setFillColor(sf::Color::White);
-        }
-        else {
-            simulationInfo.debug.back().text.setFillColor(sf::Color(120, 120, 120));
-        }
     }
 
     // Agent info
@@ -101,40 +103,62 @@ GUI::GUI(Config &config, sf::RenderWindow *window, World *world, Camera *camera)
     // Correlation stuff
     selectedInput = {VECTOR_NONE, 0};
 
+    lineGraphs.push_back({
+        .name = "population",
+        .color = sf::Color(100, 200, 100)
+    });
+
 }
 
 void GUI::draw(float deltaTime, float timeFactor) {
+    // UI camera-view
     auto cameraView = window->getView();
     window->setView(view);
 
-    simulationInfo.main.setString("FPS: "+std::to_string(int(1.f/deltaTime))
-        +"\nTime factor: "+std::to_string(int(timeFactor))
-        +"\nPopulation: "+std::to_string(world->getStatistics().populationCount)
-        +"\nAverage generation: "+std::to_string(world->getStatistics().averageGeneration)
-        +"\nLowest generation: " + std::to_string(world->getStatistics().lowestGeneration)
-        +"\nHighest generation: " + std::to_string(world->getStatistics().highestGeneration));
-    window->draw(simulationInfo.main);
+    { // Draw current world statistics
+        simulationInfo.main.setString("FPS: " + std::to_string(int(1.f / deltaTime))
+                                      + "\nTime factor: " + std::to_string(int(timeFactor))
+                                      + "\nPopulation: " + std::to_string(world->getStatistics().populationCount)
+                                      + "\nAverage generation: " +
+                                      std::to_string(world->getStatistics().averageGeneration)
+                                      + "\nLowest generation: " +
+                                      std::to_string(world->getStatistics().lowestGeneration)
+                                      + "\nHighest generation: " +
+                                      std::to_string(world->getStatistics().highestGeneration));
 
-    unsigned deltaGeneration = world->getStatistics().highestGeneration - world->getStatistics().lowestGeneration;
-    unsigned last = 0;
-    if (deltaGeneration != 0 && config.render.showDistribution) {
-        double delta = (double) (deltaGeneration + 1) / simulationInfo.populationDistribution.size();
-        delta = fmax(delta, 1.0);
-        for (unsigned i = 0; i < simulationInfo.populationDistribution.size(); i++) {
-            unsigned upTo = world->getStatistics().lowestGeneration + floor(delta * (i + 1));
-            unsigned val = 0;
+        window->draw(simulationInfo.main);
+    }
 
-            for (unsigned j = last; j < upTo; j++) {
-                try {
-                    val += world->getStatistics().populationDistribution.at(j) / (upTo - last);
-                } catch (const std::out_of_range& e) { /* This is a gap between the generations */ };
-            }
-            last = upTo;
-            simulationInfo.populationDistribution.at(i).setScale(1, (float) val/world->getStatistics().populationCount);
-            window->draw(simulationInfo.populationDistribution.at(i));
+    if (config.render.showLineGraph){
+        for (auto& lg : lineGraphs){
+            lg.draw(window, world);
         }
     }
 
+    { // Draw distribution
+        unsigned deltaGeneration = world->getStatistics().highestGeneration - world->getStatistics().lowestGeneration;
+        unsigned last = 0;
+        if (deltaGeneration != 0 && config.render.showDistribution) {
+            double delta = (double) (deltaGeneration + 1) / simulationInfo.populationDistribution.size();
+            delta = fmax(delta, 1.0);
+            for (unsigned i = 0; i < simulationInfo.populationDistribution.size(); i++) {
+                unsigned upTo = world->getStatistics().lowestGeneration + floor(delta * (i + 1));
+                unsigned val = 0;
+
+                for (unsigned j = last; j < upTo; j++) {
+                    try {
+                        val += world->getStatistics().populationDistribution.at(j) / (upTo - last);
+                    } catch (const std::out_of_range &e) { /* This is a gap between the generations */ };
+                }
+                last = upTo;
+                simulationInfo.populationDistribution.at(i).setScale(1, (float) val /
+                                                                        world->getStatistics().populationCount);
+                window->draw(simulationInfo.populationDistribution.at(i));
+            }
+        }
+    }
+
+    // Draw debug info
     if (config.render.showDebug){
         for (auto& t : simulationInfo.debug){
             t.update();
@@ -142,64 +166,66 @@ void GUI::draw(float deltaTime, float timeFactor) {
         }
     }
 
-    if (selectedAgent){
-        window->draw(agentInfo.agentIdentifier);
+    { // Draw information about the selected agent (if there is one)
+        if (selectedAgent) {
+            window->draw(agentInfo.agentIdentifier);
 
-        window->draw(agentInfo.energyText);
-        agentInfo.energyBar.setScale(selectedAgent->getEnergy()/selectedAgent->getSettings().maxEnergy, 1);
-        window->draw(agentInfo.energyBackground);
-        window->draw(agentInfo.energyBar);
+            window->draw(agentInfo.energyText);
+            agentInfo.energyBar.setScale(selectedAgent->getEnergy() / selectedAgent->getSettings().maxEnergy, 1);
+            window->draw(agentInfo.energyBackground);
+            window->draw(agentInfo.energyBar);
 
-        if (selectedInput.first != VECTOR_NONE){
+            if (selectedInput.first != VECTOR_NONE) {
 
-            if (selectedInput.first == VECTOR_PERCEPT){
-                auto correlation = selectedAgent->getRegressionActions(selectedInput.second);
+                if (selectedInput.first == VECTOR_PERCEPT) {
+                    auto correlation = selectedAgent->getRegressionActions(selectedInput.second);
 
+                    window->draw(agentInfo.perceptText);
+                    agentInfo.perceptVector.draw(window, selectedAgent->getPercept(), selectedInput.second);
+
+                    window->draw(agentInfo.actionsText);
+                    agentInfo.actionVector.drawCorr(window, correlation);
+                } else {
+                    auto correlation = selectedAgent->getRegressionPercept(selectedInput.second);
+
+                    window->draw(agentInfo.perceptText);
+                    agentInfo.perceptVector.drawCorr(window, correlation);
+
+                    window->draw(agentInfo.actionsText);
+                    agentInfo.actionVector.draw(window, selectedAgent->getActions(), selectedInput.second);
+
+                }
+
+                // http://ci.columbia.edu/ci/premba_test/c0331/s7/s7_5.html
+            } else {
                 window->draw(agentInfo.perceptText);
-                agentInfo.perceptVector.draw(window, selectedAgent->getPercept(), selectedInput.second);
+                agentInfo.perceptVector.draw(window, selectedAgent->getPercept());
 
                 window->draw(agentInfo.actionsText);
-                agentInfo.actionVector.drawCorr(window, correlation);
-            }
-            else {
-                auto correlation = selectedAgent->getRegressionPercept(selectedInput.second);
-
-                window->draw(agentInfo.perceptText);
-                agentInfo.perceptVector.drawCorr(window, correlation);
-
-                window->draw(agentInfo.actionsText);
-                agentInfo.actionVector.draw(window, selectedAgent->getActions(), selectedInput.second);
-
+                agentInfo.actionVector.draw(window, selectedAgent->getActions());
             }
 
-            // http://ci.columbia.edu/ci/premba_test/c0331/s7/s7_5.html
+            agentInfo.infoText.setString(
+                    "Network layers: " + std::to_string(selectedAgent->getNetworkStatistics().layers)
+                    + "\nPerceptron count: " + std::to_string(selectedAgent->getNetworkStatistics().perceptronCount)
+                    + "\nAge: " + std::to_string(selectedAgent->getAge())
+                    + "\nGeneration: " + std::to_string(selectedAgent->getGeneration())
+                    + "\nChildren: " + std::to_string(selectedAgent->getChildCount())
+                    + "\nMurders: " + std::to_string(selectedAgent->getMurderCount())
+                    + "\nMushrooms: " + std::to_string(selectedAgent->getInventory().mushrooms));
+
+            window->draw(agentInfo.infoText);
         }
-        else {
-            window->draw(agentInfo.perceptText);
-            agentInfo.perceptVector.draw(window, selectedAgent->getPercept());
-
-            window->draw(agentInfo.actionsText);
-            agentInfo.actionVector.draw(window, selectedAgent->getActions());
-        }
-
-        agentInfo.infoText.setString(
-                "Network layers: "+std::to_string(selectedAgent->getNetworkStatistics().layers)
-                +"\nPerceptron count: "+std::to_string(selectedAgent->getNetworkStatistics().perceptronCount)
-                +"\nAge: " + std::to_string(selectedAgent->getAge())
-                +"\nGeneration: "+ std::to_string(selectedAgent->getGeneration())
-                +"\nChildren: "+std::to_string(selectedAgent->getChildCount())
-                +"\nMurders: "+std::to_string(selectedAgent->getMurderCount())
-                +"\nMushrooms: "+std::to_string(selectedAgent->getInventory().mushrooms));
-
-        window->draw(agentInfo.infoText);
     }
 
+    // Draw tooltip
     if (tooltip.active){
         sf::Text text(tooltip.text, font, 10);
         text.setPosition((sf::Vector2f) tooltip.pos + sf::Vector2f(0, 20));
         window->draw(text);
     }
 
+    // Reset camera view
     window->setView(cameraView);
 }
 
@@ -316,6 +342,76 @@ bool GUI::hover(sf::Vector2i pos) {
 
     tooltip.active = false;
     return false;
+}
+
+void GUI::LineGraph::draw(sf::RenderWindow *window, const World *world) {
+    // Set all the vertex data
+    verts.clear();
+    auto &stats = world->getHistoricalStatistics();
+    verts.resize(stats.size());
+    verts.setPrimitiveType(sf::LineStrip);
+
+    if (stats.empty())
+        return;
+
+    float minX = std::numeric_limits<float>::max();
+    float maxX = std::numeric_limits<float>::min();
+
+    float minY = std::numeric_limits<float>::max();
+    float maxY = std::numeric_limits<float>::min();
+
+    for (std::size_t i = 0; i < stats.size(); i++){
+        const auto &s = stats[i];
+        float x, y;
+        x = s.timestamp;
+        if (name == "population")
+            y = s.populationCount;
+        else
+            throw std::runtime_error("Line Graph datum "+name+" doesn't exist");
+
+        verts[i] = sf::Vector2f(x, y);
+
+        minX = std::min(minX, x);
+        maxX = std::max(maxX, x);
+
+        minY = std::min(minY, y);
+        maxY = std::max(maxY, y);
+    }
+
+    for (std::size_t i = 0; i < stats.size(); i++){
+        float x = verts[i].position.x;
+        float y = verts[i].position.y;
+        //  Normalize
+        x = (x - minX) / (maxX - minX);
+        y = 1.f - (y - minY) / (maxY - minY);
+
+        // Place on screen
+        sf::Vector2f wSize = (sf::Vector2f) window->getSize();
+        x = wSize.x*0.15f + x*wSize.x*0.80;
+        y = wSize.y - 200 + y*120;
+
+        verts[i] = sf::Vertex({x, y}, color);
+    }
+
+    // Draw graph
+    window->draw(verts);
+}
+
+
+GUI::Toggle::Toggle(std::string name, bool *value, std::vector<Toggle> subToggles, sf::Color color) {
+    //text = sf::Text(name, font);
+    text.setString(name);
+    text.setCharacterSize(20);
+    if (*value){
+        text.setFillColor(sf::Color::White);
+    }
+    else {
+        text.setFillColor(sf::Color(120, 120, 120));
+    }
+
+    Toggle::value = value;
+    Toggle::subToggles = subToggles;
+    hovered = false;
 }
 
 void GUI::Toggle::click() {

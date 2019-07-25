@@ -30,18 +30,32 @@ private:
     sf::Font font;
 
     struct Toggle {
+        Toggle(std::string name, bool *value, std::vector<Toggle> subtoggles = std::vector<Toggle>(), sf::Color color = sf::Color(120, 120, 120));
         void click();
         void set(bool v);
         void update();
-        bool* value;
         sf::Text text;
+        bool* value;
+        sf::Color color;
+        std::vector<Toggle> subToggles;
+        bool hovered;
     };
 
-    struct {
+    struct SimulationInfo {
         sf::Text main;
         std::vector<sf::RectangleShape> populationDistribution;
         std::vector<Toggle> debug;
     } simulationInfo;
+
+    struct LineGraph {
+        void draw(sf::RenderWindow *window, const World *world);
+
+        std::string name;
+        sf::Color color;
+        sf::VertexArray verts;
+    };
+
+    std::vector<LineGraph> lineGraphs;
 
     struct VectorRenderer {
         std::size_t hover(sf::Vector2i pos);
@@ -54,7 +68,7 @@ private:
 
     std::shared_ptr<Agent> selectedAgent;
 
-    struct {
+    struct agentInfo {
         sf::Text agentIdentifier;
         sf::Text energyText;
         sf::RectangleShape energyBackground;
@@ -79,7 +93,7 @@ private:
 
     std::pair<AgentVectors, std::size_t> selectedInput;
 
-    struct {
+    struct Tooltip {
         bool active = false;
         sf::Vector2i pos;
         std::string text;

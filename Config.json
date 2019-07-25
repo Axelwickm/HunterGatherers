@@ -3,19 +3,18 @@
   "seed" : "TIME",
 
   "WorldSettings" : {
-    "worldWidth" : 4000, "worldHeight" :  4000,
+    "worldWidth" : 8000, "worldHeight" :  8000,
     "terrainSquare" : 30,
-    "quadtreeLimit" : 30,
+    "quadtreeLimit" : 60,
     "PopulatorEntries" : [
       {
         "type" : "Agent",
-        "targetCount" : 40,
-        "rate" : 3
+        "targetCount" : 20,
+        "rate" : 1
       },{
         "type" : "Mushroom",
-        "targetCount" : 300,
-        "rate" : 3.0
-
+        "targetCount" : 400,
+        "rate" : 0.4
       },{
         "type" : "BouncingBall",
         "targetCount" : 0,
@@ -27,16 +26,16 @@
   "AgentSettings" : {
     "mass": 1,
     "friction" : 0.01,
-    "maxSpeed" : 500,
+    "maxSpeed" : 1000,
     "turnFactor" : 100,
     "punchTime" : 1,
     "actionCooldown" : 2,
 
     "energyLossRate" : 0.5,
-    "movementEnergyLoss" : 1.0,
-    "punchEnergy": 10,
-    "punchDamage" : 60,
-    "mushroomEnergy" : 100,
+    "movementEnergyLoss" : 0.0265,
+    "punchEnergy": 2,
+    "punchDamage" : 100,
+    "mushroomEnergy" : 45,
     "maxEnergy" : 100,
     "maxMushroomCount": 15,
 
@@ -51,16 +50,16 @@
     "memoryReactivity" : 0.1,
 
     "perceiveCollision" : true,
-    "receptorCount" : 5,
+    "receptorCount" : 7,
     "perceiveColor" : true,
     "perceiveEnergyLevel" : true,
     "perceiveMushroomCount" : true,
 
-    "FOV" : 100,
-    "visibilityDistance" : 200,
+    "FOV" : 120,
+    "visibilityDistance" : 350,
     "visualReactivity" : 5,
 
-    "mutation" : 0.075,
+    "mutation" : 0.05,
     "layerMin" : 4, "layerMax" : 7,
     "biasMin" : -1, "biasMax" : 1,
     "weightMin" : -2, "weightMax" : 2,
@@ -72,6 +71,7 @@
     "pause" : "Space",
     "close" : "Escape",
     "showDebug" : "D",
+    "clearStats" : "C",
 
     "up" : "Up",
     "down" : "Down",
@@ -92,12 +92,16 @@
     "windowWidth" : 1920,
     "windowHeight" : 1080,
 
+    "showLineGraph" : true,
+        "graphPopulation" : true,
+        "graphAverageGeneration" : false,
+
     "showDistribution" : true,
     "bins" : 50,
     "showDebug" : true,
     "showWorldObjectBounds" : false,
     "showQuadtree" :  false,
     "showQuadtreeEntities" : false,
-    "showVision" : false
+    "showVision" : true
   }
 }

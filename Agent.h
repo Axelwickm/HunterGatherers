@@ -34,6 +34,9 @@ public:
     unsigned int getMurderCount() const;
     void setMurderCount(unsigned int murderCount);
 
+    unsigned int getNewChildren();
+    unsigned int getNewMurders();
+
     void update(float deltaTime) override;
     void draw(sf::RenderWindow *window, float deltaTime) override;
 
@@ -76,7 +79,9 @@ private:
     // General
     const AgentSettings settings;
     unsigned generation;
+    unsigned oldChildCount;
     unsigned childCount;
+    unsigned oldMurderCount;
     unsigned murderCount;
     std::string name;
 
@@ -87,7 +92,6 @@ private:
     std::vector<std::vector<float>> varX;
     std::vector<std::vector<float>> covXY;
     void networkRegression();
-
 
     float orientation; // In degrees
     float energy; // Between 0 and maxEnergy
@@ -109,7 +113,6 @@ private:
     std::vector<float> memory;
     std::vector<float> actions;
     std::vector<float> receptors;
-
 
     // Vision variables
     std::vector<sf::Vertex> lineOfSight;

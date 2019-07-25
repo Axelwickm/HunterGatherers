@@ -80,6 +80,9 @@ int main(int argc, char *argv[]) {
                 else if (code == controls.showDebug){
                     config.render.showDebug = !config.render.showDebug;
                 }
+                else if (code == controls.clearStats){
+                    world.clearStatistics();
+                }
                 if (code == controls.up){
                     camera.move(sf::Vector2f(0, controls.upAmount));
                 }

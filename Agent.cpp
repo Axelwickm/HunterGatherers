@@ -32,7 +32,9 @@ Agent::Agent(const AgentSettings &settings, World *world, sf::Vector2f position,
     loadResources();
 
     generation = 0;
+    oldChildCount = 0;
     childCount = 0;
+    oldMurderCount = 0;
     murderCount = 0;
     energy = settings.maxEnergy;
     setMass(settings.mass);
@@ -96,7 +98,9 @@ Agent::Agent(const Agent &other, float mutation)
 : settings(other.settings), WorldObject(other), orientation(other.orientation) {
     loadResources();
     generation = other.generation;
+    oldChildCount = 0;
     childCount = 0;
+    oldMurderCount = 0;
     murderCount = 0;
     energy = other.energy;
     actionCooldown = settings.actionCooldown;
@@ -458,7 +462,10 @@ void Agent::update(float deltaTime) {
                             object->getPosition().y + object->getBounds().top,
                             object->getBounds().width - object->getBounds().left,
                             object->getBounds().height - object->getBounds().top);
-            if (boxesIntersect(a, b)){
+            auto diff = getPosition() - object->getPosition();
+            float dist = std::sqrt(diff.x*diff.x+diff.y*diff.y);
+
+            if (dist < 64){
                 auto &type = typeid(*object.get());
                 if (type == typeid(Agent)){
                     if (punchTimer == deltaTime){
@@ -698,6 +705,18 @@ void Agent::setMurderCount(unsigned int murderCount) {
     Agent::murderCount = murderCount;
 }
 
+unsigned int Agent::getNewChildren() {
+    unsigned delta = childCount - oldChildCount;
+    oldChildCount = childCount;
+    return delta;
+}
+
+unsigned int Agent::getNewMurders() {
+    unsigned delta = murderCount - oldMurderCount;
+    oldMurderCount = murderCount;
+    return delta;
+}
+
 const Agent::Inventory &Agent::getInventory() const {
     return inventory;
 }
@@ -721,4 +740,5 @@ const std::vector<float> &Agent::getReceptors() const {
 const std::vector<float> &Agent::getMemory() const {
     return memory;
 }
+
 

@@ -119,6 +119,7 @@ void Config::loadConfigFromFile(const std::string &filename) {
     controls.pause = findKeyCode(C["pause"].get<std::string>());
     controls.close = findKeyCode(C["close"].get<std::string>());
     controls.showDebug = findKeyCode(C["showDebug"].get<std::string>());
+    controls.clearStats = findKeyCode(C["clearStats"].get<std::string>());
     controls.up = findKeyCode(C["up"].get<std::string>());
     controls.down = findKeyCode(C["down"].get<std::string>());
     controls.left = findKeyCode(C["left"].get<std::string>());
@@ -136,6 +137,10 @@ void Config::loadConfigFromFile(const std::string &filename) {
     controls.scrollFactor = C["scrollFactor"].get<float>();
 
     auto &RS = json["Rendering"];
+    render.showLineGraph = RS["showLineGraph"].get<bool>();
+        render.graphPopulation = RS["graphPopulation"].get<bool>();
+        render.graphAverageGeneration = RS["graphAverageGeneration"].get<bool>();
+
     render.showDistribution = RS["showDistribution"].get<bool>();
     render.bins = RS["bins"].get<unsigned>();
     render.showWorldObjectBounds = RS["showWorldObjectBounds"].get<bool>();
@@ -162,6 +167,7 @@ sf::Keyboard::Key Config::findKeyCode(std::string key) {
         {"Space", sf::Keyboard::Space},
         {"Escape", sf::Keyboard::Escape},
         {"D", sf::Keyboard::D},
+        {"C", sf::Keyboard::C},
         {"Up", sf::Keyboard::Up},
         {"Down", sf::Keyboard::Down},
         {"Left", sf::Keyboard::Left},

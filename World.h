@@ -4,8 +4,7 @@
 
 #include <memory>
 #include <set>
-
-
+#include <deque>
 
 #ifndef HUNTERGATHERERS_WORLD_H
 #define HUNTERGATHERERS_WORLD_H
@@ -18,8 +17,11 @@
 #include "Populator.h"
 
 struct WorldStatistics {
+    float timestamp = 0;
     std::size_t populationCount = 0;
     float averageGeneration = 0;
+    unsigned reproductions = 0;
+    unsigned murders = 0;
     unsigned lowestGeneration = 0;
     unsigned highestGeneration = 0;
     std::map<std::size_t, unsigned> populationDistribution;
@@ -47,7 +49,9 @@ public:
     const std::set<std::shared_ptr<Agent>> &getAgents() const;
     const std::set<std::shared_ptr<WorldObject>> &getObjects() const;
 
-    const WorldStatistics & getStatistics() const;
+    const WorldStatistics &getStatistics() const;
+    const std::deque<WorldStatistics> &getHistoricalStatistics() const;
+    void clearStatistics();
 
     const sf::RenderWindow *getWindow() const;
 
@@ -56,6 +60,7 @@ public:
 
 
 private:
+    float worldTime;
     Config& config;
     sf::RenderWindow *window;
     const sf::Vector2f dimensions;
@@ -68,6 +73,10 @@ private:
     std::set<std::shared_ptr<Agent>> agents;
     std::set<std::shared_ptr<WorldObject> > objects;
     WorldStatistics statistics;
+    std::deque<WorldStatistics> historicalStatistics;
+    const float historyFrequency;
+    const std::size_t maxHistory;
+
 
     Quadtree<float> quadtree;
     OpenCL_Wrapper *openCL_wrapper;
