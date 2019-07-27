@@ -140,6 +140,8 @@ void Config::loadConfigFromFile(const std::string &filename) {
     render.showLineGraph = RS["showLineGraph"].get<bool>();
         render.graphPopulation = RS["graphPopulation"].get<bool>();
         render.graphAverageGeneration = RS["graphAverageGeneration"].get<bool>();
+        render.graphBirths = RS["graphBirths"].get<bool>();
+        render.graphMurders = RS["graphMurders"].get<bool>();
 
     render.showDistribution = RS["showDistribution"].get<bool>();
     render.bins = RS["bins"].get<unsigned>();

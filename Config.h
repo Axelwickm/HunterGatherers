@@ -66,6 +66,8 @@ struct RenderSettings {
     bool showLineGraph{};
         bool graphPopulation{};
         bool graphAverageGeneration{};
+        bool graphBirths{};
+        bool graphMurders{};
 
     bool showDistribution{};
     unsigned bins{};

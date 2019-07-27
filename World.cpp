@@ -229,6 +229,9 @@ void World::updateStatistics() {
         statistics.populationDistribution.clear();
 
         for (auto& agent : agents){
+            statistics.births += agent->getNewBirths();
+            statistics.murders += agent->getNewMurders();
+
             unsigned g = agent->getGeneration();
             statistics.populationDistribution.try_emplace(g, 0);
             statistics.populationDistribution[g]++;

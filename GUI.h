@@ -30,7 +30,8 @@ private:
     sf::Font font;
 
     struct Toggle {
-        Toggle(std::string name, bool *value, std::vector<Toggle> subtoggles = std::vector<Toggle>(), sf::Color color = sf::Color(120, 120, 120));
+        Toggle(std::string name, bool *value, std::vector<Toggle> subtoggles = std::vector<Toggle>(), sf::Color color = sf::Color(200, 200, 200));
+        Toggle(std::string name, bool *value, Toggle* parent, sf::Color color = sf::Color(200, 200, 200));
         void click();
         void set(bool v);
         void update();
@@ -38,6 +39,7 @@ private:
         bool* value;
         sf::Color color;
         std::vector<Toggle> subToggles;
+        Toggle* parent;
         bool hovered;
     };
 
@@ -48,10 +50,12 @@ private:
     } simulationInfo;
 
     struct LineGraph {
-        void draw(sf::RenderWindow *window, const World *world);
+        void draw(sf::RenderWindow *window, const World *world, sf::Vector2i orgSize);
 
         std::string name;
         sf::Color color;
+        bool* shouldRender;
+        unsigned yPixelOffset = 0;
         sf::VertexArray verts;
     };
 

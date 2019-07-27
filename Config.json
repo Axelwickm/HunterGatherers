@@ -3,18 +3,18 @@
   "seed" : "TIME",
 
   "WorldSettings" : {
-    "worldWidth" : 8000, "worldHeight" :  8000,
+    "worldWidth" : 5000, "worldHeight" :  5000,
     "terrainSquare" : 30,
     "quadtreeLimit" : 60,
     "PopulatorEntries" : [
       {
         "type" : "Agent",
-        "targetCount" : 20,
-        "rate" : 1
+        "targetCount" : 30,
+        "rate" : 2
       },{
         "type" : "Mushroom",
         "targetCount" : 400,
-        "rate" : 0.4
+        "rate" : 1
       },{
         "type" : "BouncingBall",
         "targetCount" : 0,
@@ -95,6 +95,8 @@
     "showLineGraph" : true,
         "graphPopulation" : true,
         "graphAverageGeneration" : false,
+        "graphBirths" : true,
+        "graphMurders" : false,
 
     "showDistribution" : true,
     "bins" : 50,

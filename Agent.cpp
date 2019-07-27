@@ -705,7 +705,7 @@ void Agent::setMurderCount(unsigned int murderCount) {
     Agent::murderCount = murderCount;
 }
 
-unsigned int Agent::getNewChildren() {
+unsigned int Agent::getNewBirths() {
     unsigned delta = childCount - oldChildCount;
     oldChildCount = childCount;
     return delta;

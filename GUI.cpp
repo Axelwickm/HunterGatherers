@@ -4,6 +4,7 @@
 
 
 #include <sstream>
+#include <utility>
 
 #include "GUI.h"
 #include "World.h"
@@ -41,9 +42,20 @@ GUI::GUI(Config &config, sf::RenderWindow *window, World *world, Camera *camera)
     /* 14*/ Toggle("visualizeColor", &config.render.visualizeColor)
     };
 
-
-    //{"population", &config.render.graphPopulation},
-    //{"average gen.", &config.render.graphAverageGeneration}
+    const std::vector<std::array<int, 3>> subColors = {
+        {133, 92, 117},
+        {217, 175, 107},
+        {175, 100, 88},
+        {115, 111, 76},
+        {82, 106, 131},
+        {98, 83, 119},
+        {104, 133, 92},
+        {156, 156, 94},
+        {160, 97, 119},
+        {140, 120, 93},
+        {70, 115, 120},
+        {124, 124, 124}
+    };
 
     for (unsigned  i = 0; i < simulationInfo.debug.size(); i++){
         auto &toggle = simulationInfo.debug.at(i);
@@ -51,7 +63,30 @@ GUI::GUI(Config &config, sf::RenderWindow *window, World *world, Camera *camera)
         toggle.text.setPosition(window->getSize().x-300, 10+i*25);
 
         if (toggle.text.getString().toAnsiString() == "showLineGraph"){
-            toggle.subToggles.push_back(Toggle("population", &config.render.graphPopulation, &toggle, sf::Color(133, 92, 117)))
+            toggle.subToggles = {
+                    Toggle("population", &config.render.graphPopulation, &toggle),
+                    Toggle("mean gen.", &config.render.graphAverageGeneration, &toggle),
+                    Toggle("births", &config.render.graphBirths, &toggle),
+                    Toggle("murders", &config.render.graphMurders, &toggle)
+            };
+
+            for (std::size_t j = 0; j < toggle.subToggles.size(); j++){
+                toggle.subToggles.at(j).text.setPosition(
+                        window->getSize().x-400,
+                        toggle.text.getPosition().y+j*12
+                );
+                toggle.subToggles.at(j).text.setCharacterSize(15);
+                toggle.subToggles.at(j).text.setFont(font);
+                auto col = subColors.at(j);
+                toggle.subToggles.at(j).color = sf::Color(col[0], col[1], col[2]);
+                toggle.subToggles.at(j).update();
+                lineGraphs.push_back((LineGraph) {
+                    .name = toggle.subToggles.at(j).text.getString().toAnsiString(),
+                    .color = sf::Color(col[0], col[1], col[2]),
+                    .shouldRender = toggle.subToggles.at(j).value,
+                    .yPixelOffset = (unsigned) j
+                });
+            }
         }
     }
 
@@ -103,11 +138,6 @@ GUI::GUI(Config &config, sf::RenderWindow *window, World *world, Camera *camera)
     // Correlation stuff
     selectedInput = {VECTOR_NONE, 0};
 
-    lineGraphs.push_back({
-        .name = "population",
-        .color = sf::Color(100, 200, 100)
-    });
-
 }
 
 void GUI::draw(float deltaTime, float timeFactor) {
@@ -130,8 +160,9 @@ void GUI::draw(float deltaTime, float timeFactor) {
     }
 
     if (config.render.showLineGraph){
-        for (auto& lg : lineGraphs){
-            lg.draw(window, world);
+        for (auto &lg : lineGraphs){
+            if (!*lg.shouldRender) continue;
+            lg.draw(window, world, originalWindowSize);
         }
     }
 
@@ -163,6 +194,12 @@ void GUI::draw(float deltaTime, float timeFactor) {
         for (auto& t : simulationInfo.debug){
             t.update();
             window->draw(t.text);
+
+            if (t.hovered){
+                for (auto &sub : t.subToggles){
+                    window->draw(sub.text);
+                }
+            }
         }
     }
 
@@ -293,8 +330,15 @@ bool GUI::click(sf::Vector2i pos) {
                 }
                 return true;
             }
+            for (auto &sub : t.subToggles){
+                if (pointInBox(sf::Vector2f(pos.x, pos.y), sub.text.getGlobalBounds())){
+                    sub.click();
+                    return true;
+                }
+            }
         }
     }
+
     if (selectedAgent){
         if (pointInBox(sf::Vector2f(pos.x, pos.y), agentInfo.agentIdentifier.getGlobalBounds())){
             camera->followAgent(selectedAgent.get());
@@ -322,6 +366,35 @@ bool GUI::click(sf::Vector2i pos) {
 }
 
 bool GUI::hover(sf::Vector2i pos) {
+    pos = sf::Vector2i(((float) pos.x / window->getSize().x) * originalWindowSize.x,
+                       ((float) pos.y / window->getSize().y) * originalWindowSize.y);
+
+    if (config.render.showDebug){
+        std::function<bool(Toggle&)> hoverToggle = [&](Toggle &t) -> bool {
+            bool anyHovered = false;
+            if (t.hovered){
+                for (auto &sub : t.subToggles){
+                    anyHovered |= hoverToggle(sub);
+                }
+            }
+            sf::FloatRect bounds = t.text.getGlobalBounds();
+            if (t.parent != nullptr){
+                bounds.width += 80;
+                bounds.height += 80;
+            }
+            if (anyHovered || pointInBox(sf::Vector2f(pos.x, pos.y), bounds)){
+                t.hovered = true;
+                return true;
+            }
+            t.hovered = false;
+            return false;
+        };
+
+        for (auto &toggle : simulationInfo.debug){
+            hoverToggle(toggle);
+        }
+    }
+
     if (selectedAgent){
         std::size_t perceptVectorPos = agentInfo.perceptVector.hover(pos);
         if (perceptVectorPos != std::numeric_limits<std::size_t>::max()){
@@ -344,7 +417,7 @@ bool GUI::hover(sf::Vector2i pos) {
     return false;
 }
 
-void GUI::LineGraph::draw(sf::RenderWindow *window, const World *world) {
+void GUI::LineGraph::draw(sf::RenderWindow *window, const World *world, const sf::Vector2i orgSize) {
     // Set all the vertex data
     verts.clear();
     auto &stats = world->getHistoricalStatistics();
@@ -366,6 +439,12 @@ void GUI::LineGraph::draw(sf::RenderWindow *window, const World *world) {
         x = s.timestamp;
         if (name == "population")
             y = s.populationCount;
+        else if (name == "mean gen.")
+            y = s.averageGeneration;
+        else if (name == "births")
+            y = s.births;
+        else if (name == "murders")
+            y = s.murders;
         else
             throw std::runtime_error("Line Graph datum "+name+" doesn't exist");
 
@@ -386,9 +465,9 @@ void GUI::LineGraph::draw(sf::RenderWindow *window, const World *world) {
         y = 1.f - (y - minY) / (maxY - minY);
 
         // Place on screen
-        sf::Vector2f wSize = (sf::Vector2f) window->getSize();
+        auto wSize = sf::Vector2f(orgSize);
         x = wSize.x*0.15f + x*wSize.x*0.80;
-        y = wSize.y - 200 + y*120;
+        y = wSize.y - 200 + y*120 + yPixelOffset;
 
         verts[i] = sf::Vertex({x, y}, color);
     }
@@ -398,20 +477,22 @@ void GUI::LineGraph::draw(sf::RenderWindow *window, const World *world) {
 }
 
 
-GUI::Toggle::Toggle(std::string name, bool *value, std::vector<Toggle> subToggles, sf::Color color) {
-    //text = sf::Text(name, font);
+GUI::Toggle::Toggle(std::string name, bool *value, std::vector<Toggle> subToggles, sf::Color color) :
+color(color){
     text.setString(name);
     text.setCharacterSize(20);
-    if (*value){
-        text.setFillColor(sf::Color::White);
-    }
-    else {
-        text.setFillColor(sf::Color(120, 120, 120));
-    }
 
     Toggle::value = value;
-    Toggle::subToggles = subToggles;
-    hovered = false;
+    Toggle::subToggles = std::move(subToggles);
+    Toggle::hovered = false;
+    Toggle::parent = nullptr;
+
+    update();
+}
+
+GUI::Toggle::Toggle(std::string name, bool *value, Toggle* parent, sf::Color color) :
+Toggle(name, value, std::vector<Toggle>(), color) {
+    Toggle::parent = parent;
 }
 
 void GUI::Toggle::click() {
@@ -426,10 +507,13 @@ void GUI::Toggle::set(bool v) {
 
 void GUI::Toggle::update() {
     if (*value){
-        text.setFillColor(sf::Color::White);
+        text.setFillColor(color);
     }
     else {
-        text.setFillColor(sf::Color(120, 120, 120));
+        text.setFillColor(sf::Color(80, 80, 80));
+        for (auto &sub : subToggles){
+            sub.hovered = false;
+        }
     }
 }
 

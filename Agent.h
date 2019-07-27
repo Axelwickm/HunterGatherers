@@ -34,7 +34,7 @@ public:
     unsigned int getMurderCount() const;
     void setMurderCount(unsigned int murderCount);
 
-    unsigned int getNewChildren();
+    unsigned int getNewBirths();
     unsigned int getNewMurders();
 
     void update(float deltaTime) override;
