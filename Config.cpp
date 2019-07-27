@@ -139,7 +139,11 @@ void Config::loadConfigFromFile(const std::string &filename) {
     auto &RS = json["Rendering"];
     render.showLineGraph = RS["showLineGraph"].get<bool>();
         render.graphPopulation = RS["graphPopulation"].get<bool>();
-        render.graphAverageGeneration = RS["graphAverageGeneration"].get<bool>();
+        render.graphMeanGeneration = RS["graphMeanGeneration"].get<bool>();
+        render.graphMeanPerceptrons = RS["graphMeanPerceptrons"].get<bool>();
+        render.graphMeanAge = RS["graphMeanAge"].get<bool>();
+        render.graphMeanChildren = RS["graphMeanChildren"].get<bool>();
+        render.graphMeanMushrooms = RS["graphMeanMushrooms"].get<bool>();
         render.graphBirths = RS["graphBirths"].get<bool>();
         render.graphMurders = RS["graphMurders"].get<bool>();
 

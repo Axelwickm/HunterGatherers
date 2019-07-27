@@ -30,8 +30,10 @@ private:
     sf::Font font;
 
     struct Toggle {
-        Toggle(std::string name, bool *value, std::vector<Toggle> subtoggles = std::vector<Toggle>(), sf::Color color = sf::Color(200, 200, 200));
-        Toggle(std::string name, bool *value, Toggle* parent, sf::Color color = sf::Color(200, 200, 200));
+        Toggle(const std::string& name, bool *value, std::vector<Toggle> subtoggles = std::vector<Toggle>(),
+                sf::Color color = sf::Color(200, 200, 200));
+        Toggle(std::string name, bool *value, Toggle* parent,
+                sf::Color color = sf::Color(200, 200, 200));
         void click();
         void set(bool v);
         void update();
@@ -56,6 +58,7 @@ private:
         sf::Color color;
         bool* shouldRender;
         unsigned yPixelOffset = 0;
+        sf::Text valueText;
         sf::VertexArray verts;
     };
 

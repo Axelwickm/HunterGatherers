@@ -94,7 +94,11 @@
 
     "showLineGraph" : true,
         "graphPopulation" : true,
-        "graphAverageGeneration" : false,
+        "graphMeanGeneration" : false,
+        "graphMeanPerceptrons" : false,
+        "graphMeanAge" : false,
+        "graphMeanChildren" : false,
+        "graphMeanMushrooms" : false,
         "graphBirths" : true,
         "graphMurders" : false,
 

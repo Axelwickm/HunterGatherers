@@ -12,7 +12,7 @@
 World::World(Config &config, sf::RenderWindow *window, OpenCL_Wrapper *openCL_wrapper) :
 worldTime(0), config(config), window(window), dimensions(config.world.dimensions), openCL_wrapper(openCL_wrapper),
 populator(this), quadtree(Quadtree<float>(sf::Vector2<float>(0, 0), dimensions)),
-historyFrequency(1), maxHistory(50000){
+historyFrequency(5), maxHistory(50000){
     randomEngine = std::mt19937(config.seed++);
     quadtree.setLimit(config.world.quadtreeLimit);
     generateTerrain();
@@ -66,6 +66,8 @@ void World::update(float deltaTime) {
         openCL_wrapper->think(agent, agent->getPercept());
     }
 
+    updateStatistics();
+
 
 }
 
@@ -104,7 +106,6 @@ bool World::addObject(std::shared_ptr<WorldObject> worldObject) {
     if (typeid(*worldObject.get()) == typeid(Agent)){
         agents.insert(std::dynamic_pointer_cast<Agent>(worldObject));
         openCL_wrapper->addAgent((Agent*) worldObject.get());
-        updateStatistics();
     }
 
     populator.changeCount(worldObject->type, 1);
@@ -138,7 +139,6 @@ void World::performDeletions() {
     }
 
     deletionList.clear();
-    updateStatistics();
 }
 
 const sf::RenderWindow *World::getWindow() const {
@@ -214,38 +214,45 @@ void World::updateStatistics() {
     if (worldTime - statistics.timestamp < historyFrequency) return; // Not time yet
 
     statistics.timestamp = worldTime;
-    if (agents.empty()){
-        statistics.populationCount = 0;
-        statistics.averageGeneration = 0;
-        statistics.lowestGeneration = 0;
-        statistics.highestGeneration = 0;
-        statistics.populationDistribution.clear();
-    }
-    else {
-        statistics.populationCount = agents.size();
-        statistics.averageGeneration = 0;
+    statistics.populationDistribution.clear();
+    statistics.births = 0;
+    statistics.murders = 0;
+    statistics.populationCount = agents.size();
+    statistics.meanGeneration = 0;
+    statistics.meanPerceptrons = 0;
+    statistics.meanAge = 0;
+    statistics.meanChildren = 0;
+    statistics.meanMushrooms = 0;
+
+    if (!agents.empty()){
         statistics.lowestGeneration = std::numeric_limits<unsigned>::max();
         statistics.highestGeneration = 0;
-        statistics.populationDistribution.clear();
-
         for (auto& agent : agents){
-            statistics.births += agent->getNewBirths();
-            statistics.murders += agent->getNewMurders();
-
             unsigned g = agent->getGeneration();
             statistics.populationDistribution.try_emplace(g, 0);
             statistics.populationDistribution[g]++;
 
-            statistics.averageGeneration += g;
             if (g < statistics.lowestGeneration){
                 statistics.lowestGeneration = g;
             }
             if (statistics.highestGeneration < g){
                 statistics.highestGeneration = g;
             }
+
+            statistics.births += agent->getNewBirths();
+            statistics.murders += agent->getNewMurders();
+            statistics.meanGeneration += g;
+            statistics.meanPerceptrons += agent->getNetworkStatistics().perceptronCount;
+            statistics.meanAge += agent->getAge();
+            statistics.meanChildren += agent->getChildCount();
+            statistics.meanMushrooms += agent->getInventory().mushrooms;
         }
 
-        statistics.averageGeneration /= agents.size();
+        statistics.meanGeneration /= agents.size();
+        statistics.meanPerceptrons /= agents.size();
+        statistics.meanAge /= agents.size();
+        statistics.meanChildren /= agents.size();
+        statistics.meanMushrooms /= agents.size();
     }
 
     if (maxHistory <= historicalStatistics.size())

@@ -19,7 +19,11 @@
 struct WorldStatistics {
     float timestamp = 0;
     std::size_t populationCount = 0;
-    float averageGeneration = 0;
+    float meanGeneration = 0;
+    float meanPerceptrons = 0;
+    float meanAge = 0;
+    float meanChildren = 0;
+    float meanMushrooms = 0;
     unsigned births = 0;
     unsigned murders = 0;
     unsigned lowestGeneration = 0;

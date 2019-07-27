@@ -16,8 +16,7 @@ GUI::GUI(Config &config, sf::RenderWindow *window, World *world, Camera *camera)
     font.loadFromFile(R"(C:\Windows\Fonts\consola.ttf)");
     sf::Color gray(120, 120, 120);
 
-    simulationInfo.main = sf::Text(std::string("FPS: ###\nTime factor: ##\nPopulation: ###\nAverage generation: ####")+
-            std::string("\nLowest generation: ###\nHighest generation: ###\n"), font);
+    simulationInfo.main = sf::Text(std::string("FPS: ###\nTime factor: ##\nPopulation: ###\n"), font);
     simulationInfo.main.setCharacterSize(20);
     simulationInfo.main.setStyle(sf::Text::Regular);
     simulationInfo.main.setFillColor(gray);
@@ -65,14 +64,18 @@ GUI::GUI(Config &config, sf::RenderWindow *window, World *world, Camera *camera)
         if (toggle.text.getString().toAnsiString() == "showLineGraph"){
             toggle.subToggles = {
                     Toggle("population", &config.render.graphPopulation, &toggle),
-                    Toggle("mean gen.", &config.render.graphAverageGeneration, &toggle),
+                    Toggle("mean gen.", &config.render.graphMeanGeneration, &toggle),
+                    Toggle("mean perceptrons", &config.render.graphMeanPerceptrons, &toggle),
+                    Toggle("mean age", &config.render.graphMeanAge, &toggle),
+                    Toggle("mean children", &config.render.graphMeanChildren, &toggle),
+                    Toggle("mean mushrooms", &config.render.graphMeanMushrooms, &toggle),
                     Toggle("births", &config.render.graphBirths, &toggle),
                     Toggle("murders", &config.render.graphMurders, &toggle)
             };
 
             for (std::size_t j = 0; j < toggle.subToggles.size(); j++){
                 toggle.subToggles.at(j).text.setPosition(
-                        window->getSize().x-400,
+                        window->getSize().x-420,
                         toggle.text.getPosition().y+j*12
                 );
                 toggle.subToggles.at(j).text.setCharacterSize(15);
@@ -84,8 +87,10 @@ GUI::GUI(Config &config, sf::RenderWindow *window, World *world, Camera *camera)
                     .name = toggle.subToggles.at(j).text.getString().toAnsiString(),
                     .color = sf::Color(col[0], col[1], col[2]),
                     .shouldRender = toggle.subToggles.at(j).value,
-                    .yPixelOffset = (unsigned) j
+                    .yPixelOffset = (unsigned) j,
+                    .valueText = sf::Text("###", font, 12)
                 });
+                lineGraphs.back().valueText.setFillColor(sf::Color(col[0], col[1], col[2]));
             }
         }
     }
@@ -149,12 +154,7 @@ void GUI::draw(float deltaTime, float timeFactor) {
         simulationInfo.main.setString("FPS: " + std::to_string(int(1.f / deltaTime))
                                       + "\nTime factor: " + std::to_string(int(timeFactor))
                                       + "\nPopulation: " + std::to_string(world->getStatistics().populationCount)
-                                      + "\nAverage generation: " +
-                                      std::to_string(world->getStatistics().averageGeneration)
-                                      + "\nLowest generation: " +
-                                      std::to_string(world->getStatistics().lowestGeneration)
-                                      + "\nHighest generation: " +
-                                      std::to_string(world->getStatistics().highestGeneration));
+                                      +"\n");
 
         window->draw(simulationInfo.main);
     }
@@ -440,7 +440,15 @@ void GUI::LineGraph::draw(sf::RenderWindow *window, const World *world, const sf
         if (name == "population")
             y = s.populationCount;
         else if (name == "mean gen.")
-            y = s.averageGeneration;
+            y = s.meanGeneration;
+        else if (name == "mean perceptrons")
+            y = s.meanPerceptrons;
+        else if (name == "mean age")
+            y = s.meanAge;
+        else if (name == "mean children")
+            y = s.meanChildren;
+        else if (name == "mean mushrooms")
+            y = s.meanMushrooms;
         else if (name == "births")
             y = s.births;
         else if (name == "murders")
@@ -457,27 +465,41 @@ void GUI::LineGraph::draw(sf::RenderWindow *window, const World *world, const sf
         maxY = std::max(maxY, y);
     }
 
+    float lastVal = 0;
+    sf::Vector2f lastPos;
     for (std::size_t i = 0; i < stats.size(); i++){
         float x = verts[i].position.x;
         float y = verts[i].position.y;
+
         //  Normalize
         x = (x - minX) / (maxX - minX);
         y = 1.f - (y - minY) / (maxY - minY);
 
         // Place on screen
         auto wSize = sf::Vector2f(orgSize);
-        x = wSize.x*0.15f + x*wSize.x*0.80;
-        y = wSize.y - 200 + y*120 + yPixelOffset;
+        x = wSize.x*0.12f + x*wSize.x*0.80;
+        y = wSize.y - 200 + y*140 + yPixelOffset;
 
+        if (i == stats.size()-1){
+            lastVal = verts[i].position.y;
+            lastPos = sf::Vector2f(x, y);
+        }
         verts[i] = sf::Vertex({x, y}, color);
     }
 
     // Draw graph
     window->draw(verts);
+
+    // Draw value in end
+    if (!valueText.getString().isEmpty() && lastPos.x == lastPos.x && lastPos.y == lastPos.y){
+        valueText.setPosition(lastPos);
+        valueText.setString(std::to_string((int) lastVal)+" "+name);
+        window->draw(valueText);
+    }
 }
 
 
-GUI::Toggle::Toggle(std::string name, bool *value, std::vector<Toggle> subToggles, sf::Color color) :
+GUI::Toggle::Toggle(const std::string& name, bool *value, std::vector<Toggle> subToggles, sf::Color color) :
 color(color){
     text.setString(name);
     text.setCharacterSize(20);

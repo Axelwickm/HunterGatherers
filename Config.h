@@ -65,7 +65,11 @@ struct RenderSettings {
 
     bool showLineGraph{};
         bool graphPopulation{};
-        bool graphAverageGeneration{};
+        bool graphMeanGeneration{};
+        bool graphMeanPerceptrons{};
+        bool graphMeanAge{};
+        bool graphMeanChildren{};
+        bool graphMeanMushrooms{};
         bool graphBirths{};
         bool graphMurders{};
 
