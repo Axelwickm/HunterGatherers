@@ -39,7 +39,7 @@ GUI::GUI(Config &config, sf::RenderWindow *window, World *world, Camera *camera)
     /* 11*/ Toggle("visualizeChildren", &config.render.visualizeChildren),
     /* 12*/ Toggle("visualizeMurders", &config.render.visualizeMurders),
     /* 13*/ Toggle("visualizeMushrooms", &config.render.visualizeMushrooms),
-    /* 14*/ Toggle("visualizeColor", &config.render.visualizeColor)
+    /* 14*/ Toggle("showSquare", &config.render.visualizeColor)
     };
 
     const std::vector<std::array<int, 3>> subColors = {
