@@ -19,16 +19,25 @@
 struct WorldStatistics {
     float timestamp = 0;
     std::size_t populationCount = 0;
-    float meanGeneration = 0;
-    float meanPerceptrons = 0;
-    float meanAge = 0;
-    float meanChildren = 0;
-    float meanMushrooms = 0;
-    unsigned births = 0;
-    unsigned murders = 0;
     unsigned lowestGeneration = 0;
     unsigned highestGeneration = 0;
-    std::map<std::size_t, unsigned> populationDistribution;
+
+    struct ColorValue {
+        explicit operator float() const {
+            return value;
+        }
+        sf::Color color;
+        float value{};
+    };
+
+    std::vector<ColorValue> generation;
+    std::vector<ColorValue> perceptrons;
+    std::vector<ColorValue> age;
+    std::vector<ColorValue> children;
+    std::vector<ColorValue> murders;
+    std::vector<ColorValue> energy;
+    std::vector<ColorValue> mushrooms;
+    std::vector<ColorValue> speed;
 };
 
 class World {
@@ -48,14 +57,15 @@ public:
 
     void reproduce(Agent &a);
 
-    Config & getConfig();
+    Config &getConfig();
 
     const std::set<std::shared_ptr<Agent>> &getAgents() const;
     const std::set<std::shared_ptr<WorldObject>> &getObjects() const;
 
-    const WorldStatistics &getStatistics() const;
     const std::deque<WorldStatistics> &getHistoricalStatistics() const;
     void clearStatistics();
+
+    const float getHistoryFrequency() const;
 
     const sf::RenderWindow *getWindow() const;
 
@@ -75,12 +85,9 @@ private:
 
     Populator populator;
     std::set<std::shared_ptr<Agent>> agents;
-    std::set<std::shared_ptr<WorldObject> > objects;
-    WorldStatistics statistics;
+    std::set<std::shared_ptr<WorldObject>> objects;
     std::deque<WorldStatistics> historicalStatistics;
     const float historyFrequency;
-    const std::size_t maxHistory;
-
 
     Quadtree<float> quadtree;
     OpenCL_Wrapper *openCL_wrapper;

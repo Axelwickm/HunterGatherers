@@ -137,17 +137,27 @@ void Config::loadConfigFromFile(const std::string &filename) {
     controls.scrollFactor = C["scrollFactor"].get<float>();
 
     auto &RS = json["Rendering"];
-    render.showLineGraph = RS["showLineGraph"].get<bool>();
+    render.graphLine = RS["graphLine"].get<bool>();
         render.graphPopulation = RS["graphPopulation"].get<bool>();
         render.graphMeanGeneration = RS["graphMeanGeneration"].get<bool>();
         render.graphMeanPerceptrons = RS["graphMeanPerceptrons"].get<bool>();
         render.graphMeanAge = RS["graphMeanAge"].get<bool>();
         render.graphMeanChildren = RS["graphMeanChildren"].get<bool>();
+        render.graphMeanMurders = RS["graphMeanMurders"].get<bool>();
+        render.graphMeanEnergy = RS["graphMeanEnergy"].get<bool>();
         render.graphMeanMushrooms = RS["graphMeanMushrooms"].get<bool>();
-        render.graphBirths = RS["graphBirths"].get<bool>();
-        render.graphMurders = RS["graphMurders"].get<bool>();
+        render.graphMeanSpeed = RS["graphMeanSpeed"].get<bool>();
 
-    render.showDistribution = RS["showDistribution"].get<bool>();
+    render.graphSpectrogram = RS["graphSpectrogram"].get<bool>();
+        render.graphGeneration = RS["graphGeneration"].get<bool>();
+        render.graphPerceptrons = RS["graphPerceptrons"].get<bool>();
+        render.graphAge = RS["graphAge"].get<bool>();
+        render.graphEnergy = RS["graphEnergy"].get<bool>();
+        render.graphChildren = RS["graphChildren"].get<bool>();
+        render.graphMurders = RS["graphMurders"].get<bool>();
+        render.graphMushrooms = RS["graphMushrooms"].get<bool>();
+        render.graphSpeed = RS["graphSpeed"].get<bool>();
+
     render.bins = RS["bins"].get<unsigned>();
     render.showWorldObjectBounds = RS["showWorldObjectBounds"].get<bool>();
     render.showDebug = RS["showDebug"].get<bool>();

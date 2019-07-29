@@ -12,7 +12,7 @@
 World::World(Config &config, sf::RenderWindow *window, OpenCL_Wrapper *openCL_wrapper) :
 worldTime(0), config(config), window(window), dimensions(config.world.dimensions), openCL_wrapper(openCL_wrapper),
 populator(this), quadtree(Quadtree<float>(sf::Vector2<float>(0, 0), dimensions)),
-historyFrequency(5), maxHistory(50000){
+historyFrequency(3) {
     randomEngine = std::mt19937(config.seed++);
     quadtree.setLimit(config.world.quadtreeLimit);
     generateTerrain();
@@ -210,59 +210,46 @@ const std::set<std::shared_ptr<WorldObject>> &World::getObjects() const {
 }
 
 void World::updateStatistics() {
-    if (worldTime == statistics.timestamp) return; // Time is paused
-    if (worldTime - statistics.timestamp < historyFrequency) return; // Not time yet
+    WorldStatistics statistics;
+    if (!historicalStatistics.empty())
+        if (worldTime - historicalStatistics.back().timestamp <= historyFrequency)
+            return; // Not time yet
 
     statistics.timestamp = worldTime;
-    statistics.populationDistribution.clear();
-    statistics.births = 0;
-    statistics.murders = 0;
     statistics.populationCount = agents.size();
-    statistics.meanGeneration = 0;
-    statistics.meanPerceptrons = 0;
-    statistics.meanAge = 0;
-    statistics.meanChildren = 0;
-    statistics.meanMushrooms = 0;
 
-    if (!agents.empty()){
-        statistics.lowestGeneration = std::numeric_limits<unsigned>::max();
-        statistics.highestGeneration = 0;
-        for (auto& agent : agents){
-            unsigned g = agent->getGeneration();
-            statistics.populationDistribution.try_emplace(g, 0);
-            statistics.populationDistribution[g]++;
+    statistics.generation.reserve(agents.size());
+    statistics.perceptrons.reserve(agents.size());
+    statistics.age.reserve(agents.size());
+    statistics.children.reserve(agents.size());
+    statistics.murders.reserve(agents.size());
+    statistics.energy.reserve(agents.size());
+    statistics.mushrooms.reserve(agents.size());
+    statistics.speed.reserve(agents.size());
 
-            if (g < statistics.lowestGeneration){
-                statistics.lowestGeneration = g;
-            }
-            if (statistics.highestGeneration < g){
-                statistics.highestGeneration = g;
-            }
+    statistics.lowestGeneration = std::numeric_limits<unsigned>::max();
+    statistics.highestGeneration = 0;
+    for (auto& agent : agents){
+        unsigned g = agent->getGeneration();
 
-            statistics.births += agent->getNewBirths();
-            statistics.murders += agent->getNewMurders();
-            statistics.meanGeneration += g;
-            statistics.meanPerceptrons += agent->getNetworkStatistics().perceptronCount;
-            statistics.meanAge += agent->getAge();
-            statistics.meanChildren += agent->getChildCount();
-            statistics.meanMushrooms += agent->getInventory().mushrooms;
+        if (g < statistics.lowestGeneration){
+            statistics.lowestGeneration = g;
+        }
+        if (statistics.highestGeneration < g){
+            statistics.highestGeneration = g;
         }
 
-        statistics.meanGeneration /= agents.size();
-        statistics.meanPerceptrons /= agents.size();
-        statistics.meanAge /= agents.size();
-        statistics.meanChildren /= agents.size();
-        statistics.meanMushrooms /= agents.size();
+        statistics.generation.push_back({agent->getColor(), (float) agent->getGeneration()});
+        statistics.perceptrons.push_back({agent->getColor(), (float) agent->getNetworkStatistics().perceptronCount});
+        statistics.age.push_back({agent->getColor(), agent->getAge()});
+        statistics.children.push_back({agent->getColor(), (float) agent->getChildCount()});
+        statistics.murders.push_back({agent->getColor(), (float) agent->getMurderCount()});
+        statistics.energy.push_back({agent->getColor(), std::max(0.f, agent->getEnergy())});
+        statistics.mushrooms.push_back({agent->getColor(), (float) agent->getInventory().mushrooms});
+        statistics.speed.push_back({agent->getColor(), agent->getSpeed()});
     }
 
-    if (maxHistory <= historicalStatistics.size())
-        historicalStatistics.pop_front();
-
     historicalStatistics.push_back(statistics);
-}
-
-const WorldStatistics &World::getStatistics() const {
-    return statistics;
 }
 
 const std::deque<WorldStatistics> &World::getHistoricalStatistics() const {
@@ -271,4 +258,8 @@ const std::deque<WorldStatistics> &World::getHistoricalStatistics() const {
 
 void World::clearStatistics() {
     historicalStatistics.clear();
+}
+
+const float World::getHistoryFrequency() const {
+    return historyFrequency;
 }

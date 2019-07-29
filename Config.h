@@ -63,17 +63,27 @@ struct AgentSettings {
 struct RenderSettings {
     sf::Vector2u windowSize;
 
-    bool showLineGraph{};
+    bool graphLine{};
         bool graphPopulation{};
         bool graphMeanGeneration{};
         bool graphMeanPerceptrons{};
         bool graphMeanAge{};
         bool graphMeanChildren{};
+        bool graphMeanMurders{};
+        bool graphMeanEnergy{};
         bool graphMeanMushrooms{};
-        bool graphBirths{};
-        bool graphMurders{};
+        bool graphMeanSpeed{};
 
-    bool showDistribution{};
+    bool graphSpectrogram{};
+        bool graphGeneration{};
+        bool graphPerceptrons{};
+        bool graphAge{};
+        bool graphEnergy{};
+        bool graphChildren{};
+        bool graphMurders{};
+        bool graphMushrooms{};
+        bool graphSpeed{};
+
     unsigned bins{};
     bool showDebug{};
     bool showWorldObjectBounds{};

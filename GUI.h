@@ -9,6 +9,7 @@
 #include <SFML/Graphics/RenderWindow.hpp>
 #include "Agent.h"
 #include "Camera.h"
+#include "utils.cpp"
 
 class GUI {
 public:
@@ -32,7 +33,7 @@ private:
     struct Toggle {
         Toggle(const std::string& name, bool *value, std::vector<Toggle> subtoggles = std::vector<Toggle>(),
                 sf::Color color = sf::Color(200, 200, 200));
-        Toggle(std::string name, bool *value, Toggle* parent,
+        Toggle(const std::string& name, bool *value, Toggle* parent,
                 sf::Color color = sf::Color(200, 200, 200));
         void click();
         void set(bool v);
@@ -41,6 +42,7 @@ private:
         bool* value;
         sf::Color color;
         std::vector<Toggle> subToggles;
+        bool exclusiveSubs = false;
         Toggle* parent;
         bool hovered;
     };
@@ -52,7 +54,8 @@ private:
     } simulationInfo;
 
     struct LineGraph {
-        void draw(sf::RenderWindow *window, const World *world, sf::Vector2i orgSize);
+        void update(const World *world);
+        void draw(sf::RenderWindow *window, sf::Vector2f orgSize);
 
         std::string name;
         sf::Color color;
@@ -60,9 +63,36 @@ private:
         unsigned yPixelOffset = 0;
         sf::Text valueText;
         sf::VertexArray verts;
+        sf::Vector2f min = {std::numeric_limits<float>::max(), std::numeric_limits<float>::max()};
+        sf::Vector2f max = {std::numeric_limits<float>::min(), std::numeric_limits<float>::min()};
+        unsigned lastUpdateFrame = 0;
     };
 
+
     std::vector<LineGraph> lineGraphs;
+
+    struct Spectrogram {
+        void update(const World *world);
+        void draw(sf::RenderWindow *window, const sf::Vector2f orgSize);
+
+        std::string name;
+        bool* shouldRender;
+        float stride = 1;
+        unsigned markerWidth = 5;
+        unsigned defaultSize = 80;
+        std::size_t maxHeight = 400;
+        std::size_t downsamplingTriggerW = 1800;
+
+        unsigned perColumn = 1; unsigned columnCounter = 0;
+        std::vector<sf::Color> colorColumn;
+
+        Contiguous2dVector<sf::Color> spectrogram;
+        float minVal = std::numeric_limits<float>::max();
+        float maxVal = std::numeric_limits<float>::min();
+        unsigned lastUpdateFrame = 0;
+    };
+
+    std::vector<Spectrogram> spectrograms;
 
     struct VectorRenderer {
         std::size_t hover(sf::Vector2i pos);

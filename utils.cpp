@@ -73,5 +73,72 @@ inline sf::Color colorFromGenome(const std::vector<double>& genome){
     return sf::Color(reducedGenome[0]*250+5, reducedGenome[1]*250+5, reducedGenome[2]*250+5);
 }
 
+template <class T>
+class Contiguous2dVector {
+public:
+    Contiguous2dVector(std::size_t n, std::size_t m, const T fillValue)
+            : fillValue(fillValue), n(n), m(m) {
+        data = std::vector<T>(n*m, fillValue);
+    }
+
+    explicit Contiguous2dVector(const T fillValue)
+    : fillValue(fillValue), n(0), m(0) {}
+
+    Contiguous2dVector<T>& operator=(const Contiguous2dVector& other){
+        n = other.n; m = other.m;
+        data = other.data;
+        return *this;
+    }
+
+    void push_back_row(std::vector<T> item){
+        if (m < item.size()){
+            // Insert fill value after every row
+            const std::size_t nm = item.size();
+            data.reserve(n*nm);
+            for (std::size_t i = 0; i < n; i++){
+                // FIXME: +1 v?
+                data.insert(std::begin(data)+m+i*nm, nm-m, fillValue);
+            }
+            m = nm;
+        }
+
+        // Add new data
+        data.insert(std::end(data), std::begin(item), std::end(item));
+        n++;
+    }
+
+    void clear(){
+        data.clear();
+        n = 0; m = 0;
+    }
+
+    std::size_t getN() const {
+        return n;
+    }
+
+    std::size_t getM() const {
+        return m;
+    }
+
+    T& at(std::size_t x, std::size_t y){
+        if (n <= x)
+            throw std::out_of_range("x ("+std::to_string(x)+") too big for n ("+std::to_string(n)+")");
+        if (m <= y)
+            throw std::out_of_range("y ("+std::to_string(x)+") too big for m ("+std::to_string(n)+")");
+
+        return data.at(x*m+y);
+    }
+
+    const T getFillValue() const {
+        return fillValue;
+    }
+
+private:
+    std::size_t n, m;
+    const T fillValue;
+    std::vector<T> data;
+};
+
+template class Contiguous2dVector<sf::Color>;
 
 #endif //FAMILYISEVERYTHING_UTILS_CPP

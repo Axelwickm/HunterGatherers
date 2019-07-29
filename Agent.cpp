@@ -532,11 +532,13 @@ void Agent::draw(sf::RenderWindow *window, float deltaTime) {
     }
 
     sprite.setPosition(getPosition());
-    if (world->getConfig().render.visualizeGeneration){
-        unsigned deltaGeneration = world->getStatistics().highestGeneration - world->getStatistics().lowestGeneration;
+    if (world->getConfig().render.visualizeGeneration && !world->getHistoricalStatistics().empty()){
+        unsigned deltaGeneration = world->getHistoricalStatistics().back().highestGeneration
+                - world->getHistoricalStatistics().back().lowestGeneration;
         if (deltaGeneration != 0){
             sf::Color c = sprite.getColor();
-            c.a = 250 * (float) (generation - world->getStatistics().lowestGeneration) / (float) deltaGeneration + 5;
+            c.a = 250 * (float) (generation - world->getHistoricalStatistics().back().lowestGeneration)
+                    / (float) deltaGeneration + 5;
             sprite.setColor(c);
         }
     }

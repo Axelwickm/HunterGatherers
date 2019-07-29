@@ -5,6 +5,7 @@
 
 #include <sstream>
 #include <utility>
+#include <random>
 
 #include "GUI.h"
 #include "World.h"
@@ -24,21 +25,21 @@ GUI::GUI(Config &config, sf::RenderWindow *window, World *world, Camera *camera)
 
 
     simulationInfo.debug = {
-    /* 0 */ Toggle("agentSpawning", &world->agentSpawning),
-    /* 1 */ Toggle("reloadConfig", &config.shouldReload),
-    /* 2 */ Toggle("showWorldObjectBounds", &config.render.showWorldObjectBounds),
-    /* 3 */ Toggle("showQuadtree", &config.render.showQuadtree),
-    /* 4 */ Toggle("showQuadtreeEntities", &config.render.showQuadtreeEntities),
-    /* 5 */ Toggle("showVision", &config.render.showVision),
-    /* 6 */ Toggle("showLineGraph", &config.render.showLineGraph),
-    /* 7 */ Toggle("showDistribution", &config.render.showDistribution),
-    /* 8 */ Toggle("renderOnlyAgents", &config.render.renderOnlyAgents),
-    /* 9 */ Toggle("visualizeGeneration", &config.render.visualizeGeneration),
-    /* 10*/ Toggle("visualizeAge", &config.render.visualizeAge),
-    /* 11*/ Toggle("visualizeChildren", &config.render.visualizeChildren),
-    /* 12*/ Toggle("visualizeMurders", &config.render.visualizeMurders),
-    /* 13*/ Toggle("visualizeMushrooms", &config.render.visualizeMushrooms),
-    /* 14*/ Toggle("showSquare", &config.render.visualizeColor)
+        Toggle("agentSpawning", &world->agentSpawning),
+        Toggle("reloadConfig", &config.shouldReload),
+        Toggle("showWorldObjectBounds", &config.render.showWorldObjectBounds),
+        Toggle("showQuadtree", &config.render.showQuadtree),
+        Toggle("showQuadtreeEntities", &config.render.showQuadtreeEntities),
+        Toggle("showVision", &config.render.showVision),
+        Toggle("graphLine", &config.render.graphLine),
+        Toggle("graphSpectrogram", &config.render.graphSpectrogram),
+        Toggle("renderOnlyAgents", &config.render.renderOnlyAgents),
+        Toggle("visualizeGeneration", &config.render.visualizeGeneration),
+        Toggle("visualizeAge", &config.render.visualizeAge),
+        Toggle("visualizeChildren", &config.render.visualizeChildren),
+        Toggle("visualizeMurders", &config.render.visualizeMurders),
+        Toggle("visualizeMushrooms", &config.render.visualizeMushrooms),
+        Toggle("showSquare", &config.render.visualizeColor)
     };
 
     const std::vector<std::array<int, 3>> subColors = {
@@ -61,16 +62,17 @@ GUI::GUI(Config &config, sf::RenderWindow *window, World *world, Camera *camera)
         toggle.text.setFont(font);
         toggle.text.setPosition(window->getSize().x-300, 10+i*25);
 
-        if (toggle.text.getString().toAnsiString() == "showLineGraph"){
+        if (toggle.text.getString().toAnsiString() == "graphLine"){
             toggle.subToggles = {
                     Toggle("population", &config.render.graphPopulation, &toggle),
                     Toggle("mean gen.", &config.render.graphMeanGeneration, &toggle),
                     Toggle("mean perceptrons", &config.render.graphMeanPerceptrons, &toggle),
                     Toggle("mean age", &config.render.graphMeanAge, &toggle),
                     Toggle("mean children", &config.render.graphMeanChildren, &toggle),
+                    Toggle("mean murders", &config.render.graphMeanMurders, &toggle),
+                    Toggle("mean energy", &config.render.graphMeanEnergy, &toggle),
                     Toggle("mean mushrooms", &config.render.graphMeanMushrooms, &toggle),
-                    Toggle("births", &config.render.graphBirths, &toggle),
-                    Toggle("murders", &config.render.graphMurders, &toggle)
+                    Toggle("mean speed", &config.render.graphMeanSpeed, &toggle),
             };
 
             for (std::size_t j = 0; j < toggle.subToggles.size(); j++){
@@ -93,6 +95,49 @@ GUI::GUI(Config &config, sf::RenderWindow *window, World *world, Camera *camera)
                 lineGraphs.back().valueText.setFillColor(sf::Color(col[0], col[1], col[2]));
             }
         }
+        else if (toggle.text.getString().toAnsiString() == "graphSpectrogram"){
+                toggle.subToggles = {
+                        Toggle("generation", &config.render.graphGeneration, &toggle),
+                        Toggle("perceptrons", &config.render.graphPerceptrons, &toggle),
+                        Toggle("age", &config.render.graphAge, &toggle),
+                        Toggle("children", &config.render.graphChildren, &toggle),
+                        Toggle("murders", &config.render.graphMurders, &toggle),
+                        Toggle("energy", &config.render.graphEnergy, &toggle),
+                        Toggle("mushrooms", &config.render.graphMushrooms, &toggle),
+                        Toggle("speed", &config.render.graphSpeed, &toggle),
+                };
+
+                auto blank = sf::Color(0, 0, 0, 0);
+                spectrograms = {
+                        (Spectrogram) {.name = "generation", .shouldRender=&config.render.graphGeneration,
+                                       .stride=2, .markerWidth=1, .defaultSize=80, .spectrogram=Contiguous2dVector(blank)},
+                        (Spectrogram) {.name = "perceptrons", .shouldRender=&config.render.graphPerceptrons,
+                                .stride=5, .markerWidth=8, .defaultSize=80, .spectrogram=Contiguous2dVector(blank)},
+                        (Spectrogram) {.name = "age", .shouldRender=&config.render.graphAge,
+                                .stride=0.1f, .markerWidth=5, .defaultSize=100, .spectrogram=Contiguous2dVector(blank)},
+                        (Spectrogram) {.name = "children", .shouldRender=&config.render.graphChildren,
+                                .stride=1, .markerWidth=1, .defaultSize=20, .spectrogram=Contiguous2dVector(blank)},
+                        (Spectrogram) {.name = "murders", .shouldRender=&config.render.graphMurders,
+                                .stride=1, .markerWidth=1, .defaultSize=20, .spectrogram=Contiguous2dVector(blank)},
+                        (Spectrogram) {.name = "energy", .shouldRender=&config.render.graphEnergy,
+                                .stride=0.5, .markerWidth=10, .defaultSize=100, .spectrogram=Contiguous2dVector(blank)},
+                        (Spectrogram) {.name = "mushrooms", .shouldRender=&config.render.graphMushrooms,
+                                .stride=1, .markerWidth=3, .defaultSize=20, .spectrogram=Contiguous2dVector(blank)},
+                        (Spectrogram) {.name = "speed", .shouldRender=&config.render.graphSpeed,
+                            .stride=0.2, .markerWidth=3, .defaultSize=20, .spectrogram=Contiguous2dVector(blank)}
+                };
+
+                for (std::size_t j = 0; j < toggle.subToggles.size(); j++){
+                    toggle.subToggles.at(j).text.setPosition(
+                            window->getSize().x-420,
+                            toggle.text.getPosition().y+j*12
+                    );
+                    toggle.subToggles.at(j).text.setCharacterSize(15);
+                    toggle.subToggles.at(j).text.setFont(font);
+                    toggle.subToggles.at(j).update();
+                    toggle.exclusiveSubs = true;
+                }
+            }
     }
 
     sf::Rect<int> distributionBounds(450, window->getSize().y-10, 800, 90);
@@ -153,39 +198,26 @@ void GUI::draw(float deltaTime, float timeFactor) {
     { // Draw current world statistics
         simulationInfo.main.setString("FPS: " + std::to_string(int(1.f / deltaTime))
                                       + "\nTime factor: " + std::to_string(int(timeFactor))
-                                      + "\nPopulation: " + std::to_string(world->getStatistics().populationCount)
+                                      + "\nPopulation: " + std::to_string(world->getAgents().size())
                                       +"\n");
 
         window->draw(simulationInfo.main);
     }
 
-    if (config.render.showLineGraph){
+    if (config.render.graphLine){
         for (auto &lg : lineGraphs){
             if (!*lg.shouldRender) continue;
-            lg.draw(window, world, originalWindowSize);
+            lg.update(world);
+            lg.draw(window, (sf::Vector2f) originalWindowSize);
         }
     }
 
-    { // Draw distribution
-        unsigned deltaGeneration = world->getStatistics().highestGeneration - world->getStatistics().lowestGeneration;
-        unsigned last = 0;
-        if (deltaGeneration != 0 && config.render.showDistribution) {
-            double delta = (double) (deltaGeneration + 1) / simulationInfo.populationDistribution.size();
-            delta = fmax(delta, 1.0);
-            for (unsigned i = 0; i < simulationInfo.populationDistribution.size(); i++) {
-                unsigned upTo = world->getStatistics().lowestGeneration + floor(delta * (i + 1));
-                unsigned val = 0;
-
-                for (unsigned j = last; j < upTo; j++) {
-                    try {
-                        val += world->getStatistics().populationDistribution.at(j) / (upTo - last);
-                    } catch (const std::out_of_range &e) { /* This is a gap between the generations */ };
-                }
-                last = upTo;
-                simulationInfo.populationDistribution.at(i).setScale(1, (float) val /
-                                                                        world->getStatistics().populationCount);
-                window->draw(simulationInfo.populationDistribution.at(i));
-            }
+    // Draw spectrogram
+    if (config.render.graphSpectrogram){
+        for (auto &sp : spectrograms){
+            if (!*sp.shouldRender) continue;
+            sp.update(world);
+            sp.draw(window, (sf::Vector2f) originalWindowSize);
         }
     }
 
@@ -203,7 +235,8 @@ void GUI::draw(float deltaTime, float timeFactor) {
         }
     }
 
-    { // Draw information about the selected agent (if there is one)
+    // Draw information about the selected agent (if there is one)
+    {
         if (selectedAgent) {
             window->draw(agentInfo.agentIdentifier);
 
@@ -230,7 +263,6 @@ void GUI::draw(float deltaTime, float timeFactor) {
 
                     window->draw(agentInfo.actionsText);
                     agentInfo.actionVector.draw(window, selectedAgent->getActions(), selectedInput.second);
-
                 }
 
                 // http://ci.columbia.edu/ci/premba_test/c0331/s7/s7_5.html
@@ -328,12 +360,22 @@ bool GUI::click(sf::Vector2i pos) {
                         }
                     }
                 }
+                else if (t.text.getString().substring(0, 5) == "graph") {
+                    for (auto& c : simulationInfo.debug){
+                        if (c.text.getString() != t.text.getString() && c.text.getString().substring(0, 5) == "graph"){
+                            c.set(false);
+                            c.hovered = false;
+                        }
+                    }
+                }
                 return true;
             }
-            for (auto &sub : t.subToggles){
-                if (pointInBox(sf::Vector2f(pos.x, pos.y), sub.text.getGlobalBounds())){
-                    sub.click();
-                    return true;
+            if (t.hovered) {
+                for (auto &sub : t.subToggles) {
+                    if (pointInBox(sf::Vector2f(pos.x, pos.y), sub.text.getGlobalBounds())) {
+                        sub.click();
+                        return true;
+                    }
                 }
             }
         }
@@ -379,8 +421,8 @@ bool GUI::hover(sf::Vector2i pos) {
             }
             sf::FloatRect bounds = t.text.getGlobalBounds();
             if (t.parent != nullptr){
-                bounds.width += 80;
-                bounds.height += 80;
+                bounds.width += 40;
+                bounds.height += 40;
             }
             if (anyHovered || pointInBox(sf::Vector2f(pos.x, pos.y), bounds)){
                 t.hovered = true;
@@ -391,7 +433,14 @@ bool GUI::hover(sf::Vector2i pos) {
         };
 
         for (auto &toggle : simulationInfo.debug){
-            hoverToggle(toggle);
+            bool h = hoverToggle(toggle);
+            if (h && toggle.text.getString().substring(0, 5) == "graph") {
+                for (auto& c : simulationInfo.debug){
+                    if (c.text.getString() != toggle.text.getString() && c.text.getString().substring(0, 5) == "graph"){
+                        c.hovered = false;
+                    }
+                }
+            }
         }
     }
 
@@ -417,87 +466,263 @@ bool GUI::hover(sf::Vector2i pos) {
     return false;
 }
 
-void GUI::LineGraph::draw(sf::RenderWindow *window, const World *world, const sf::Vector2i orgSize) {
-    // Set all the vertex data
-    verts.clear();
+void GUI::LineGraph::update(const World *world){
     auto &stats = world->getHistoricalStatistics();
-    verts.resize(stats.size());
-    verts.setPrimitiveType(sf::LineStrip);
-
     if (stats.empty())
         return;
 
-    float minX = std::numeric_limits<float>::max();
-    float maxX = std::numeric_limits<float>::min();
+    if (stats.size() <= verts.getVertexCount()){
+        verts.clear();
+        lastUpdateFrame = 0;
+    }
 
-    float minY = std::numeric_limits<float>::max();
-    float maxY = std::numeric_limits<float>::min();
-
-    for (std::size_t i = 0; i < stats.size(); i++){
+    for (std::size_t i = lastUpdateFrame; i < stats.size(); i++){
         const auto &s = stats[i];
         float x, y;
         x = s.timestamp;
         if (name == "population")
             y = s.populationCount;
         else if (name == "mean gen.")
-            y = s.meanGeneration;
+            y = (float) std::accumulate(std::begin(s.generation), std::end(s.generation), 0,
+                    [](float acc, const WorldStatistics::ColorValue& value){ return acc+value.value; })
+                / s.populationCount;
         else if (name == "mean perceptrons")
-            y = s.meanPerceptrons;
+            y = (float) std::accumulate(std::begin(s.perceptrons), std::end(s.perceptrons), 0,
+                    [](float acc, const WorldStatistics::ColorValue& value){ return acc+value.value; })
+                / s.populationCount;
         else if (name == "mean age")
-            y = s.meanAge;
+            y = (float) std::accumulate(std::begin(s.age), std::end(s.age), 0,
+                    [](float acc, const WorldStatistics::ColorValue& value){ return acc+value.value; })
+                / s.populationCount;
         else if (name == "mean children")
-            y = s.meanChildren;
+            y = (float) std::accumulate(std::begin(s.children), std::end(s.children), 0,
+                    [](float acc, const WorldStatistics::ColorValue& value){ return acc+value.value; })
+                / s.populationCount;
+        else if (name == "mean murders")
+            y = (float) std::accumulate(std::begin(s.murders), std::end(s.murders), 0,
+                                        [](float acc, const WorldStatistics::ColorValue& value){ return acc+value.value; })
+                / s.populationCount;
+        else if (name == "mean energy")
+            y = (float) std::accumulate(std::begin(s.energy), std::end(s.energy), 0,
+                                        [](float acc, const WorldStatistics::ColorValue& value){ return acc+value.value; })
+                / s.populationCount;
         else if (name == "mean mushrooms")
-            y = s.meanMushrooms;
-        else if (name == "births")
-            y = s.births;
-        else if (name == "murders")
-            y = s.murders;
+            y = (float) std::accumulate(std::begin(s.mushrooms), std::end(s.mushrooms), 0,
+                    [](float acc, const WorldStatistics::ColorValue& value){ return acc+value.value; })
+                / s.populationCount;
+        else if (name == "mean speed")
+            y = (float) std::accumulate(std::begin(s.speed), std::end(s.speed), 0,
+                                        [](float acc, const WorldStatistics::ColorValue& value){ return acc+value.value; })
+                / s.populationCount;
         else
             throw std::runtime_error("Line Graph datum "+name+" doesn't exist");
 
-        verts[i] = sf::Vector2f(x, y);
+        y *= -1;
+        verts.append(sf::Vertex({x, y}, color));
 
-        minX = std::min(minX, x);
-        maxX = std::max(maxX, x);
-
-        minY = std::min(minY, y);
-        maxY = std::max(maxY, y);
+        min = sf::Vector2f(std::min(min.x, x), std::min(min.y, y));
+        max = sf::Vector2f(std::max(max.x, x), std::max(max.y, y));
     }
-
-    float lastVal = 0;
-    sf::Vector2f lastPos;
-    for (std::size_t i = 0; i < stats.size(); i++){
-        float x = verts[i].position.x;
-        float y = verts[i].position.y;
-
-        //  Normalize
-        x = (x - minX) / (maxX - minX);
-        y = 1.f - (y - minY) / (maxY - minY);
-
-        // Place on screen
-        auto wSize = sf::Vector2f(orgSize);
-        x = wSize.x*0.12f + x*wSize.x*0.80;
-        y = wSize.y - 200 + y*140 + yPixelOffset;
-
-        if (i == stats.size()-1){
-            lastVal = verts[i].position.y;
-            lastPos = sf::Vector2f(x, y);
-        }
-        verts[i] = sf::Vertex({x, y}, color);
-    }
-
-    // Draw graph
-    window->draw(verts);
-
-    // Draw value in end
-    if (!valueText.getString().isEmpty() && lastPos.x == lastPos.x && lastPos.y == lastPos.y){
-        valueText.setPosition(lastPos);
-        valueText.setString(std::to_string((int) lastVal)+" "+name);
-        window->draw(valueText);
-    }
+    lastUpdateFrame = stats.size();
 }
 
+void GUI::LineGraph::draw(sf::RenderWindow *window, const sf::Vector2f orgSize) {
+    // Set all the vertex data
+    verts.setPrimitiveType(sf::LineStrip);
+
+    // Draw graph
+    sf::View view;
+    view.reset(sf::FloatRect(sf::Vector2f(-2, -2) + min, max-min + sf::Vector2f(2, 2) ));
+    view.setViewport(sf::FloatRect(0.1, 0.75, 0.8, 0.24));
+    auto oldView = window->getView();
+    window->setView(view);
+    window->draw(verts);
+
+
+    // Draw value in end
+    sf::Vector2f lastPos = verts[verts.getVertexCount()-1].position;
+    lastPos = view.getTransform().transformPoint(lastPos);
+    lastPos = sf::Vector2f(lastPos.x*view.getViewport().width, -lastPos.y*view.getViewport().height);
+    lastPos += sf::Vector2f(view.getViewport().left, view.getViewport().top+view.getViewport().height);
+    lastPos = sf::Vector2f(lastPos.x*orgSize.x, lastPos.y*orgSize.y);
+    if (!valueText.getString().isEmpty() && lastPos.x == lastPos.x && lastPos.y == lastPos.y){
+        valueText.setPosition(lastPos);
+        valueText.setString(std::to_string((int) verts[verts.getVertexCount()-1].position.y)+" "+name);
+        window->draw(valueText);
+    }
+    window->setView(oldView);
+}
+
+void GUI::Spectrogram::update(const World *world) {
+    auto &stats = world->getHistoricalStatistics();
+    if (stats.empty())
+        return;
+
+    if (stats.size() < spectrogram.getN()){
+        spectrogram.clear();
+        lastUpdateFrame = 0;
+    }
+
+    // Extract the value from statistics
+    std::vector<std::vector<WorldStatistics::ColorValue>> newValues;
+    for (std::size_t i = lastUpdateFrame; i < stats.size(); i++){
+        const auto &s = stats[i];
+        std::vector<WorldStatistics::ColorValue> values;
+
+        if (name == "generation")
+            values = s.generation;
+        else if (name == "perceptrons")
+            values = s.perceptrons;
+        else if (name == "age")
+            values = s.age;
+        else if (name == "children")
+            values = s.children;
+        else if (name == "murders")
+            values = s.murders;
+        else if (name == "energy")
+            values = s.energy;
+        else if (name == "mushrooms")
+            values = s.mushrooms;
+        else if (name == "speed")
+            values = s.speed;
+        else
+            throw std::runtime_error("Spectrogram Graph datum "+name+" doesn't exist");
+
+        auto minIt = std::min_element(std::begin(values), std::end(values),
+                [](const WorldStatistics::ColorValue& a, const WorldStatistics::ColorValue& b){
+                    return a.value < b.value;
+        });
+
+        auto maxIt = std::max_element(std::begin(values), std::end(values),
+                [](const WorldStatistics::ColorValue& a, const WorldStatistics::ColorValue& b){
+            return a.value < b.value;
+        });
+
+        if (minIt != std::end(values))
+            minVal = std::fminf(minVal, float(*minIt));
+        if (maxIt != std::end(values))
+            maxVal = std::fmaxf(maxVal, float(*maxIt));
+
+        newValues.push_back(values);
+    }
+
+    // Lambda for drawing in spectrogram
+    auto mark = [](std::vector<std::array<unsigned, 4>> &vec,
+            std::vector<float> &totals,
+            const float ind, const sf::Color color,
+            const float opacity, const unsigned size) {
+
+        for (std::size_t i = ind-std::floor((float) size/2); i < ind+std::ceil((float) size/2); i++) {
+            try {
+                float dist = 1.5f/(fabsf(ind-i)+1.5f);
+                vec.at(i).at(0) += color.r;
+                vec.at(i).at(1) += color.g;
+                vec.at(i).at(2) += color.b;
+                vec.at(i).at(3) += opacity*255.f*dist;
+                totals.at(i) += 1.0;
+            } catch (const std::out_of_range& e) {};
+        }
+    };
+
+    // Go through each value and draw
+    for (auto& values : newValues){
+        std::vector<std::array<unsigned, 4>> column(std::max(unsigned((maxVal-minVal)*stride), defaultSize));
+        std::vector<float> totals(column.size(), 0.f);
+
+        for (const auto &value : values){
+            std::size_t ind = (value.value - minVal)*(float) stride;
+            mark(column, totals, ind, value.color, .8f, markerWidth);
+        }
+
+        // Average colors
+        if (colorColumn.size() < column.size()){
+            colorColumn.resize(column.size(), sf::Color(0, 0, 0, 0));
+        }
+
+        for (std::size_t i = 0; i < column.size(); i++){
+            colorColumn.at(i).r += column.at(i).at(0) / totals.at(i) / (float) perColumn;
+            colorColumn.at(i).g += column.at(i).at(1) / totals.at(i) / (float) perColumn;
+            colorColumn.at(i).b += column.at(i).at(2) / totals.at(i) / (float) perColumn;
+            colorColumn.at(i).a += column.at(i).at(3) / totals.at(i) / (float) perColumn;
+        }
+
+        // Rescale the column if it too big
+        if (maxHeight < colorColumn.size()) {
+            auto engine = std::mt19937_64(std::random_device()());
+            while (maxHeight < colorColumn.size()) {
+                auto dist = std::uniform_int_distribution<int>(0, colorColumn.size()-2);
+                unsigned y = dist(engine);
+                unsigned r = 0, g = 0, b = 0, a = 0;
+                for (auto &c : {colorColumn.at(y), colorColumn.at(y+1)}){
+                    r += c.r;
+                    g += c.g;
+                    b += c.b;
+                    a += c.a;
+                }
+                r /= 2; g /= 2;
+                b /= 2; a /= 2;
+                colorColumn.at(y) = sf::Color(r, g, b, a);
+                colorColumn.erase(std::begin(colorColumn)+y+1);
+                printf("%d\n", colorColumn.size());
+            }
+        }
+
+        // Add to spectrogram
+        columnCounter++;
+        if (columnCounter == perColumn){
+            spectrogram.push_back_row(colorColumn);
+            colorColumn.clear(); columnCounter = 0;
+        }
+
+        // Check if spectrogram is too wide
+        if (downsamplingTriggerW < spectrogram.getN()){
+            auto newSpec = Contiguous2dVector(std::ceil(spectrogram.getN()/2), spectrogram.getM(), spectrogram.getFillValue());
+            for (std::size_t x = 0; x < newSpec.getN(); x++) {
+                for (std::size_t y = 0; y < newSpec.getM(); y++) {
+                    unsigned r = 0, g = 0, b = 0, a = 0;
+                    for (auto &c : {spectrogram.at(x*2, y), spectrogram.at(x*2+1, y)}){
+                        r += c.r;
+                        g += c.g;
+                        b += c.b;
+                        a += c.a;
+                    }
+                    r /= 2; g /= 2;
+                    b /= 2; a /= 2;
+                    newSpec.at(x, y) = sf::Color(r, g, b, a);
+                }
+            }
+
+            spectrogram = newSpec;
+            perColumn *= 2;
+        }
+    }
+    //printf("Spectrogram size %d %d\n", spectrogram.getN(), spectrogram.getM());
+    lastUpdateFrame = stats.size();
+}
+
+void GUI::Spectrogram::draw(sf::RenderWindow *window, const sf::Vector2f orgSize) {
+    sf::Image image;
+    image.create(spectrogram.getN(), spectrogram.getM());
+    for (std::size_t x = 0; x < image.getSize().x; x++){
+        for (std::size_t y = 0; y < image.getSize().y; y++){
+            image.setPixel(x, y, spectrogram.at(x, y));
+        }
+    }
+    sf::Texture texture;
+    texture.loadFromImage(image);
+    auto sprite = sf::Sprite(texture);
+
+    sf::View view;
+    view.reset(sf::FloatRect(0, 0, spectrogram.getN(), spectrogram.getM()));
+    view.setViewport(sf::FloatRect(0.1, 0.75, 0.8, 0.24));
+    view.setSize(view.getSize().x, -view.getSize().y);
+    auto oldView = window->getView();
+    window->setView(view);
+
+    window->draw(sprite);
+    window->setView(oldView);
+
+}
 
 GUI::Toggle::Toggle(const std::string& name, bool *value, std::vector<Toggle> subToggles, sf::Color color) :
 color(color){
@@ -512,7 +737,7 @@ color(color){
     update();
 }
 
-GUI::Toggle::Toggle(std::string name, bool *value, Toggle* parent, sf::Color color) :
+GUI::Toggle::Toggle(const std::string& name, bool *value, Toggle* parent, sf::Color color) :
 Toggle(name, value, std::vector<Toggle>(), color) {
     Toggle::parent = parent;
 }
@@ -530,6 +755,15 @@ void GUI::Toggle::set(bool v) {
 void GUI::Toggle::update() {
     if (*value){
         text.setFillColor(color);
+        if (parent != nullptr){
+            if (parent->exclusiveSubs){
+                for (auto &sub : parent->subToggles){
+                    if (&sub != this){
+                        sub.set(false);
+                    }
+                }
+            }
+        }
     }
     else {
         text.setFillColor(sf::Color(80, 80, 80));
@@ -600,3 +834,4 @@ void GUI::VectorRenderer::drawCorr(sf::RenderWindow *window, const std::vector<f
         }
     }
 }
+
