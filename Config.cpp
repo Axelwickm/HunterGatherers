@@ -33,6 +33,11 @@ void Config::loadConfigFromFile(const std::string &filename) {
     auto &WS = json["WorldSettings"];
     auto worldWidth = WS["worldWidth"].get<float>();
     auto worldHeight = WS["worldHeight"].get<float>();
+
+    world.mushroomReproductionRate = WS["mushroomReproductionRate"].get<float>();
+    world.mushroomReproductionDistance = WS["mushroomReproductionDistance"].get<float>();
+    world.mushroomReproductionNearLimit = WS["mushroomReproductionNearLimit"].get<unsigned>();
+
     world.dimensions = {worldWidth, worldHeight};
     world.terrainSquare = WS["terrainSquare"].get<unsigned>();
     world.quadtreeLimit = WS["quadtreeLimit"].get<float>();

@@ -62,6 +62,7 @@ private:
         bool* shouldRender;
         unsigned yPixelOffset = 0;
         sf::Text valueText;
+        unsigned maxPoints = 20;
         sf::VertexArray verts;
         sf::Vector2f min = {std::numeric_limits<float>::max(), std::numeric_limits<float>::max()};
         sf::Vector2f max = {std::numeric_limits<float>::min(), std::numeric_limits<float>::min()};

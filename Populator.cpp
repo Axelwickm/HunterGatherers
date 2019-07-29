@@ -28,6 +28,16 @@ void Populator::populate(float deltaT) {
     }
 }
 
+
+const Populator::Entry &Populator::getEntry(std::string type) const {
+    auto itr = entries.find(type);
+    if (itr != entries.end()){
+        return entries.at(type);
+    }
+
+    throw std::runtime_error("Couldn't find populator entry "+type);
+}
+
 void Populator::changeCount(std::string type, int deltaCount) {
     auto itr = entries.find(type);
     if (itr != entries.end()){
@@ -41,4 +51,3 @@ void Populator::entryEnabled(std::string type, bool enabled) {
         itr->second.enabled = enabled;
     }
 }
-

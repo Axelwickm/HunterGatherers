@@ -518,10 +518,10 @@ void GUI::LineGraph::update(const World *world){
             throw std::runtime_error("Line Graph datum "+name+" doesn't exist");
 
         y *= -1;
-        verts.append(sf::Vertex({x, y}, color));
-
         min = sf::Vector2f(std::min(min.x, x), std::min(min.y, y));
         max = sf::Vector2f(std::max(max.x, x), std::max(max.y, y));
+
+        verts.append(sf::Vertex({x, y}, color));
     }
     lastUpdateFrame = stats.size();
 }
@@ -537,7 +537,6 @@ void GUI::LineGraph::draw(sf::RenderWindow *window, const sf::Vector2f orgSize) 
     auto oldView = window->getView();
     window->setView(view);
     window->draw(verts);
-
 
     // Draw value in end
     sf::Vector2f lastPos = verts[verts.getVertexCount()-1].position;

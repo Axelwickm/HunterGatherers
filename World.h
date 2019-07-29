@@ -58,6 +58,7 @@ public:
     void reproduce(Agent &a);
 
     Config &getConfig();
+    const Populator &getPopulator() const;
 
     const std::set<std::shared_ptr<Agent>> &getAgents() const;
     const std::set<std::shared_ptr<WorldObject>> &getObjects() const;

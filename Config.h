@@ -11,6 +11,9 @@
 
 struct WorldSettings {
     sf::Vector2f dimensions;
+    float mushroomReproductionRate{};
+    float mushroomReproductionDistance{};
+    unsigned mushroomReproductionNearLimit{};
     unsigned terrainSquare{};
     float quadtreeLimit{};
     std::map<std::string, Populator::Entry> populatorEntries{};

@@ -4,17 +4,22 @@
 
   "WorldSettings" : {
     "worldWidth" : 5000, "worldHeight" :  5000,
+
+    "mushroomReproductionRate" : 0.08,
+    "mushroomReproductionDistance" : 100,
+    "mushroomReproductionNearLimit" : 3,
+
     "terrainSquare" : 30,
     "quadtreeLimit" : 60,
     "PopulatorEntries" : [
       {
         "type" : "Agent",
-        "targetCount" : 30,
+        "targetCount" : 10,
         "rate" : 2
       },{
         "type" : "Mushroom",
-        "targetCount" : 400,
-        "rate" : 1
+        "targetCount" : 200,
+        "rate" : 0.1
       },{
         "type" : "BouncingBall",
         "targetCount" : 0,

@@ -171,7 +171,7 @@ bool World::spawn(std::string type) {
     }
     else if (type == "Mushroom"){
         sf::Vector2<float> position(spawnX(randomEngine), spawnY(randomEngine));
-        std::shared_ptr<Mushroom> w(new Mushroom(this, position));
+        std::shared_ptr<Mushroom> w(new Mushroom(this, position, config));
         return addObject(w);
     }
     else if (type == "BouncingBall"){
@@ -262,4 +262,8 @@ void World::clearStatistics() {
 
 const float World::getHistoryFrequency() const {
     return historyFrequency;
+}
+
+const Populator &World::getPopulator() const {
+    return populator;
 }

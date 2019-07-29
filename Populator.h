@@ -25,6 +25,7 @@ public:
     };
 
     void populate(float deltaT);
+    const Entry& getEntry(std::string type) const;
     void changeCount(std::string type, int deltaCount);
     void entryEnabled(std::string type, bool enabled);
 

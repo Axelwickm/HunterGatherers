@@ -423,7 +423,7 @@ void Agent::update(float deltaTime) {
             actionCooldown = settings.actionCooldown;
             inventory.mushrooms--;
             sf::Vector2<float> position(getPosition().x+50*orientationVector.x, getPosition().y+50*orientationVector.y);
-            std::shared_ptr<Mushroom> mushroom(new Mushroom(world, position));
+            std::shared_ptr<Mushroom> mushroom(new Mushroom(world, position, world->getConfig()));
             world->addObject(mushroom);
         }
     }
