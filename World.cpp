@@ -246,9 +246,9 @@ void World::updateStatistics() {
         statistics.murders.push_back({agent->getColor(), (float) agent->getMurderCount()});
         statistics.energy.push_back({agent->getColor(), std::max(0.f, agent->getEnergy())});
         statistics.mushrooms.push_back({agent->getColor(), (float) agent->getInventory().mushrooms});
-        statistics.speed.push_back({agent->getColor(), agent->getSpeed()});
+        if (agent->getSpeed() < 400)
+            statistics.speed.push_back({agent->getColor(), agent->getSpeed()});
     }
-
     historicalStatistics.push_back(statistics);
 }
 

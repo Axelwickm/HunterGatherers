@@ -124,7 +124,7 @@ GUI::GUI(Config &config, sf::RenderWindow *window, World *world, Camera *camera)
                         (Spectrogram) {.name = "mushrooms", .shouldRender=&config.render.graphMushrooms,
                                 .stride=1, .markerWidth=3, .defaultSize=20, .spectrogram=Contiguous2dVector(blank)},
                         (Spectrogram) {.name = "speed", .shouldRender=&config.render.graphSpeed,
-                            .stride=0.2, .markerWidth=3, .defaultSize=20, .spectrogram=Contiguous2dVector(blank)}
+                            .stride=20, .markerWidth=3, .defaultSize=100, .spectrogram=Contiguous2dVector(blank)}
                 };
 
                 for (std::size_t j = 0; j < toggle.subToggles.size(); j++){
@@ -563,7 +563,7 @@ void GUI::Spectrogram::update(const World *world) {
     }
 
     // Extract the value from statistics
-    std::vector<std::vector<WorldStatistics::ColorValue>> newValues;
+    static std::vector<std::vector<WorldStatistics::ColorValue>> newValues;
     for (std::size_t i = lastUpdateFrame; i < stats.size(); i++){
         const auto &s = stats[i];
         std::vector<WorldStatistics::ColorValue> values;
@@ -623,8 +623,14 @@ void GUI::Spectrogram::update(const World *world) {
         }
     };
 
+    std::size_t deleted = 0;
+
     // Go through each value and draw
     for (auto& values : newValues){
+        deleted++;
+        if (5 < deleted)
+            break;
+
         std::vector<std::array<unsigned, 4>> column(std::max(unsigned((maxVal-minVal)*stride), defaultSize));
         std::vector<float> totals(column.size(), 0.f);
 
@@ -662,7 +668,6 @@ void GUI::Spectrogram::update(const World *world) {
                 b /= 2; a /= 2;
                 colorColumn.at(y) = sf::Color(r, g, b, a);
                 colorColumn.erase(std::begin(colorColumn)+y+1);
-                printf("%d\n", colorColumn.size());
             }
         }
 
@@ -695,6 +700,7 @@ void GUI::Spectrogram::update(const World *world) {
             perColumn *= 2;
         }
     }
+    newValues.erase(std::begin(newValues), std::begin(newValues)+deleted);
     //printf("Spectrogram size %d %d\n", spectrogram.getN(), spectrogram.getM());
     lastUpdateFrame = stats.size();
 }
