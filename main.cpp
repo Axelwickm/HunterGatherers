@@ -56,7 +56,9 @@ int main(int argc, char *argv[]) {
     bool paused = false;
 
     bool dragging = false;
+    bool notMoving = false;
     sf::Vector2<int> mousePosition = sf::Mouse::getPosition();
+    float thresholdSpeed = 50;
 
     const Controls& controls = config.controls;
 
@@ -67,6 +69,7 @@ int main(int argc, char *argv[]) {
         // Get events
         sf::Event event{};
         while (window.pollEvent(event)) {
+            notMoving = true;
 
             // A key was pressed
             if (event.type == sf::Event::KeyPressed){
@@ -136,22 +139,20 @@ int main(int argc, char *argv[]) {
 
             // Mouse drag
             else if (event.type == sf::Event::MouseMoved){
-                dragging = true;
-                /*if (sf::Touch::isDown(0)){
-                    std::cout<<"Touch\n";
-                    mousePosition = sf::Touch::getPosition(0);
-                }*/
-                //std::cout<<sf::Touch::isDown(1)<<std::endl;
                 auto oldMousePos = mousePosition;
                 mousePosition = sf::Vector2<int>(event.mouseMove.x, event.mouseMove.y);
                 if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left)){
-                    camera.move((sf::Vector2f) (oldMousePos - mousePosition));
+                    sf::Vector2f delta = sf::Vector2f(oldMousePos - mousePosition);
+                    float speed = std::sqrt(delta.x*delta.x+delta.y*delta.y);
+                    if (speed < thresholdSpeed || dragging)
+                        camera.move(delta);
                 }
                 else {
                     gui.hover(mousePosition);
                 }
 
-
+                dragging = true;
+                notMoving = false;
             }
 
             // Mouse was scrolled
@@ -174,6 +175,9 @@ int main(int argc, char *argv[]) {
             else if (event.type == sf::Event::Closed){
                 window.close();
             }
+
+            if (notMoving)
+                dragging = false;
         }
 
         if (config.shouldReload){
