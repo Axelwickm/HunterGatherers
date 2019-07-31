@@ -188,9 +188,10 @@ void World::reproduce(Agent &a) {
     auto agent = std::make_shared<Agent>(a, config.agents.mutation);
     agent->setGeneration(agent->getGeneration()+1);
     agent->setQuadtree(&quadtree, agent);
-    agent->setEnergy(a.getEnergy()*0.15f);
+
     agent->setOrientation(std::uniform_real_distribution<float>(0, 360)(randomEngine));
-    a.setEnergy(a.getEnergy()*0.5f);
+    a.setEnergy(agent->getEnergy()*0.5);
+    agent->setEnergy(agent->getEnergy()*0.5f-15.f);
     a.setChildCount(a.getChildCount()+1);
     addObject(agent);
     addObject(std::make_shared<Heart>(this, a.getPosition()));
@@ -257,6 +258,7 @@ const std::deque<WorldStatistics> &World::getHistoricalStatistics() const {
 }
 
 void World::clearStatistics() {
+    printf("Clearing all statistics\n");
     historicalStatistics.clear();
 }
 

@@ -10,6 +10,7 @@
 #include "Agent.h"
 #include "Camera.h"
 #include "utils.cpp"
+#include "World.h"
 
 class GUI {
 public:
@@ -80,10 +81,12 @@ private:
         bool* shouldRender;
         float stride = 1;
         unsigned markerWidth = 5;
-        unsigned defaultSize = 80;
-        std::size_t maxHeight = 400;
+        sf::Vector2u currentSize;
+        unsigned startHeight = 80;
+        std::size_t maxHeight = 300;
         std::size_t downsamplingTriggerW = 1800;
 
+        std::vector<std::vector<WorldStatistics::ColorValue>> newValues;
         unsigned perColumn = 1; unsigned columnCounter = 0;
         std::vector<sf::Color> colorColumn;
 

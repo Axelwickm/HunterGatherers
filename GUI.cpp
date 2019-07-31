@@ -110,21 +110,21 @@ GUI::GUI(Config &config, sf::RenderWindow *window, World *world, Camera *camera)
                 auto blank = sf::Color(0, 0, 0, 0);
                 spectrograms = {
                         (Spectrogram) {.name = "generation", .shouldRender=&config.render.graphGeneration,
-                                       .stride=2, .markerWidth=1, .defaultSize=80, .spectrogram=Contiguous2dVector(blank)},
+                                       .stride=2, .markerWidth=1, .startHeight=80, .spectrogram=Contiguous2dVector(blank)},
                         (Spectrogram) {.name = "perceptrons", .shouldRender=&config.render.graphPerceptrons,
-                                .stride=5, .markerWidth=8, .defaultSize=80, .spectrogram=Contiguous2dVector(blank)},
+                                .stride=5, .markerWidth=8, .startHeight=80, .spectrogram=Contiguous2dVector(blank)},
                         (Spectrogram) {.name = "age", .shouldRender=&config.render.graphAge,
-                                .stride=0.1f, .markerWidth=5, .defaultSize=100, .spectrogram=Contiguous2dVector(blank)},
+                                .stride=0.1f, .markerWidth=5, .startHeight=100, .spectrogram=Contiguous2dVector(blank)},
                         (Spectrogram) {.name = "children", .shouldRender=&config.render.graphChildren,
-                                .stride=1, .markerWidth=1, .defaultSize=20, .spectrogram=Contiguous2dVector(blank)},
+                                .stride=1, .markerWidth=1, .startHeight=20, .spectrogram=Contiguous2dVector(blank)},
                         (Spectrogram) {.name = "murders", .shouldRender=&config.render.graphMurders,
-                                .stride=1, .markerWidth=1, .defaultSize=20, .spectrogram=Contiguous2dVector(blank)},
+                                .stride=1, .markerWidth=1, .startHeight=20, .spectrogram=Contiguous2dVector(blank)},
                         (Spectrogram) {.name = "energy", .shouldRender=&config.render.graphEnergy,
-                                .stride=0.5, .markerWidth=10, .defaultSize=100, .spectrogram=Contiguous2dVector(blank)},
+                                .stride=0.5, .markerWidth=10, .startHeight=100, .spectrogram=Contiguous2dVector(blank)},
                         (Spectrogram) {.name = "mushrooms", .shouldRender=&config.render.graphMushrooms,
-                                .stride=1, .markerWidth=3, .defaultSize=20, .spectrogram=Contiguous2dVector(blank)},
+                                .stride=1, .markerWidth=3, .startHeight=20, .spectrogram=Contiguous2dVector(blank)},
                         (Spectrogram) {.name = "speed", .shouldRender=&config.render.graphSpeed,
-                            .stride=20, .markerWidth=3, .defaultSize=100, .spectrogram=Contiguous2dVector(blank)}
+                            .stride=30, .markerWidth=4, .startHeight=50, .maxHeight=50, .spectrogram=Contiguous2dVector(blank)}
                 };
 
                 for (std::size_t j = 0; j < toggle.subToggles.size(); j++){
@@ -557,15 +557,24 @@ void GUI::Spectrogram::update(const World *world) {
     if (stats.empty())
         return;
 
-    if (stats.size() < spectrogram.getN()){
+    if (stats.size() < currentSize.x){
         spectrogram.clear();
         lastUpdateFrame = 0;
+        currentSize = sf::Vector2u(0, 0);
     }
 
-    // Extract the value from statistics
-    static std::vector<std::vector<WorldStatistics::ColorValue>> newValues;
+    if (spectrogram.getN() == 0 && spectrogram.getM() == 0){
+        // Allocated the whole spectrogram
+        spectrogram = Contiguous2dVector(downsamplingTriggerW, maxHeight, sf::Color(0, 0, 0, 0));
+    }
+
+    std::size_t j = 0;
     for (std::size_t i = lastUpdateFrame; i < stats.size(); i++){
-        const auto &s = stats[i];
+        const auto &s = stats.at(i);
+        lastUpdateFrame++; j++;
+        if (15 < j)
+            break;
+
         std::vector<WorldStatistics::ColorValue> values;
 
         if (name == "generation")
@@ -604,7 +613,7 @@ void GUI::Spectrogram::update(const World *world) {
 
         newValues.push_back(values);
     }
-
+    
     // Lambda for drawing in spectrogram
     auto mark = [](std::vector<std::array<unsigned, 4>> &vec,
             std::vector<float> &totals,
@@ -623,15 +632,9 @@ void GUI::Spectrogram::update(const World *world) {
         }
     };
 
-    std::size_t deleted = 0;
-
     // Go through each value and draw
     for (auto& values : newValues){
-        deleted++;
-        if (5 < deleted)
-            break;
-
-        std::vector<std::array<unsigned, 4>> column(std::max(unsigned((maxVal-minVal)*stride), defaultSize));
+        std::vector<std::array<unsigned, 4>> column(std::max(unsigned((maxVal-minVal)*stride), startHeight));
         std::vector<float> totals(column.size(), 0.f);
 
         for (const auto &value : values){
@@ -674,14 +677,22 @@ void GUI::Spectrogram::update(const World *world) {
         // Add to spectrogram
         columnCounter++;
         if (columnCounter == perColumn){
-            spectrogram.push_back_row(colorColumn);
+            auto p = spectrogram.at(currentSize.x);
+            auto itCol = p.first;
+            for (auto it = std::begin(colorColumn); it != std::end(colorColumn); it++){
+                *itCol = *it;
+                itCol++;
+            }
+
+            currentSize.x += 1;
+            currentSize.y = std::max((std::size_t) currentSize.y, colorColumn.size());
             colorColumn.clear(); columnCounter = 0;
         }
 
         // Check if spectrogram is too wide
-        if (downsamplingTriggerW < spectrogram.getN()){
-            auto newSpec = Contiguous2dVector(std::ceil(spectrogram.getN()/2), spectrogram.getM(), spectrogram.getFillValue());
-            for (std::size_t x = 0; x < newSpec.getN(); x++) {
+        if (spectrogram.getN() <= currentSize.x){
+            auto newSpec = Contiguous2dVector(spectrogram.getN(), spectrogram.getM(), spectrogram.getFillValue());
+            for (std::size_t x = 0; x < std::ceil(newSpec.getN()/2.0); x++) {
                 for (std::size_t y = 0; y < newSpec.getM(); y++) {
                     unsigned r = 0, g = 0, b = 0, a = 0;
                     for (auto &c : {spectrogram.at(x*2, y), spectrogram.at(x*2+1, y)}){
@@ -698,16 +709,19 @@ void GUI::Spectrogram::update(const World *world) {
 
             spectrogram = newSpec;
             perColumn *= 2;
+            currentSize.x = std::ceil(currentSize.x/2.0);
         }
     }
-    newValues.erase(std::begin(newValues), std::begin(newValues)+deleted);
-    //printf("Spectrogram size %d %d\n", spectrogram.getN(), spectrogram.getM());
-    lastUpdateFrame = stats.size();
+    newValues.clear();
 }
 
 void GUI::Spectrogram::draw(sf::RenderWindow *window, const sf::Vector2f orgSize) {
+    if (currentSize.x == 0 || currentSize.y == 0)
+        return;
+
     sf::Image image;
-    image.create(spectrogram.getN(), spectrogram.getM());
+    image.create(currentSize.x, currentSize.y);
+
     for (std::size_t x = 0; x < image.getSize().x; x++){
         for (std::size_t y = 0; y < image.getSize().y; y++){
             image.setPixel(x, y, spectrogram.at(x, y));
@@ -718,7 +732,7 @@ void GUI::Spectrogram::draw(sf::RenderWindow *window, const sf::Vector2f orgSize
     auto sprite = sf::Sprite(texture);
 
     sf::View view;
-    view.reset(sf::FloatRect(0, 0, spectrogram.getN(), spectrogram.getM()));
+    view.reset(sf::FloatRect(0, 0, currentSize.x, currentSize.y));
     view.setViewport(sf::FloatRect(0.1, 0.75, 0.8, 0.24));
     view.setSize(view.getSize().x, -view.getSize().y);
     auto oldView = window->getView();
@@ -726,7 +740,6 @@ void GUI::Spectrogram::draw(sf::RenderWindow *window, const sf::Vector2f orgSize
 
     window->draw(sprite);
     window->setView(oldView);
-
 }
 
 GUI::Toggle::Toggle(const std::string& name, bool *value, std::vector<Toggle> subToggles, sf::Color color) :

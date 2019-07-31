@@ -129,6 +129,13 @@ public:
         return data.at(x*m+y);
     }
 
+    std::pair<typename std::vector<T>::iterator, typename std::vector<T>::iterator> at(std::size_t x){
+        if (n <= x)
+            throw std::out_of_range("x ("+std::to_string(x)+") too big for n ("+std::to_string(n)+")");
+
+        return std::make_pair(std::begin(data)+x*m, std::begin(data)+x*m+m);
+    }
+
     const T getFillValue() const {
         return fillValue;
     }
