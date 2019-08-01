@@ -110,7 +110,7 @@ GUI::GUI(Config &config, sf::RenderWindow *window, World *world, Camera *camera)
                 auto blank = sf::Color(0, 0, 0, 0);
                 spectrograms = {
                         (Spectrogram) {.name = "generation", .shouldRender=&config.render.graphGeneration,
-                                       .stride=2, .markerWidth=1, .startHeight=80, .spectrogram=Contiguous2dVector(blank)},
+                                       .stride=2, .markerWidth=1, .startHeight=10, .spectrogram=Contiguous2dVector(blank)},
                         (Spectrogram) {.name = "perceptrons", .shouldRender=&config.render.graphPerceptrons,
                                 .stride=5, .markerWidth=8, .startHeight=80, .spectrogram=Contiguous2dVector(blank)},
                         (Spectrogram) {.name = "age", .shouldRender=&config.render.graphAge,
@@ -120,7 +120,7 @@ GUI::GUI(Config &config, sf::RenderWindow *window, World *world, Camera *camera)
                         (Spectrogram) {.name = "murders", .shouldRender=&config.render.graphMurders,
                                 .stride=1, .markerWidth=1, .startHeight=20, .spectrogram=Contiguous2dVector(blank)},
                         (Spectrogram) {.name = "energy", .shouldRender=&config.render.graphEnergy,
-                                .stride=0.5, .markerWidth=10, .startHeight=100, .spectrogram=Contiguous2dVector(blank)},
+                                .stride=0.5, .markerWidth=4, .startHeight=100, .spectrogram=Contiguous2dVector(blank)},
                         (Spectrogram) {.name = "mushrooms", .shouldRender=&config.render.graphMushrooms,
                                 .stride=1, .markerWidth=3, .startHeight=20, .spectrogram=Contiguous2dVector(blank)},
                         (Spectrogram) {.name = "speed", .shouldRender=&config.render.graphSpeed,
@@ -561,6 +561,7 @@ void GUI::Spectrogram::update(const World *world) {
         spectrogram.clear();
         lastUpdateFrame = 0;
         currentSize = sf::Vector2u(0, 0);
+        perColumn = 1; columnCounter = 0;
     }
 
     if (spectrogram.getN() == 0 && spectrogram.getM() == 0){
@@ -627,56 +628,75 @@ void GUI::Spectrogram::update(const World *world) {
                 vec.at(i).at(1) += color.g;
                 vec.at(i).at(2) += color.b;
                 vec.at(i).at(3) += opacity*255.f*dist;
-                totals.at(i) += 1.0;
+                totals.at(i) += 1.0f;
             } catch (const std::out_of_range& e) {};
         }
     };
 
     // Go through each value and draw
     for (auto& values : newValues){
-        std::vector<std::array<unsigned, 4>> column(std::max(unsigned((maxVal-minVal)*stride), startHeight));
+        std::vector<std::array<unsigned, 4>> column(std::min((std::size_t) std::max(std::size_t((maxVal-minVal)*stride),
+                std::size_t(startHeight)), maxHeight));
         std::vector<float> totals(column.size(), 0.f);
+        // Global color column has to be of sufficient size
+        if (colorColumn.size() < column.size()){
+            colorColumn.resize(column.size(), sf::Color(0, 0, 0, 0));
+            colorColumnCount.resize(column.size(), 0);
+        }
 
+        // Draw values to column
         for (const auto &value : values){
             std::size_t ind = (value.value - minVal)*(float) stride;
             mark(column, totals, ind, value.color, .8f, markerWidth);
         }
 
-        // Average colors
-        if (colorColumn.size() < column.size()){
-            colorColumn.resize(column.size(), sf::Color(0, 0, 0, 0));
-        }
-
+        // Divide in column to average colors
         for (std::size_t i = 0; i < column.size(); i++){
-            colorColumn.at(i).r += column.at(i).at(0) / totals.at(i) / (float) perColumn;
-            colorColumn.at(i).g += column.at(i).at(1) / totals.at(i) / (float) perColumn;
-            colorColumn.at(i).b += column.at(i).at(2) / totals.at(i) / (float) perColumn;
-            colorColumn.at(i).a += column.at(i).at(3) / totals.at(i) / (float) perColumn;
-        }
-
-        // Rescale the column if it too big
-        if (maxHeight < colorColumn.size()) {
-            auto engine = std::mt19937_64(std::random_device()());
-            while (maxHeight < colorColumn.size()) {
-                auto dist = std::uniform_int_distribution<int>(0, colorColumn.size()-2);
-                unsigned y = dist(engine);
-                unsigned r = 0, g = 0, b = 0, a = 0;
-                for (auto &c : {colorColumn.at(y), colorColumn.at(y+1)}){
-                    r += c.r;
-                    g += c.g;
-                    b += c.b;
-                    a += c.a;
-                }
-                r /= 2; g /= 2;
-                b /= 2; a /= 2;
-                colorColumn.at(y) = sf::Color(r, g, b, a);
-                colorColumn.erase(std::begin(colorColumn)+y+1);
-            }
+            column.at(i).at(0) /= totals.at(i); column.at(i).at(1) /= totals.at(i);
+            column.at(i).at(2) /= totals.at(i); column.at(i).at(3) /= totals.at(i);
+            colorColumnCount.at(i)++;
         }
 
         // Add to spectrogram
         columnCounter++;
         if (columnCounter == perColumn){
+            // Rescale the column if it too big
+            if (maxHeight < colorColumn.size()) {
+                auto engine = std::mt19937_64(std::random_device()());
+                while (maxHeight < colorColumn.size()) {
+                    auto dist = std::uniform_int_distribution<int>(0, colorColumn.size()-2);
+                    unsigned y = dist(engine);
+                    unsigned r = 0, g = 0, b = 0, a = 0;
+                    float total = 0;
+                    for (auto &c : {colorColumn.at(y), colorColumn.at(y+1)}){
+                        if (c.r == 0 && c.g == 0 && c.b == 0 && c.a == 0){
+                            total += 0.05;
+                        }
+                        else {
+                            r += c.r;
+                            g += c.g;
+                            b += c.b;
+                            a += c.a;
+                            total += 1;
+                        }
+                    }
+                    colorColumn.at(y) = sf::Color(r, g, b, a);
+                    colorColumnCount.at(y) += colorColumnCount.at(y+1);
+                    colorColumn.erase(std::begin(colorColumn)+y+1);
+                    colorColumnCount.erase(std::begin(colorColumnCount)+y+1);
+                }
+            }
+
+            for (std::size_t i = 0; i < column.size(); i++){
+                if (colorColumnCount.at(i) != 0){
+                    colorColumn.at(i).r += column.at(i).at(0);
+                    colorColumn.at(i).g += column.at(i).at(1);
+                    colorColumn.at(i).b += column.at(i).at(2);
+                    colorColumn.at(i).a += column.at(i).at(3);
+                    colorColumnCount.at(i) = 0;
+                }
+            }
+
             auto p = spectrogram.at(currentSize.x);
             auto itCol = p.first;
             for (auto it = std::begin(colorColumn); it != std::end(colorColumn); it++){
@@ -686,7 +706,7 @@ void GUI::Spectrogram::update(const World *world) {
 
             currentSize.x += 1;
             currentSize.y = std::max((std::size_t) currentSize.y, colorColumn.size());
-            colorColumn.clear(); columnCounter = 0;
+            colorColumn.clear(); colorColumnCount.clear(); columnCounter = 0;
         }
 
         // Check if spectrogram is too wide
@@ -695,14 +715,21 @@ void GUI::Spectrogram::update(const World *world) {
             for (std::size_t x = 0; x < std::ceil(newSpec.getN()/2.0); x++) {
                 for (std::size_t y = 0; y < newSpec.getM(); y++) {
                     unsigned r = 0, g = 0, b = 0, a = 0;
+                    float total = 0;
                     for (auto &c : {spectrogram.at(x*2, y), spectrogram.at(x*2+1, y)}){
-                        r += c.r;
-                        g += c.g;
-                        b += c.b;
-                        a += c.a;
+                        if (c.r == 0 && c.g == 0 && c.b == 0 && c.a == 0){
+                            total += 0.05;
+                        }
+                        else {
+                            r += c.r;
+                            g += c.g;
+                            b += c.b;
+                            a += c.a;
+                            total += 1;
+                        }
                     }
-                    r /= 2; g /= 2;
-                    b /= 2; a /= 2;
+                    r /= total; g /= total;
+                    b /= total; a /= total;
                     newSpec.at(x, y) = sf::Color(r, g, b, a);
                 }
             }

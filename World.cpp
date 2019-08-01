@@ -191,7 +191,7 @@ void World::reproduce(Agent &a) {
 
     agent->setOrientation(std::uniform_real_distribution<float>(0, 360)(randomEngine));
     a.setEnergy(agent->getEnergy()*0.5);
-    agent->setEnergy(agent->getEnergy()*0.5f-15.f);
+    agent->setEnergy(agent->getEnergy()*0.5f);
     a.setChildCount(a.getChildCount()+1);
     addObject(agent);
     addObject(std::make_shared<Heart>(this, a.getPosition()));

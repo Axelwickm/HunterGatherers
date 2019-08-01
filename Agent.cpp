@@ -397,7 +397,7 @@ void Agent::update(float deltaTime) {
         const float turn2 = *(actionIterator++);
         float turn = (turn1 - turn2)*settings.turnFactor;
         orientation += turn*deltaTime;
-        energy -= fabsf(turn1 - turn2) * 0.2f * settings.movementEnergyLoss * deltaTime;
+        energy -= fabsf(turn1 - turn2) * 0.25f * settings.movementEnergyLoss * deltaTime;
     }
 
     if (settings.canReproduce){
@@ -410,7 +410,7 @@ void Agent::update(float deltaTime) {
 
     if (settings.canEat){
         const float eatWilling = *(actionIterator++);
-        if (0 < inventory.mushrooms && 0.6 < eatWilling && actionCooldown == 0){
+        if (0 < inventory.mushrooms && 0.75 < eatWilling && actionCooldown == 0){
             actionCooldown = settings.actionCooldown;
             inventory.mushrooms--;
             energy += world->getConfig().agents.mushroomEnergy;
@@ -430,7 +430,7 @@ void Agent::update(float deltaTime) {
 
     if (settings.canPunch){
         const float punchWilling = *(actionIterator++);
-        if (punchTimer == 0 && 0.7 < punchWilling && actionCooldown == 0){
+        if (punchTimer == 0 && 0.6 < punchWilling && actionCooldown == 0){
             punchTimer += deltaTime;
             sprite.setTexture(punchTexture);
             frameIndex = 0;

@@ -82,13 +82,14 @@ private:
         float stride = 1;
         unsigned markerWidth = 5;
         sf::Vector2u currentSize;
-        unsigned startHeight = 80;
+        unsigned startHeight = 20;
         std::size_t maxHeight = 300;
-        std::size_t downsamplingTriggerW = 1800;
+        std::size_t downsamplingTriggerW = 2000;
 
         std::vector<std::vector<WorldStatistics::ColorValue>> newValues;
         unsigned perColumn = 1; unsigned columnCounter = 0;
         std::vector<sf::Color> colorColumn;
+        std::vector<unsigned> colorColumnCount;
 
         Contiguous2dVector<sf::Color> spectrogram;
         float minVal = std::numeric_limits<float>::max();

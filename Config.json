@@ -5,8 +5,8 @@
   "WorldSettings" : {
     "worldWidth" : 5000, "worldHeight" :  5000,
 
-    "mushroomReproductionRate" : 0.08,
-    "mushroomReproductionDistance" : 100,
+    "mushroomReproductionRate" : 0.055,
+    "mushroomReproductionDistance" : 120,
     "mushroomReproductionNearLimit" : 3,
 
     "terrainSquare" : 30,
@@ -14,12 +14,12 @@
     "PopulatorEntries" : [
       {
         "type" : "Agent",
-        "targetCount" : 10,
-        "rate" : 2
+        "targetCount" : 100,
+        "rate" : 0.1
       },{
         "type" : "Mushroom",
-        "targetCount" : 200,
-        "rate" : 0.1
+        "targetCount" : 300,
+        "rate" : 0.055
       },{
         "type" : "BouncingBall",
         "targetCount" : 0,
@@ -36,11 +36,11 @@
     "punchTime" : 1,
     "actionCooldown" : 2,
 
-    "energyLossRate" : 0.5,
-    "movementEnergyLoss" : 0.0265,
-    "punchEnergy": 2,
-    "punchDamage" : 100,
-    "mushroomEnergy" : 45,
+    "energyLossRate" : 0.35,
+    "movementEnergyLoss" : 0.015,
+    "punchEnergy": 6,
+    "punchDamage" : 40,
+    "mushroomEnergy" : 20,
     "maxEnergy" : 100,
     "maxMushroomCount": 15,
 
@@ -51,8 +51,8 @@
     "canPlace" : true,
     "canPunch" : true,
 
-    "memory" : 2,
-    "memoryReactivity" : 0.1,
+    "memory" : 4,
+    "memoryReactivity" : 0.18,
 
     "perceiveCollision" : true,
     "receptorCount" : 7,
@@ -64,7 +64,7 @@
     "visibilityDistance" : 350,
     "visualReactivity" : 5,
 
-    "mutation" : 0.05,
+    "mutation" : 0.08,
     "layerMin" : 4, "layerMax" : 7,
     "biasMin" : -1, "biasMax" : 1,
     "weightMin" : -2, "weightMax" : 2,
@@ -87,7 +87,7 @@
     "speedUp" : "Period",
 
     "keyboardCameraMove" : 15,
-    "timeFactorInitial" : 6,
+    "timeFactorInitial" : 9,
     "timeFactorDelta" : 0.05,
     "timeFactorMax" :  20,
     "scrollFactor" :  0.05
