@@ -36,8 +36,11 @@
     "punchTime" : 1,
     "actionCooldown" : 2,
 
+    "energyToParent" : 0.5,
+    "energyToChild" : 0.25,
     "energyLossRate" : 0.35,
     "movementEnergyLoss" : 0.015,
+    "turnRateEnergyLoss" : 0.00375,
     "punchEnergy": 6,
     "punchDamage" : 40,
     "mushroomEnergy" : 20,

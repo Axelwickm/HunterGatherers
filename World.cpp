@@ -190,8 +190,9 @@ void World::reproduce(Agent &a) {
     agent->setQuadtree(&quadtree, agent);
 
     agent->setOrientation(std::uniform_real_distribution<float>(0, 360)(randomEngine));
-    a.setEnergy(agent->getEnergy()*0.5);
-    agent->setEnergy(agent->getEnergy()*0.5f);
+    float totalEnergy = agent->getEnergy();
+    a.setEnergy(totalEnergy*config.agents.energyToParent);
+    agent->setEnergy(totalEnergy*config.agents.energyToChild);
     a.setChildCount(a.getChildCount()+1);
     addObject(agent);
     addObject(std::make_shared<Heart>(this, a.getPosition()));

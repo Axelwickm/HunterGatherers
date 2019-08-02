@@ -77,7 +77,7 @@ public:
 
 private:
     // General
-    const AgentSettings settings;
+    const AgentSettings& settings;
     unsigned generation;
     unsigned oldChildCount;
     unsigned childCount;

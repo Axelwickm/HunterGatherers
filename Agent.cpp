@@ -397,7 +397,7 @@ void Agent::update(float deltaTime) {
         const float turn2 = *(actionIterator++);
         float turn = (turn1 - turn2)*settings.turnFactor;
         orientation += turn*deltaTime;
-        energy -= fabsf(turn1 - turn2) * 0.25f * settings.movementEnergyLoss * deltaTime;
+        energy -= fabsf(turn1 - turn2) * settings.turnRateEnergyLoss * deltaTime;
     }
 
     if (settings.canReproduce){

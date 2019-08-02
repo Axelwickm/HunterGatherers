@@ -83,7 +83,10 @@ void Config::loadConfigFromFile(const std::string &filename) {
     agents.punchTime = AS["punchTime"].get<float>();
     agents.actionCooldown = AS["actionCooldown"].get<float>();
 
+    agents.energyToParent = AS["energyToParent"].get<float>();
+    agents.energyToChild = AS["energyToChild"].get<float>();
     agents.energyLossRate = AS["energyLossRate"].get<float>();
+    agents.turnRateEnergyLoss = AS["turnRateEnergyLoss"].get<float>();
     agents.movementEnergyLoss = AS["movementEnergyLoss"].get<float>();
     agents.punchEnergy = AS["punchEnergy"].get<float>();
     agents.punchDamage = AS["punchDamage"].get<float>();

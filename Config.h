@@ -27,7 +27,10 @@ struct AgentSettings {
     float punchTime;
     float actionCooldown;
 
+    float energyToParent;
+    float energyToChild;
     float energyLossRate;
+    float turnRateEnergyLoss;
     float movementEnergyLoss;
     float punchEnergy;
     float punchDamage;
