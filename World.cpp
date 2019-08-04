@@ -219,6 +219,7 @@ void World::updateStatistics() {
 
     statistics.timestamp = worldTime;
     statistics.populationCount = agents.size();
+    statistics.mushroomCount = populator.getEntry("Mushroom").count;
 
     statistics.generation.reserve(agents.size());
     statistics.perceptrons.reserve(agents.size());

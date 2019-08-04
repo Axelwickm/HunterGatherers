@@ -19,6 +19,7 @@
 struct WorldStatistics {
     float timestamp = 0;
     std::size_t populationCount = 0;
+    std::size_t mushroomCount = 0;
     unsigned lowestGeneration = 0;
     unsigned highestGeneration = 0;
 

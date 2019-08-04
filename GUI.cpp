@@ -17,7 +17,7 @@ GUI::GUI(Config &config, sf::RenderWindow *window, World *world, Camera *camera)
     font.loadFromFile(R"(C:\Windows\Fonts\consola.ttf)");
     sf::Color gray(120, 120, 120);
 
-    simulationInfo.main = sf::Text(std::string("FPS: ###\nTime factor: ##\nPopulation: ###\n"), font);
+    simulationInfo.main = sf::Text(std::string("FPS: ###\nTime factor: ##\nPopulation: ###\nMushrooms: ###\n"), font);
     simulationInfo.main.setCharacterSize(20);
     simulationInfo.main.setStyle(sf::Text::Regular);
     simulationInfo.main.setFillColor(gray);
@@ -199,6 +199,7 @@ void GUI::draw(float deltaTime, float timeFactor) {
         simulationInfo.main.setString("FPS: " + std::to_string(int(1.f / deltaTime))
                                       + "\nTime factor: " + std::to_string(int(timeFactor))
                                       + "\nPopulation: " + std::to_string(world->getAgents().size())
+                                      + "\nMushrooms: " + std::to_string(world->getHistoricalStatistics().back().mushroomCount)
                                       +"\n");
 
         window->draw(simulationInfo.main);
