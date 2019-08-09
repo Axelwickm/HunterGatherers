@@ -12,6 +12,8 @@ void Config::loadConfigFromFile(const std::string &filename) {
     if (file.fail()){
         throw std::runtime_error("Can't open config file: "+filename+"\n");
     }
+    std::printf("Loading config file: %s\n", filename.c_str());
+
     nlohmann::json json;
     file >> json;
     file.close();
