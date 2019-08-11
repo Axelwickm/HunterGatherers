@@ -83,10 +83,11 @@ private:
         unsigned markerWidth = 5;
         sf::Vector2u currentSize;
         unsigned startHeight = 20;
-        std::size_t maxHeight = 300;
+        std::size_t downsamplingTriggerH = 400;
         std::size_t downsamplingTriggerW = 2000;
 
         std::vector<std::vector<WorldStatistics::ColorValue>> newValues;
+        unsigned perRow = 1;
         unsigned perColumn = 1; unsigned columnCounter = 0;
         std::vector<sf::Color> colorColumn;
         std::vector<unsigned> colorColumnCount;
