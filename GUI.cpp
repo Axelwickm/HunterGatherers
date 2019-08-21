@@ -31,6 +31,7 @@ GUI::GUI(Config &config, sf::RenderWindow *window, World *world, Camera *camera)
         Toggle("showQuadtree", &config.render.showQuadtree),
         Toggle("showQuadtreeEntities", &config.render.showQuadtreeEntities),
         Toggle("showVision", &config.render.showVision),
+        Toggle("showPaths", &config.render.showPaths),
         Toggle("graphLine", &config.render.graphLine),
         Toggle("graphSpectrogram", &config.render.graphSpectrogram),
         Toggle("renderOnlyAgents", &config.render.renderOnlyAgents),
@@ -240,6 +241,7 @@ void GUI::draw(float deltaTime, float timeFactor) {
     // Draw information about the selected agent (if there is one)
     {
         if (selectedAgent) {
+            selectedAgent->queuePathDraw();
             window->draw(agentInfo.agentIdentifier);
 
             window->draw(agentInfo.energyText);

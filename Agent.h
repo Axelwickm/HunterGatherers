@@ -60,6 +60,9 @@ public:
     std::vector<float> getRegressionPercept(unsigned id) const;
     std::vector<float> getRegressionActions(unsigned id) const;
 
+    void clearPath();
+    void queuePathDraw();
+
     struct Inventory {
         unsigned mushrooms;
     };
@@ -113,6 +116,11 @@ private:
     std::vector<float> memory;
     std::vector<float> actions;
     std::vector<float> receptors;
+
+    // Agent path
+    float pathTimer;
+    bool drawPathNextFrame{};
+    std::vector<sf::Vertex> path;
 
     // Vision variables
     std::vector<sf::Vertex> lineOfSight;

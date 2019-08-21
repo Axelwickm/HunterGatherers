@@ -85,6 +85,7 @@ Agent::Agent(const AgentSettings &settings, World *world, sf::Vector2f position,
     sprite.setColor(color);
 
     actionUpdates = 0;
+    pathTimer = 0;
     perceptMean = std::vector<float>(inputCount);
     std::fill(std::begin(perceptMean), std::end(perceptMean), 0.f);
     actionsMean = std::vector<float>(outputCount);
@@ -107,6 +108,7 @@ Agent::Agent(const Agent &other, float mutation)
     punchTimer = 0;
 
     actionUpdates = 0;
+    pathTimer = 0;
 
     inventory.mushrooms = 0;
 
@@ -374,6 +376,11 @@ void Agent::updatePercept(float deltaTime) {
 
 void Agent::update(float deltaTime) {
     WorldObject::update(deltaTime);
+    pathTimer += deltaTime;
+    if (pathTimer >= 1){
+        path.emplace_back(sf::Vertex(getPosition(), getColor()));
+        pathTimer = 0;
+    }
     actionCooldown = fmaxf(actionCooldown - deltaTime, 0.f);
 
     // Apply actions
@@ -584,6 +591,12 @@ void Agent::draw(sf::RenderWindow *window, float deltaTime) {
         window->draw(&lineOfSight.front(), 2*receptors.size(), sf::Lines);
         window->draw(orientationLine, 2, sf::Lines);
     }
+
+    if (world->getConfig().render.showPaths || drawPathNextFrame){
+        window->draw(&path.front(), path.size(), sf::Lines);
+    }
+    drawPathNextFrame = false;
+
     WorldObject::draw(window, deltaTime);
 }
 
@@ -620,6 +633,14 @@ void Agent::setActions(const std::vector<float> &actions) {
     actionUpdates++;
 
     networkRegression();
+}
+
+void Agent::clearPath() {
+    path.clear();
+}
+
+void Agent::queuePathDraw() {
+    drawPathNextFrame = true;
 }
 
 void Agent::networkRegression() {

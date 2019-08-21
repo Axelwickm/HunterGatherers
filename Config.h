@@ -96,6 +96,7 @@ struct RenderSettings {
     bool showQuadtree{};
     bool showQuadtreeEntities{};
     bool showVision{};
+    bool showPaths{};
     bool renderOnlyAgents{};
     bool visualizeGeneration{};
     bool visualizeAge{};
