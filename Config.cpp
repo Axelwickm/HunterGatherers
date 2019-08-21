@@ -128,7 +128,7 @@ void Config::loadConfigFromFile(const std::string &filename) {
     auto &C = json["Controls"];
     controls.pause = findKeyCode(C["pause"].get<std::string>());
     controls.close = findKeyCode(C["close"].get<std::string>());
-    controls.showDebug = findKeyCode(C["showDebug"].get<std::string>());
+    controls.showInterface = findKeyCode(C["showInterface"].get<std::string>());
     controls.clearStats = findKeyCode(C["clearStats"].get<std::string>());
     controls.up = findKeyCode(C["up"].get<std::string>());
     controls.down = findKeyCode(C["down"].get<std::string>());
@@ -170,7 +170,7 @@ void Config::loadConfigFromFile(const std::string &filename) {
 
     render.bins = RS["bins"].get<unsigned>();
     render.showWorldObjectBounds = RS["showWorldObjectBounds"].get<bool>();
-    render.showDebug = RS["showDebug"].get<bool>();
+    render.showInterface = RS["showInterface"].get<bool>();
     render.showQuadtree = RS["showQuadtree"].get<bool>();
     render.showQuadtreeEntities = RS["showQuadtreeEntities"].get<bool>();
     render.showVision = RS["showVision"].get<bool>();

@@ -78,7 +78,7 @@
   "Controls" : {
     "pause" : "Space",
     "close" : "Escape",
-    "showDebug" : "D",
+    "showInterface" : "D",
     "clearStats" : "C",
 
     "up" : "Up",
@@ -122,7 +122,7 @@
         "graphSpeed" : false,
 
     "bins" : 50,
-    "showDebug" : true,
+    "showInterface" : true,
     "showWorldObjectBounds" : false,
     "showQuadtree" :  false,
     "showQuadtreeEntities" : false,

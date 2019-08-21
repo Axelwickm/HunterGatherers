@@ -91,7 +91,7 @@ struct RenderSettings {
         bool graphSpeed{};
 
     unsigned bins{};
-    bool showDebug{};
+    bool showInterface{};
     bool showWorldObjectBounds{};
     bool showQuadtree{};
     bool showQuadtreeEntities{};
@@ -108,7 +108,7 @@ struct RenderSettings {
 struct Controls {
     sf::Keyboard::Key pause;
     sf::Keyboard::Key close;
-    sf::Keyboard::Key showDebug;
+    sf::Keyboard::Key showInterface;
     sf::Keyboard::Key clearStats;
 
     sf::Keyboard::Key up;

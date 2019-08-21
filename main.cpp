@@ -83,8 +83,8 @@ int main(int argc, char *argv[]) {
                 else if (code == controls.close){
                     window.close();
                 }
-                else if (code == controls.showDebug){
-                    config.render.showDebug = !config.render.showDebug;
+                else if (code == controls.showInterface){
+                    config.render.showInterface = !config.render.showInterface;
                 }
                 else if (code == controls.clearStats){
                     world.clearStatistics();

@@ -191,6 +191,8 @@ GUI::GUI(Config &config, sf::RenderWindow *window, World *world, Camera *camera)
 }
 
 void GUI::draw(float deltaTime, float timeFactor) {
+    if (!config.render.showInterface)
+        return;
     // UI camera-view
     auto cameraView = window->getView();
     window->setView(view);
@@ -223,18 +225,17 @@ void GUI::draw(float deltaTime, float timeFactor) {
     }
 
     // Draw debug info
-    if (config.render.showDebug){
-        for (auto& t : simulationInfo.debug){
-            t.update();
-            window->draw(t.text);
+    for (auto& t : simulationInfo.debug){
+        t.update();
+        window->draw(t.text);
 
-            if (t.hovered){
-                for (auto &sub : t.subToggles){
-                    window->draw(sub.text);
-                }
+        if (t.hovered){
+            for (auto &sub : t.subToggles){
+                window->draw(sub.text);
             }
         }
     }
+
 
     // Draw information about the selected agent (if there is one)
     {
@@ -350,7 +351,7 @@ bool GUI::click(sf::Vector2i pos) {
     pos = sf::Vector2i(((float) pos.x / window->getSize().x) * originalWindowSize.x,
                        ((float) pos.y / window->getSize().y) * originalWindowSize.y);
 
-    if (config.render.showDebug){
+    if (config.render.showInterface){
         for (auto& t : simulationInfo.debug){
             if (pointInBox(sf::Vector2f(pos.x, pos.y), t.text.getGlobalBounds())){
                 t.click();
@@ -412,7 +413,7 @@ bool GUI::hover(sf::Vector2i pos) {
     pos = sf::Vector2i(((float) pos.x / window->getSize().x) * originalWindowSize.x,
                        ((float) pos.y / window->getSize().y) * originalWindowSize.y);
 
-    if (config.render.showDebug){
+    if (config.render.showInterface){
         std::function<bool(Toggle&)> hoverToggle = [&](Toggle &t) -> bool {
             bool anyHovered = false;
             if (t.hovered){
