@@ -121,10 +121,10 @@ public:
     }
 
     T& at(std::size_t x, std::size_t y){
-        if (n <= x)
+        if (n <= x) // For some reason this is false positive if using size_t
             throw std::out_of_range("x ("+std::to_string(x)+") too big for n ("+std::to_string(n)+")");
         if (m <= y)
-            throw std::out_of_range("y ("+std::to_string(x)+") too big for m ("+std::to_string(n)+")");
+            throw std::out_of_range("y ("+std::to_string(x)+") too big for m ("+std::to_string(m)+")");
 
         return data.at(x*m+y);
     }

@@ -481,6 +481,9 @@ void Agent::update(float deltaTime) {
             auto diff = getPosition() - object->getPosition();
             float dist = std::sqrt(diff.x*diff.x+diff.y*diff.y);
 
+            if (dist < 32)
+                setColliding(true);
+
             if (dist < 64){
                 auto &type = typeid(*object.get());
                 if (type == typeid(Agent)){
