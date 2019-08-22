@@ -121,6 +121,7 @@ private:
     float pathTimer;
     bool drawPathNextFrame{};
     std::vector<sf::Vertex> path;
+    bool alreadyRegularColor{};
 
     // Vision variables
     std::vector<sf::Vertex> lineOfSight;

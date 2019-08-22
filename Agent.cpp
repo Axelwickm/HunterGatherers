@@ -539,6 +539,16 @@ void Agent::draw(sf::RenderWindow *window, float deltaTime) {
     }
 
     sprite.setPosition(getPosition());
+
+    auto changePathColor = [&](){
+        if (!(world->getConfig().render.showPaths || drawPathNextFrame))
+            return;
+        const sf::Color col = sprite.getColor();
+        for (auto &vert : path){
+            vert.color = col;
+        }
+    };
+
     if (world->getConfig().render.visualizeGeneration && !world->getHistoricalStatistics().empty()){
         unsigned deltaGeneration = world->getHistoricalStatistics().back().highestGeneration
                 - world->getHistoricalStatistics().back().lowestGeneration;
@@ -547,28 +557,46 @@ void Agent::draw(sf::RenderWindow *window, float deltaTime) {
             c.a = 250 * (float) (generation - world->getHistoricalStatistics().back().lowestGeneration)
                     / (float) deltaGeneration + 5;
             sprite.setColor(c);
+            changePathColor();
+            alreadyRegularColor = false;
         }
     }
     else if (world->getConfig().render.visualizeAge){
         sf::Color c = sprite.getColor();
         c.a = 250.f / (1.f + expf(-(getAge()-200.f)/200.f)) + 5.f;
         sprite.setColor(c);
+        changePathColor();
+        alreadyRegularColor = false;
     }
     else if (world->getConfig().render.visualizeMushrooms){
         sf::Color c = sprite.getColor();
         c.a = 250.f* (float) inventory.mushrooms/(float) world->getConfig().agents.maxMushroomCount + 5.f;
         sprite.setColor(c);
+        changePathColor();
+        alreadyRegularColor = false;
     }
     else if (world->getConfig().render.visualizeChildren){
         sf::Color c = sprite.getColor();
         c.a = 250.f / (1.f + expf(-(childCount-10)/3.f)) + 5.f;
         sprite.setColor(c);
+        changePathColor();
+        alreadyRegularColor = false;
     }
     else if (world->getConfig().render.visualizeMurders){
         sf::Color c = sprite.getColor();
-        c.a = 250.f / (1.f + expf(-(murderCount-4)/1.f)) + 5.f;
+        c.a = 250.f / (1.f + expf(-(murderCount*2-4))) + 5.f;
         sprite.setColor(c);
+        changePathColor();
+        alreadyRegularColor = false;
     }
+    else if (!alreadyRegularColor){
+        sf::Color c = sprite.getColor();
+        c.a = 255;
+        sprite.setColor(c);
+        changePathColor();
+        alreadyRegularColor = true;
+    }
+
     if (world->getConfig().render.visualizeColor){
         sf::RectangleShape c;
         c.setSize(sf::Vector2f(sprite.getLocalBounds().width, sprite.getLocalBounds().height));
@@ -580,12 +608,6 @@ void Agent::draw(sf::RenderWindow *window, float deltaTime) {
     }
 
     window->draw(sprite);
-
-    if (sprite.getColor().a != 255){
-        sf::Color c = sprite.getColor();
-        c.a = 255;
-        sprite.setColor(c);
-    }
 
     if (world->getConfig().render.showVision){
         window->draw(&lineOfSight.front(), 2*receptors.size(), sf::Lines);

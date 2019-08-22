@@ -88,6 +88,9 @@ int main(int argc, char *argv[]) {
                 }
                 else if (code == controls.clearStats){
                     world.clearStatistics();
+                    for (auto &agent : world.getAgents()){
+                        agent->clearPath();
+                    }
                 }
                 if (code == controls.up){
                     camera.move(sf::Vector2f(0, controls.upAmount));
