@@ -3,9 +3,9 @@
   "seed" : "TIME",
 
   "WorldSettings" : {
-    "worldWidth" : 5000, "worldHeight" :  5000,
+    "worldWidth" : 7500, "worldHeight" :  7500,
 
-    "mushroomReproductionRate" : 0.055,
+    "mushroomReproductionRate" : 0.02,
     "mushroomReproductionDistance" : 120,
     "mushroomReproductionNearLimit" : 3,
 
@@ -15,11 +15,11 @@
       {
         "type" : "Agent",
         "targetCount" : 100,
-        "rate" : 0.1
+        "rate" : 0.25
       },{
         "type" : "Mushroom",
-        "targetCount" : 300,
-        "rate" : 0.055
+        "targetCount" : 750,
+        "rate" : 0.14
       },{
         "type" : "BouncingBall",
         "targetCount" : 0,
@@ -32,20 +32,20 @@
     "mass": 1,
     "friction" : 0.01,
     "maxSpeed" : 1000,
-    "turnFactor" : 100,
+    "turnFactor" : 65,
     "punchTime" : 1,
     "actionCooldown" : 2,
 
-    "energyToParent" : 0.5,
-    "energyToChild" : 0.25,
-    "energyLossRate" : 0.35,
+    "energyToParent" : 0.45,
+    "energyToChild" : 0.3,
+    "energyLossRate" : 0.2,
     "movementEnergyLoss" : 0.015,
     "turnRateEnergyLoss" : 0.00375,
     "punchEnergy": 6,
-    "punchDamage" : 40,
+    "punchDamage" : 30,
     "mushroomEnergy" : 20,
     "maxEnergy" : 100,
-    "maxMushroomCount": 15,
+    "maxMushroomCount": 20,
 
     "canReproduce" : true,
     "canWalk" : true,
@@ -67,12 +67,12 @@
     "visibilityDistance" : 350,
     "visualReactivity" : 5,
 
-    "mutation" : 0.08,
-    "layerMin" : 4, "layerMax" : 7,
+    "mutation" : 0.03,
+    "layerMin" : 4, "layerMax" : 6,
     "biasMin" : -1, "biasMax" : 1,
     "weightMin" : -2, "weightMax" : 2,
     "perceptronPerLayerMin": 6,
-    "perceptronPerLayerMax": 20
+    "perceptronPerLayerMax": 10
   },
 
   "Controls" : {
