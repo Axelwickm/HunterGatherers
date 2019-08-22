@@ -119,8 +119,11 @@ Agent::Agent(const Agent &other, float mutation)
     setBounds(other.getBounds());
 
     actions.resize(other.actions.size());
+    std::fill(std::begin(actions), std::end(actions), 0.f);
     percept.resize(other.percept.size());
+    std::fill(std::begin(percept), std::end(percept), 0.f);
     memory.resize(other.memory.size());
+    std::fill(std::begin(memory), std::end(memory), 0.f);
     genes = std::dynamic_pointer_cast<MapGenes>(other.genes->clone());
     genes->mutate(mutation);
 
@@ -286,6 +289,7 @@ void Agent::updatePercept(float deltaTime) {
         std::vector<std::shared_ptr<WorldObject> > nl;
         quadtree->searchNearLine(nl, getPosition(), getPosition()+lineEnd);
 
+        float intersected = 0;
         for (auto &n : nl){
             if (n.get() != this){
                 sf::Vector2f a = sf::Vector2f(n->getPosition().x + n->getBounds().left,
@@ -299,13 +303,18 @@ void Agent::updatePercept(float deltaTime) {
                     objectsSeen++;
                     averageColor[0] += col.r; averageColor[1] += col.b; averageColor[2] += col.g;
                     sf::Vector2f dPos = n->getPosition() - getPosition();
-                    float change = deltaTime*settings.visualReactivity*(1.f-(dPos.x*dPos.x+dPos.y*dPos.y)/(settings.visibilityDistance*settings.visibilityDistance));
-                    receptors[i] = (1-deltaTime*change)*receptors[i] + change;
+                    float normalizedDistance = (dPos.x*dPos.x+dPos.y*dPos.y)
+                                              /(settings.visibilityDistance*settings.visibilityDistance);
+                    if (normalizedDistance < 1.f){
+                        intersected += 1.f-normalizedDistance;
+                    }
                 }
             }
         }
 
-        receptors[i] = (1-deltaTime*settings.visualReactivity)*receptors[i] + 0;
+        intersected = std::fminf(intersected, 1.f);
+
+        receptors[i] += (intersected - receptors[i]) * settings.visualReactivity * deltaTime;
         *perceptIterator = receptors[i];
         perceptIterator++;
 

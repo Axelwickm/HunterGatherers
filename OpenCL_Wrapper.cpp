@@ -317,8 +317,6 @@ void OpenCL_Wrapper::think(std::shared_ptr<Agent> agent, const std::vector<float
         size_t localSize = std::min(maxComputeUnits, agentEntry.layerSizes_Host[i+1]);
         size_t globalSize = (size_t) ceil((double) agentEntry.layerSizes_Host[i+1]/localSize)*localSize;
 
-        //printf("%d %d\n", i, globalSize);
-
         err = clEnqueueNDRangeKernel(command_queue, perceptronKernel, 1, nullptr, &globalSize, &localSize,
                 1, &lastEvent, &newEvent);
 
@@ -339,18 +337,16 @@ void OpenCL_Wrapper::think(std::shared_ptr<Agent> agent, const std::vector<float
 
     if (agentEntry.layerCount % 2 == 0){
         err = clEnqueueReadBuffer(command_queue, agentEntry.netActivationA, CL_FALSE, 0,
-                            sizeof(float)*agentEntry.output.size(), &agentEntry.output.front(), 1, &lastEvent, &newEvent);
+                            sizeof(float)*agentEntry.output.size(), &agentEntry.output.front(),
+                            1, &lastEvent, &newEvent);
     }
     else {
         err = clEnqueueReadBuffer(command_queue, agentEntry.netActivationB, CL_FALSE, 0,
-                            sizeof(float)*agentEntry.output.size(), &agentEntry.output.front(), 1, &lastEvent, &newEvent);
+                            sizeof(float)*agentEntry.output.size(), &agentEntry.output.front(),
+                            1, &lastEvent, &newEvent);
     }
 
-    if (err == -30){
-        throw std::runtime_error("Err -30 D: <- me");
-
-    }
-    else if (err){
+    if (err){
         throw std::runtime_error("Failed to read output buffer from network: "+std::to_string(err));
     }
 

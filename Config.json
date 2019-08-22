@@ -65,7 +65,7 @@
 
     "FOV" : 120,
     "visibilityDistance" : 350,
-    "visualReactivity" : 5,
+    "visualReactivity" : 1,
 
     "mutation" : 0.03,
     "layerMin" : 4, "layerMax" : 6,
