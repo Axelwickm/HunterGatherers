@@ -73,7 +73,7 @@ GUI::GUI(Config &config, sf::RenderWindow *window, World *world, Camera *camera)
                     Toggle("mean murders", &config.render.graphMeanMurders, &toggle),
                     Toggle("mean energy", &config.render.graphMeanEnergy, &toggle),
                     Toggle("mean mushrooms", &config.render.graphMeanMushrooms, &toggle),
-                    Toggle("mean speed", &config.render.graphMeanSpeed, &toggle),
+                    Toggle("mean speed", &config.render.graphMeanSpeed, &toggle)
             };
 
             for (std::size_t j = 0; j < toggle.subToggles.size(); j++){
@@ -104,8 +104,7 @@ GUI::GUI(Config &config, sf::RenderWindow *window, World *world, Camera *camera)
                         Toggle("children", &config.render.graphChildren, &toggle),
                         Toggle("murders", &config.render.graphMurders, &toggle),
                         Toggle("energy", &config.render.graphEnergy, &toggle),
-                        Toggle("mushrooms", &config.render.graphMushrooms, &toggle),
-                        Toggle("speed", &config.render.graphSpeed, &toggle),
+                        Toggle("mushrooms", &config.render.graphMushrooms, &toggle)
                 };
 
                 auto blank = sf::Color(0, 0, 0, 0);
@@ -123,9 +122,7 @@ GUI::GUI(Config &config, sf::RenderWindow *window, World *world, Camera *camera)
                         (Spectrogram) {.name = "energy", .shouldRender=&config.render.graphEnergy,
                                 .stride=0.5, .markerWidth=4, .startHeight=100, .spectrogram=Contiguous2dVector(blank)},
                         (Spectrogram) {.name = "mushrooms", .shouldRender=&config.render.graphMushrooms,
-                                .stride=1, .markerWidth=3, .startHeight=20, .spectrogram=Contiguous2dVector(blank)},
-                        (Spectrogram) {.name = "speed", .shouldRender=&config.render.graphSpeed,
-                            .stride=30, .markerWidth=4, .startHeight=50, .spectrogram=Contiguous2dVector(blank)}
+                                .stride=1, .markerWidth=3, .startHeight=20, .spectrogram=Contiguous2dVector(blank)}
                 };
 
                 for (std::size_t j = 0; j < toggle.subToggles.size(); j++){
@@ -599,8 +596,6 @@ void GUI::Spectrogram::update(const World *world) {
             values = s.energy;
         else if (name == "mushrooms")
             values = s.mushrooms;
-        else if (name == "speed")
-            values = s.speed;
         else
             throw std::runtime_error("Spectrogram Graph datum "+name+" doesn't exist");
 
@@ -645,13 +640,25 @@ void GUI::Spectrogram::update(const World *world) {
         unsigned currentY = (maxVal-minVal) * stride / (float) perRow;
         if (downsamplingTriggerH <= currentY){
             // Half existing column
+            printf("Halving color column\n");
             std::vector<sf::Color> newColColumn(std::ceil(colorColumn.size()/2.f));
             std::vector<unsigned> newColCount(std::ceil(colorColumnCount.size()/2.f));
             for (std::size_t y = 0; y < newColColumn.size(); y++) {
                 unsigned r = 0, g = 0, b = 0, a = 0;
 
                 float total = 0;
-                for (auto &c : {colorColumn.at(y*2), colorColumn.at(y*2+1)}){
+                std::vector<sf::Color> colors = {colorColumn.at(y*2)};
+                std::vector<unsigned> colorsCount = {colorColumnCount.at(y*2)};
+                if (y*2+1 < colorColumn.size()){
+                    colors.push_back(colorColumn.at(y*2+1));
+                    colorsCount.push_back(colorColumnCount.at(y*2+1));
+                }
+                else {
+                    printf("Avoid color %zu\n", y*2+1);
+                }
+
+
+                for (auto &c : colors){
                     if (c.r == 0 && c.g == 0 && c.b == 0 && c.a == 0){
                         total += 0;
                     }
@@ -664,8 +671,9 @@ void GUI::Spectrogram::update(const World *world) {
                     }
                 }
 
+
                 unsigned colCount = 0;
-                for (auto &c : {colorColumnCount.at(y*2), colorColumnCount.at(y*2+1)}){
+                for (auto &c : colorsCount){
                     colCount += c;
                 }
 
@@ -675,13 +683,18 @@ void GUI::Spectrogram::update(const World *world) {
                 newColCount.at(y) = colCount;
             }
 
-            // Half width
+            printf("Halfing spectrogram height\n");
+            // Half height
             auto newSpec = Contiguous2dVector(spectrogram.getN(), spectrogram.getM(), spectrogram.getFillValue());
-            for (std::size_t x = 0; x < std::ceil(newSpec.getN()); x++) {
-                for (std::size_t y = 0; y < newSpec.getM()/2; y++) {
+            for (std::size_t x = 0; x < currentSize.x; x++) {
+                for (std::size_t y = 0; y < std::ceil(newSpec.getM()/2)-1; y++) {
                     unsigned r = 0, g = 0, b = 0, a = 0;
                     float total = 0;
-                    for (auto &c : {spectrogram.at(x, y*2), spectrogram.at(x, y*2+1)}){
+                    std::vector<sf::Color> colors = {spectrogram.at(x, y*2)};
+                    if (y*2+1 < spectrogram.getM()){
+                        colors.push_back(spectrogram.at(x, y*2+1));
+                    }
+                    for (auto &c : colors){
                         if (c.r == 0 && c.g == 0 && c.b == 0 && c.a == 0){
                             total += 0;
                         }
@@ -697,11 +710,12 @@ void GUI::Spectrogram::update(const World *world) {
                     b /= total; a /= total;
                     newSpec.at(x, y) = sf::Color(r, g, b, a);
                 }
+                printf("c");
             }
 
             spectrogram = newSpec;
             perRow *= 2;
-            currentSize.y = std::ceil(currentSize.y/2.0);
+            currentSize.y = std::ceil(downsamplingTriggerH/2.0);
 
         }
         std::vector<std::array<unsigned, 4>> column(currentY);
