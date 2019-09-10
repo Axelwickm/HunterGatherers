@@ -709,6 +709,8 @@ std::vector<float> Agent::getRegressionActions(unsigned id) const {
         if (p[i] != p[i]){ // Nan-check
             p[i] = 0.f;
         }
+        // Increase the strength of the correlations
+        p[i] = 2.5f*p[i];
     }
     return p;
 }

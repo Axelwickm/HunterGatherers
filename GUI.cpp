@@ -690,9 +690,18 @@ void GUI::Spectrogram::update(const World *world) {
                 for (std::size_t y = 0; y < std::ceil(newSpec.getM()/2)-1; y++) {
                     unsigned r = 0, g = 0, b = 0, a = 0;
                     float total = 0;
-                    std::vector<sf::Color> colors = {spectrogram.at(x, y*2)};
+                    std::vector<sf::Color> colors;
+                    try {
+                        colors = {spectrogram.at(x, y*2)};
+                    } catch (const std::out_of_range &e){
+                        printf("Is outarange a\n");
+                    }
                     if (y*2+1 < spectrogram.getM()){
-                        colors.push_back(spectrogram.at(x, y*2+1));
+                        try {
+                            colors.push_back(spectrogram.at(x, y * 2 + 1));
+                        } catch (const std::out_of_range &e) {
+                            printf("Outarange b\n");
+                        }
                     }
                     for (auto &c : colors){
                         if (c.r == 0 && c.g == 0 && c.b == 0 && c.a == 0){
@@ -708,9 +717,12 @@ void GUI::Spectrogram::update(const World *world) {
                     }
                     r /= total; g /= total;
                     b /= total; a /= total;
-                    newSpec.at(x, y) = sf::Color(r, g, b, a);
+                    try {
+                        newSpec.at(x, y) = sf::Color(r, g, b, a);
+                    } catch (const std::out_of_range &e){
+                        printf("IS outarange b\n");
+                    }
                 }
-                printf("c");
             }
 
             spectrogram = newSpec;
@@ -718,83 +730,92 @@ void GUI::Spectrogram::update(const World *world) {
             currentSize.y = std::ceil(downsamplingTriggerH/2.0);
 
         }
-        std::vector<std::array<unsigned, 4>> column(currentY);
+        try {
+            std::vector<std::array<unsigned, 4>> column(currentY);
 
-        std::vector<float> totals(column.size(), 0.f);
-        // Global color column has to be of sufficient size
-        if (colorColumn.size() < column.size()){
-            colorColumn.resize(column.size(), sf::Color(0, 0, 0, 0));
-            colorColumnCount.resize(column.size(), 0);
-        }
-
-        // Draw values to column
-        for (const auto &value : values){
-            std::size_t ind = (value.value - minVal)*(float) stride / (float) perRow;
-            mark(column, totals, ind, value.color, .8f, markerWidth);
-        }
-
-        // Divide in column to average colors
-        for (std::size_t i = 0; i < column.size(); i++){
-            column.at(i).at(0) /= totals.at(i); column.at(i).at(1) /= totals.at(i);
-            column.at(i).at(2) /= totals.at(i); column.at(i).at(3) /= totals.at(i);
-            colorColumnCount.at(i)++;
-        }
-
-        // Add to spectrogram
-        columnCounter++;
-        if (columnCounter == perColumn){
-            // Rescale the column if it too big
-            for (std::size_t i = 0; i < column.size(); i++){
-                if (colorColumnCount.at(i) != 0){
-                    colorColumn.at(i).r += column.at(i).at(0);
-                    colorColumn.at(i).g += column.at(i).at(1);
-                    colorColumn.at(i).b += column.at(i).at(2);
-                    colorColumn.at(i).a += column.at(i).at(3);
-                    colorColumnCount.at(i) = 0;
-                }
+            std::vector<float> totals(column.size(), 0.f);
+            // Global color column has to be of sufficient size
+            if (colorColumn.size() < column.size()) {
+                colorColumn.resize(column.size(), sf::Color(0, 0, 0, 0));
+                colorColumnCount.resize(column.size(), 0);
             }
 
-            auto p = spectrogram.at(currentSize.x);
-            auto itCol = p.first;
-            for (auto it = std::begin(colorColumn); it != std::end(colorColumn); it++){
-                *itCol = *it;
-                itCol++;
+            // Draw values to column
+            for (const auto &value : values) {
+                std::size_t ind = (value.value - minVal) * (float) stride / (float) perRow;
+                mark(column, totals, ind, value.color, .8f, markerWidth);
             }
 
-            currentSize.x += 1;
-            currentSize.y = std::max((std::size_t) currentSize.y, colorColumn.size());
-            colorColumn.clear(); colorColumnCount.clear(); columnCounter = 0;
-        }
+            // Divide in column to average colors
+            for (std::size_t i = 0; i < column.size(); i++) {
+                column.at(i).at(0) /= totals.at(i);
+                column.at(i).at(1) /= totals.at(i);
+                column.at(i).at(2) /= totals.at(i);
+                column.at(i).at(3) /= totals.at(i);
+                colorColumnCount.at(i)++;
+            }
 
-        // Check if spectrogram is too wide
-        if (spectrogram.getN() <= currentSize.x){
-            // Half width
-            auto newSpec = Contiguous2dVector(spectrogram.getN(), spectrogram.getM(), spectrogram.getFillValue());
-            for (std::size_t x = 0; x < std::ceil(newSpec.getN()/2.0); x++) {
-                for (std::size_t y = 0; y < newSpec.getM(); y++) {
-                    unsigned r = 0, g = 0, b = 0, a = 0;
-                    float total = 0;
-                    for (auto &c : {spectrogram.at(x*2, y), spectrogram.at(x*2+1, y)}){
-                        if (c.r == 0 && c.g == 0 && c.b == 0 && c.a == 0){
-                            total += 0;
-                        }
-                        else {
-                            r += c.r;
-                            g += c.g;
-                            b += c.b;
-                            a += c.a;
-                            total += 1;
-                        }
+            // Add to spectrogram
+            columnCounter++;
+            if (columnCounter == perColumn) {
+                // Rescale the column if it too big
+                for (std::size_t i = 0; i < column.size(); i++) {
+                    if (colorColumnCount.at(i) != 0) {
+                        colorColumn.at(i).r += column.at(i).at(0);
+                        colorColumn.at(i).g += column.at(i).at(1);
+                        colorColumn.at(i).b += column.at(i).at(2);
+                        colorColumn.at(i).a += column.at(i).at(3);
+                        colorColumnCount.at(i) = 0;
                     }
-                    r /= total; g /= total;
-                    b /= total; a /= total;
-                    newSpec.at(x, y) = sf::Color(r, g, b, a);
                 }
+
+                auto p = spectrogram.at(currentSize.x);
+                auto itCol = p.first;
+                for (auto it = std::begin(colorColumn); it != std::end(colorColumn); it++) {
+                    *itCol = *it;
+                    itCol++;
+                }
+
+                currentSize.x += 1;
+                currentSize.y = std::max((std::size_t) currentSize.y, colorColumn.size());
+                colorColumn.clear();
+                colorColumnCount.clear();
+                columnCounter = 0;
             }
 
-            spectrogram = newSpec;
-            perColumn *= 2;
-            currentSize.x = std::ceil(currentSize.x/2.0);
+            // Check if spectrogram is too wide
+            if (spectrogram.getN() <= currentSize.x) {
+                // Half width
+                auto newSpec = Contiguous2dVector(spectrogram.getN(), spectrogram.getM(), spectrogram.getFillValue());
+                for (std::size_t x = 0; x < std::ceil(newSpec.getN() / 2.0); x++) {
+                    for (std::size_t y = 0; y < newSpec.getM(); y++) {
+                        unsigned r = 0, g = 0, b = 0, a = 0;
+                        float total = 0;
+                        for (auto &c : {spectrogram.at(x * 2, y), spectrogram.at(x * 2 + 1, y)}) {
+                            if (c.r == 0 && c.g == 0 && c.b == 0 && c.a == 0) {
+                                total += 0;
+                            } else {
+                                r += c.r;
+                                g += c.g;
+                                b += c.b;
+                                a += c.a;
+                                total += 1;
+                            }
+                        }
+                        r /= total;
+                        g /= total;
+                        b /= total;
+                        a /= total;
+                        newSpec.at(x, y) = sf::Color(r, g, b, a);
+                    }
+                }
+
+                spectrogram = newSpec;
+                perColumn *= 2;
+                currentSize.x = std::ceil(currentSize.x / 2.0);
+            }
+        } catch (const std::out_of_range &e){
+            printf("Other outarange\n");
         }
     }
 
