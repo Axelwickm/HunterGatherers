@@ -12,6 +12,7 @@ target_link_libraries(HunterGatherers sfml-graphics sfml-audio)
 target_link_libraries(HunterGatherers OpenCL::OpenCL)
 
 file(COPY "resources" DESTINATION "${CMAKE_BINARY_DIR}")
+file(COPY Config.json DESTINATION "${CMAKE_BINARY_DIR}")
 #add_custom_command(TARGET HunterGatherers PRE_BUILD COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/cl $<TARGET_FILE_DIR:HunterGatherers>/cl)
 
 

@@ -14,7 +14,11 @@
 GUI::GUI(Config &config, sf::RenderWindow *window, World *world, Camera *camera)
         : config(config), window(window), originalWindowSize(window->getSize()), view(window->getDefaultView()),
         world(world), camera(camera) {
+#ifdef WIN32
     font.loadFromFile(R"(C:\Windows\Fonts\consola.ttf)");
+#elif defined(linux) || defined(__linux)
+	font.loadFromFile("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf");
+#endif
     sf::Color gray(120, 120, 120);
 
     simulationInfo.main = sf::Text(std::string("FPS: ###\nTime factor: ##\nPopulation: ###\nMushrooms: ###\n"), font);

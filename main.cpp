@@ -11,7 +11,7 @@ int main(int argc, char *argv[]) {
 
     // Process potential arguments config filename, and OpenCL device
     std::string deviceName;
-    std::string configFilename = ".\\Config.json";
+    std::string configFilename = "Config.json";
 
     for (int i = 0; i < argc; i++){
         std::string s(argv[i]);

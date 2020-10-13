@@ -16,7 +16,7 @@ void MarkovNames::loadResources() {
     if (!loaded){
         printf("Loading NamesMarkov.json\n");
         loaded = true;
-        std::ifstream file("resources\\NamesMarkov.json");
+        std::ifstream file("resources/NamesMarkov.json");
         printf("Parsing NamesMarkov to json object\n");
         file >> chain;
         file.close();
