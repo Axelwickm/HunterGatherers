@@ -1,131 +1,119 @@
 {
-  "_seed" : "seed is either an unsigned int, or TIME",
-  "seed" : "TIME",
-
-  "WorldSettings" : {
-    "worldWidth" : 7500, "worldHeight" :  7500,
-
-    "mushroomReproductionRate" : 0.02,
-    "mushroomReproductionDistance" : 120,
-    "mushroomReproductionNearLimit" : 3,
-
-    "terrainSquare" : 30,
-    "quadtreeLimit" : 60,
-    "PopulatorEntries" : [
+  "_seed": "seed is either an unsigned int, or TIME",
+  "seed": "TIME",
+  "WorldSettings": {
+    "worldWidth": 7500,
+    "worldHeight": 7500,
+    "mushroomReproductionRate": 0.02,
+    "mushroomReproductionDistance": 120,
+    "mushroomReproductionNearLimit": 3,
+    "terrainSquare": 30,
+    "quadtreeLimit": 60,
+    "PopulatorEntries": [
       {
-        "type" : "Agent",
-        "targetCount" : 100,
-        "rate" : 0.25
-      },{
-        "type" : "Mushroom",
-        "targetCount" : 750,
-        "rate" : 0.14
-      },{
-        "type" : "BouncingBall",
-        "targetCount" : 0,
-        "rate" : 0.75
+        "type": "Agent",
+        "targetCount": 100,
+        "rate": 0.25
+      },
+      {
+        "type": "Mushroom",
+        "targetCount": 750,
+        "rate": 0.14
+      },
+      {
+        "type": "BouncingBall",
+        "targetCount": 0,
+        "rate": 0.75
       }
     ]
   },
-
-  "AgentSettings" : {
+  "AgentSettings": {
     "mass": 1,
-    "friction" : 0.01,
-    "maxSpeed" : 1000,
-    "turnFactor" : 65,
-    "punchTime" : 1,
-    "actionCooldown" : 2,
-
-    "energyToParent" : 0.45,
-    "energyToChild" : 0.3,
-    "energyLossRate" : 0.2,
-    "movementEnergyLoss" : 0.015,
-    "turnRateEnergyLoss" : 0.00375,
+    "friction": 0.01,
+    "maxSpeed": 1000,
+    "turnFactor": 65,
+    "punchTime": 1,
+    "actionCooldown": 2,
+    "energyToParent": 0.45,
+    "energyToChild": 0.3,
+    "energyLossRate": 0.2,
+    "movementEnergyLoss": 0.015,
+    "turnRateEnergyLoss": 0.00375,
     "punchEnergy": 6,
-    "punchDamage" : 30,
-    "mushroomEnergy" : 20,
-    "maxEnergy" : 100,
+    "punchDamage": 30,
+    "mushroomEnergy": 20,
+    "maxEnergy": 100,
     "maxMushroomCount": 20,
-
-    "canReproduce" : true,
-    "canWalk" : true,
-    "canTurn" : true,
-    "canEat" : true,
-    "canPlace" : true,
-    "canPunch" : true,
-
-    "memory" : 4,
-    "memoryReactivity" : 0.18,
-
-    "perceiveCollision" : true,
-    "receptorCount" : 7,
-    "perceiveColor" : true,
-    "perceiveEnergyLevel" : true,
-    "perceiveMushroomCount" : true,
-
-    "FOV" : 120,
-    "visibilityDistance" : 350,
-    "visualReactivity" : 1,
-
-    "mutation" : 0.03,
-    "layerMin" : 4, "layerMax" : 6,
-    "biasMin" : -1, "biasMax" : 1,
-    "weightMin" : -2, "weightMax" : 2,
+    "canReproduce": true,
+    "canWalk": true,
+    "canTurn": true,
+    "canEat": true,
+    "canPlace": true,
+    "canPunch": true,
+    "memory": 4,
+    "memoryReactivity": 0.18,
+    "perceiveCollision": true,
+    "receptorCount": 7,
+    "perceiveColor": true,
+    "perceiveEnergyLevel": true,
+    "perceiveMushroomCount": true,
+    "FOV": 120,
+    "visibilityDistance": 350,
+    "visualReactivity": 1,
+    "mutation": 0.03,
+    "layerMin": 4,
+    "layerMax": 6,
+    "biasMin": -1,
+    "biasMax": 1,
+    "weightMin": -2,
+    "weightMax": 2,
     "perceptronPerLayerMin": 6,
     "perceptronPerLayerMax": 10
   },
-
-  "Controls" : {
-    "pause" : "Space",
-    "close" : "Escape",
-    "showInterface" : "D",
-    "clearStats" : "C",
-
-    "up" : "Up",
-    "down" : "Down",
-    "left" : "Left",
-    "right" : "Right",
-
-    "slowDown" : "Comma",
-    "speedUp" : "Period",
-
-    "keyboardCameraMove" : 15,
-    "timeFactorInitial" : 9,
-    "timeFactorDelta" : 0.05,
-    "timeFactorMax" :  20,
-    "scrollFactor" :  0.05
+  "Controls": {
+    "pause": "Space",
+    "close": "Escape",
+    "showInterface": "D",
+    "clearStats": "C",
+    "up": "Up",
+    "down": "Down",
+    "left": "Left",
+    "right": "Right",
+    "slowDown": "Comma",
+    "speedUp": "Period",
+    "keyboardCameraMove": 15,
+    "timeFactorInitial": 9,
+    "timeFactorDelta": 0.05,
+    "timeFactorMax": 20,
+    "scrollFactor": 0.05
   },
-
   "Rendering": {
-    "windowWidth" : 1920,
-    "windowHeight" : 1080,
-
-    "graphLine" : false,
-        "graphPopulation" : true,
-        "graphMeanGeneration" : false,
-        "graphMeanPerceptrons" : false,
-        "graphMeanAge" : false,
-        "graphMeanChildren" : false,
-        "graphMeanMurders" : false,
-        "graphMeanEnergy" : false,
-        "graphMeanMushrooms" : false,
-        "graphMeanSpeed" : false,
-
-    "graphSpectrogram" : true,
-        "graphGeneration" : true,
-        "graphPerceptrons" : false,
-        "graphAge" : false,
-        "graphChildren" : false,
-        "graphMurders" : false,
-        "graphEnergy" : false,
-        "graphMushrooms" : false,
-        "graphSpeed" : false,
-
-    "bins" : 50,
-    "showInterface" : true,
-    "showWorldObjectBounds" : false,
-    "showQuadtree" :  false,
-    "showQuadtreeEntities" : false,
-    "showVision" : true
+    "windowWidth": 1920,
+    "windowHeight": 1080,
+    "graphLine": false,
+    "graphPopulation": true,
+    "graphMeanGeneration": false,
+    "graphMeanPerceptrons": false,
+    "graphMeanAge": false,
+    "graphMeanChildren": false,
+    "graphMeanMurders": false,
+    "graphMeanEnergy": false,
+    "graphMeanMushrooms": false,
+    "graphMeanSpeed": false,
+    "graphSpectrogram": true,
+    "graphGeneration": true,
+    "graphPerceptrons": false,
+    "graphAge": false,
+    "graphChildren": false,
+    "graphMurders": false,
+    "graphEnergy": false,
+    "graphMushrooms": false,
+    "graphSpeed": false,
+    "bins": 50,
+    "showInterface": true,
+    "showWorldObjectBounds": false,
+    "showQuadtree": false,
+    "showQuadtreeEntities": false,
+    "showVision": true
   }
 }

@@ -28,7 +28,7 @@ Space: Pause or resume the simulation.
 Escape: Close the simulation.
 D: Toggle the display of the user interface.
 C: Clear current statistical data.
-Navigation Controls:
+Click on agent name: Follow
 
 Arrow Keys (Up, Down, Left, Right): Move the camera in the respective direction.
 Comma: Slow down the simulation speed.
@@ -38,8 +38,8 @@ Space: Pause or resume the simulation.
 Escape: Close the simulation.
 D: Toggle the display of the user interface.
 C: Clear current statistical data.
-Navigation Controls:
 
+Navigation Controls:
 Arrow Keys (Up, Down, Left, Right): Move the camera in the respective direction.
 Comma: Slow down the simulation speed.
 Period: Speed up the simulation speed.
