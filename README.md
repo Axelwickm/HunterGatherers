@@ -21,6 +21,29 @@ Clone repo:
     --gpus all \
     huntergatherers`
 
+
+## Controlls:
+
+Space: Pause or resume the simulation.
+Escape: Close the simulation.
+D: Toggle the display of the user interface.
+C: Clear current statistical data.
+Navigation Controls:
+
+Arrow Keys (Up, Down, Left, Right): Move the camera in the respective direction.
+Comma: Slow down the simulation speed.
+Period: Speed up the simulation speed.General Controls:
+
+Space: Pause or resume the simulation.
+Escape: Close the simulation.
+D: Toggle the display of the user interface.
+C: Clear current statistical data.
+Navigation Controls:
+
+Arrow Keys (Up, Down, Left, Right): Move the camera in the respective direction.
+Comma: Slow down the simulation speed.
+Period: Speed up the simulation speed.
+
 ## Info
 
 The HunterGatherers project is an engaging artificial life simulation set in a dynamic 2D world. It showcases humanoid agents with autonomous behaviors, including foraging for food, reproducing, and responding intelligently to environmental changes. The simulation's core lies in its AI-driven agents that demonstrate complex interactions and survival strategies. Key features include real-time world rendering, detailed statistical analysis tools, and a user-friendly graphical interface. The project stands out for its customizability, allowing users to tailor numerous simulation parameters via `Config.json`, offering a versatile platform for experimentation in emergent system dynamics.
