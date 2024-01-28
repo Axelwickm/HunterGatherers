@@ -9,7 +9,7 @@
 #include <SFML/Graphics/RenderWindow.hpp>
 #include "Agent.h"
 #include "Camera.h"
-#include "utils.cpp"
+#include "utils.h"
 #include "World.h"
 
 class GUI {

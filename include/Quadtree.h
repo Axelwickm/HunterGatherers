@@ -9,7 +9,7 @@
 #include <SFML/Graphics.hpp>
 
 #include "WorldObject.h"
-#include "utils.cpp"
+#include "utils.h"
 
 #ifndef FAMILYISEVERYTHING_QUADTREE_H
 #define FAMILYISEVERYTHING_QUADTREE_H

@@ -119,7 +119,7 @@ OpenCL_Wrapper::OpenCL_Wrapper(std::string deviceToUse) {
 
 
     // Build the programs and create the kernels
-    const std::string kernelSource = loadFile("../cl/neural_net.cl");
+    const std::string kernelSource = loadFile("./cl/neural_net.cl");
     cl_program  neuralNetProgram = createAndCompileProgram(kernelSource);
     perceptronKernel = clCreateKernel(neuralNetProgram, "perceptron", &err);
 

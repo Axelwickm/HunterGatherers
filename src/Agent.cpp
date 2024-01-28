@@ -7,7 +7,7 @@
 
 #include "Agent.h"
 #include "Config.h"
-#include "utils.cpp"
+#include "utils.h"
 #include "World.h"
 #include "Mushroom.h"
 #include "MarkovNames.h"
