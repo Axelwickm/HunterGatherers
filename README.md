@@ -14,11 +14,13 @@ Timelapse: https://www.youtube.com/watch?v=fuLsRUkQlHc
 Clone repo:
 1. Clone repo: `git clone --recurse-submodules https://github.com/Axelwickm/HunterGatherers.git`
 2. Build Docker Image: `docker build -t huntergatherers .`
-3. Run: `docker run -it --rm --name hunter_gatherers \
-    -e DISPLAY=$DISPLAY \
-    -v /tmp/.X11-unix:/tmp/.X11-unix \
-    --device /dev/dri:/dev/dri \
-    --gpus all \
+3. Permit docker to use screen`xhost +local:docker`
+4. Run: `docker run -it --rm --name hunter_gatherers 
+    -e DISPLAY=$DISPLAY
+    -v /tmp/.X11-unix:/tmp/.X11-unix
+    --device /dev/dri:/dev/dri
+    --gpus all
+    --ipc=host
     huntergatherers`
 
 
