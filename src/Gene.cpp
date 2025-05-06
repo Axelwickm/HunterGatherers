@@ -131,14 +131,16 @@ void IntegerGene::generate() {
 }
 
 void IntegerGene::mutate(float factor) {
-    setEvaluationCount(getEvaluationCount()+1);
-    std::poisson_distribution distribution(factor);
-    int change = distribution(randomEngine);
-    if (std::uniform_int_distribution(0, 1)(randomEngine) == 0){
+    setEvaluationCount(getEvaluationCount() + 1);
+
+    double mean = std::max(1e-6, static_cast<double>(factor));
+    std::poisson_distribution<int> dist(mean);
+    int change = dist(randomEngine);
+    if (std::uniform_int_distribution<>(0, 1)(randomEngine) == 0) {
         change = -change;
     }
 
-    value = std::max(std::min(value + change, maxVal), minVal);
+    value = std::clamp(value + change, minVal, maxVal);
 }
 
 void IntegerGene::evaluate(float mutationFactor, unsigned version) {

@@ -626,7 +626,7 @@ void Agent::draw(sf::RenderWindow *window, float deltaTime) {
         window->draw(orientationLine, 2, sf::Lines);
     }
 
-    if (world->getConfig().render.showPaths || drawPathNextFrame){
+    if ((world->getConfig().render.showPaths || drawPathNextFrame) && !path.empty()){
         window->draw(&path.front(), path.size(), sf::Lines);
     }
     drawPathNextFrame = false;
